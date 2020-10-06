@@ -19,9 +19,11 @@
 package nil.nadph.qnotified.hook;
 
 import me.kyuubiran.hook.*;
-import me.kyuubiran.hook.testhook.CutMessage;
+import me.kyuubiran.hook.testhook.*;
 import me.singleneuron.hook.*;
 import me.singleneuron.hook.decorator.SimpleCheckIn;
+import me.singleneuron.qn_kernel.dispacher.ItemBuilderFactoryHook;
+import me.singleneuron.qn_kernel.dispacher.StartActivityHook;
 import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.config.SwitchConfigItem;
 import nil.nadph.qnotified.hook.rikka.*;
@@ -111,6 +113,7 @@ public abstract class BaseDelayableHook implements SwitchConfigItem {
                 SimpleCheckIn.INSTANCE,
                 StartActivityHook.INSTANCE,
                 RemovePokeGrayTips.INSTANCE,
+                ArbitraryFrdSourceId.get(),
         };
         return sAllHooks;
     }
