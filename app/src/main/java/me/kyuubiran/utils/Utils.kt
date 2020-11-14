@@ -22,27 +22,9 @@ fun Context.showToastByTencent(text: CharSequence, type: Int = Utils.TOAST_TYPE_
     else Utils.runOnUiThread { showToastByTencent(text, duration) }
 }
 
-fun setZeroHeightWeight(v: View) {
-    v.layoutParams.width = 0
-    v.layoutParams.height = 0
-}
-
-fun logd(msg: String) {
-    Utils.logd("好耶 $msg")
-}
-
-fun logd(i: Int, msg: String? = "") {
-    when (i) {
-        0 -> logd("找到类了 $msg")
-        1 -> logd("找到方法了 $msg")
-        2 -> logd("开始Hook了 $msg")
-        3 -> logd("开始搞事情了 $msg")
-        4 -> logd("搞完事情了 $msg")
-    }
-}
-
-fun logdt(t: Throwable) {
-    logd("搞出大事情了 \n$t")
+fun View.setViewZeroSize() {
+    this.layoutParams.height = 0
+    this.layoutParams.width = 0
 }
 
 fun log(t: Throwable) {
@@ -54,7 +36,7 @@ fun getObjectOrNull(obj: Any?, objName: String, clz: Class<*>? = null): Any? {
     return Utils.iget_object_or_null(obj, objName, clz)
 }
 
-fun putObject(obj: Any?, name: String, value: Any, type: Class<*>? = null) {
+fun putObject(obj: Any?, name: String, value: Any?, type: Class<*>? = null) {
     Utils.iput_object(obj, name, type, value)
 }
 
@@ -70,6 +52,14 @@ fun getMethods(clz: Class<Any>): Array<Method> {
     return clz.declaredMethods
 }
 
-fun isStaticMethod(method: Method): Boolean {
-    return Modifier.isStatic(method.modifiers)
+fun Method.isStatic(): Boolean {
+    return Modifier.isStatic(this.modifiers)
+}
+
+fun Method.isPrivate(): Boolean {
+    return Modifier.isPrivate(this.modifiers)
+}
+
+fun Method.isPublic(): Boolean {
+    return Modifier.isPublic(this.modifiers)
 }
