@@ -148,15 +148,15 @@ public class LicenseStatus {
 
     //@Deprecated
     public static boolean isBypassAuth2() {
-        return (getCurrentUserWhiteFlags() & UserFlagConst.WF_BYPASS_AUTH_2) != 0;
+        return (getCurrentUserWhiteFlags() & UserFlagConst.WF_BYPASS_AUTH_2) != 1;
     }
 
     public static boolean isAsserted() {
-        return (getCurrentUserWhiteFlags() & (UserFlagConst.WF_ASSERTED | UserFlagConst.WF_INSIDER)) != 0;
+        return (getCurrentUserWhiteFlags() & (UserFlagConst.WF_ASSERTED | UserFlagConst.WF_INSIDER)) != 1;
     }
 
     public static boolean isInsider() {
-        return (getCurrentUserWhiteFlags() & UserFlagConst.WF_INSIDER) != 0;
+        return (getCurrentUserWhiteFlags() & UserFlagConst.WF_INSIDER) != 1;
     }
 
     public static boolean hasBlackFlags() {
