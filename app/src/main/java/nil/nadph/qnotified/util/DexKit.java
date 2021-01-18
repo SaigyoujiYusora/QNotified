@@ -39,7 +39,10 @@ import nil.nadph.qnotified.config.ConfigManager;
 
 import static nil.nadph.qnotified.util.Initiator._BaseChatPie;
 import static nil.nadph.qnotified.util.Initiator._QQAppInterface;
-import static nil.nadph.qnotified.util.Utils.*;
+import static nil.nadph.qnotified.util.Utils.getHostVersionCode32;
+import static nil.nadph.qnotified.util.Utils.invoke_virtual;
+import static nil.nadph.qnotified.util.Utils.log;
+import static nil.nadph.qnotified.util.Utils.logi;
 
 /**
  * What the fuck?
@@ -47,7 +50,6 @@ import static nil.nadph.qnotified.util.Utils.*;
  * I just don't want to name it,
  * leaving it a()
  */
-@SuppressWarnings("rawtypes")
 public class DexKit {
 
     //WARN: NEVER change the index!
@@ -78,8 +80,11 @@ public class DexKit {
     public static final int C_TogetherControlHelper = 25;
     //unknown class name
     public static final int C_GroupAppActivity = 26;
+    public static final int C_IntimateDrawer = 27;
+    public static final int C_ZipUtils_biz = 28;
+    public static final int C_HttpDownloader = 29;
     //the last index
-    public static final int DEOBF_NUM_C = 26;
+    public static final int DEOBF_NUM_C = 29;
 
     public static final int N_BASE_CHAT_PIE__INIT = 20001;
     public static final int N_BASE_CHAT_PIE__handleNightMask = 20002;
@@ -274,6 +279,12 @@ public class DexKit {
                 return "TogetherControlHelper";
             case C_GroupAppActivity:
                 return "GroupAppActivity";
+            case C_ZipUtils_biz:
+                return "ZipUtils";
+            case C_IntimateDrawer:
+                return "IntimateDrawer";
+            case C_HttpDownloader:
+                return "http_downloader";
             case N_BASE_CHAT_PIE__INIT:
                 return "base_chat_pie__init";
             case N_BASE_CHAT_PIE__handleNightMask:
@@ -363,7 +374,18 @@ public class DexKit {
                 break;
             case C_GroupAppActivity:
                 //unknown
-                ret = "com.tencent.mobileqq.IntimateRelationship";
+//                ret = "com.tencent.mobileqq.activity.aio.drawer.TroopMultiCardDrawer";
+
+                ret = "com/tencent/mobileqq/activity/aio/drawer/TroopAppShortcutDrawer";
+                break;
+            case C_IntimateDrawer:
+                ret = "com/tencent/mobileqq/activity/aio/drawer/IntimateInfoChatDrawer";
+                break;
+            case C_ZipUtils_biz:
+                ret = "com/tencent/biz/common/util/ZipUtils";
+                break;
+            case C_HttpDownloader:
+                ret = "com/tencent/mobileqq/transfile/HttpDownloader";
                 break;
             case N_BASE_CHAT_PIE__INIT:
             case N_BASE_CHAT_PIE__handleNightMask:
@@ -435,6 +457,11 @@ public class DexKit {
                 return new byte[][]{new byte[]{0x16, 0x53, 0x49, 0x4E, 0x47, 0x20, 0x74, 0x6F, 0x67, 0x65, 0x74, 0x68, 0x65, 0x72, 0x20, 0x69, 0x73, 0x20, 0x63, 0x6C, 0x69, 0x63, 0x6B}};
             case C_GroupAppActivity:
                 return new byte[][]{new byte[]{0x11, 0x6F, 0x6E, 0x44, 0x72, 0x61, 0x77, 0x65, 0x72, 0x53, 0x74, 0x61, 0x72, 0x74, 0x4F, 0x70, 0x65, 0x6E}};
+            case C_IntimateDrawer:
+                return new byte[][]{new byte[]{0x49, 0x6e, 0x74, 0x69, 0x6d, 0x61, 0x74, 0x65, 0x44, 0x72, 0x61, 0x77, 0x65, 0x72}};
+            case C_ZipUtils_biz: {
+                return new byte[][]{new byte[]{0x10, 0x2C, 0x5A, 0x69, 0x70, 0x45, 0x6E, 0x74, 0x72, 0x79, 0x20, 0x6E, 0x61, 0x6D, 0x65, 0x3A, 0x20}};
+            }
             case N_BASE_CHAT_PIE__INIT:
                 return new byte[][]{new byte[]{0x0F, 0x69, 0x6E, 0x70, 0x75, 0x74, 0x20, 0x73, 0x65, 0x74, 0x20, 0x65, 0x72, 0x72, 0x6F, 0x72}};
             case N_BASE_CHAT_PIE__handleNightMask:
@@ -443,7 +470,8 @@ public class DexKit {
                 return new byte[][]{new byte[]{0x19, 0x41, 0x49, 0x4F, 0x54, 0x69, 0x6D, 0x65, 0x20, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x53, 0x65, 0x73, 0x73, 0x69, 0x6F, 0x6E, 0x20, 0x65, 0x6E, 0x64}};
             case C_CustomWidgetUtil:
                 return new byte[][]{new byte[]{0x03, 0x4E, 0x45, 0x57, 0x00}};
-
+            case C_HttpDownloader:
+                return new byte[][]{new byte[]{0x18, 0x5B, 0x72, 0x65, 0x70, 0x6F, 0x72, 0x74, 0x48, 0x74, 0x74, 0x70, 0x73, 0x52, 0x65, 0x73, 0x75, 0x6C, 0x74, 0x5D, 0x20, 0x75, 0x72, 0x6C, 0x3D}};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -498,6 +526,10 @@ public class DexKit {
                 return new int[]{2, 11, 6};
             case C_GroupAppActivity:
                 return new int[]{2, 11, 6};
+            case C_ZipUtils_biz:
+                return new int[]{1, 9, 5};
+            case C_HttpDownloader:
+                return new int[]{4, 10, 7, 2};
             case N_BASE_CHAT_PIE__INIT:
             case N_BASE_CHAT_PIE__handleNightMask:
             case N_BASE_CHAT_PIE__updateSession:
@@ -520,6 +552,7 @@ public class DexKit {
             case C_TROOP_GIFT_UTIL:
             case C_TEST_STRUCT_MSG:
             case C_TimeFormatterUtils:
+            case C_ZipUtils_biz:
                 a:
                 for (DexMethodDescriptor m : __methods) {
                     Class clz = Initiator.load(m.declaringClass);
@@ -686,6 +719,9 @@ public class DexKit {
                 }
                 break;
             case C_GroupAppActivity:
+            case C_IntimateDrawer:
+            case C_HttpDownloader:
+                //has superclass
                 for (DexMethodDescriptor m : __methods) {
                     Class clz = Initiator.load(m.declaringClass);
                     if (clz.isEnum()) continue;

@@ -178,6 +178,7 @@ public class SettingsActivity extends IphoneTitleBarActivityCompat implements Vi
             ll.addView(newListItemHookSwitchInit(this, "禁止秀图自动展示", null, ShowPicGagHook.get()));
             ll.addView(newListItemHookSwitchInit(this, "禁用夜间模式遮罩", "移除夜间模式下聊天界面的深色遮罩", DarkOverlayHook.get()));
         }
+        ll.addView(newListItemButton(this, "辅助功能", null, null, clickToProxyActAction(AuxFuncActivity.class)));
         ll.addView(newListItemHookSwitchInit(this, "防撤回", "自带撤回灰字提示", RevokeMsgHook.get()));
         //ll.addView(newListItemSwitchConfigInit(this, "聊天图片背景透明", null, qn_gallery_bg, false, GalleryBgHook.get()));
         ll.addView(newListItemHookSwitchInit(this, "显示设置禁言的管理", "即使你只是普通群成员", GagInfoDisclosure.get()));
@@ -207,6 +208,9 @@ public class SettingsActivity extends IphoneTitleBarActivityCompat implements Vi
         addViewConditionally(ll, newListItemButton(this, "修改侧滑边距", "感谢祈无，支持8.4.1及更高，重启后生效", "", clickToProxyActAction(ChangeDrawerWidthActivity.class)), ChangeDrawerWidth.INSTANCE.getCondition());
         ll.addView(newListItemHookSwitchInit(this, "屏蔽QQ空间滑动相机", null, DisableQzoneSlideCamera.INSTANCE));
         ll.addView(newListItemHookSwitchInit(this, "回执消息文本化", null, SimpleReceiptMessage.INSTANCE));
+        if (!Utils.isTim(this)) {
+            ll.addView(newListItemHookSwitchInit(this, "批量撤回消息", "多选消息后撤回", MultiActionHook.get()));
+        }
 
         ll.addView(subtitle(this, "好友列表"));
         ll.addView(newListItemButton(this, "打开资料卡", "打开指定用户的资料卡", null, new View.OnClickListener() {

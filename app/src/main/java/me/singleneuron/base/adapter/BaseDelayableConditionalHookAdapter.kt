@@ -2,12 +2,19 @@ package me.singleneuron.base.adapter
 
 import me.singleneuron.base.Conditional
 import me.singleneuron.data.PageFaultHighPerformanceFunctionCache
+import me.singleneuron.qn_kernel.tlb.ConfigTable
 import nil.nadph.qnotified.SyncUtils
 
 abstract class BaseDelayableConditionalHookAdapter @JvmOverloads constructor(string:String, proc:Int = SyncUtils.PROC_MAIN) : BaseDelayableHookAdapter(string, proc), Conditional {
 
     //如有更改重启后生效
-    protected abstract val conditionCache : PageFaultHighPerformanceFunctionCache<Boolean>
+    protected open val conditionCache : PageFaultHighPerformanceFunctionCache<Boolean> = PageFaultHighPerformanceFunctionCache {
+        try {
+            ConfigTable.getConfig<Any?>(this::class.simpleName) != null
+        } catch (e:Exception) {
+            false
+        }
+    }
 
     override val condition : Boolean
     get() {
@@ -16,14 +23,6 @@ abstract class BaseDelayableConditionalHookAdapter @JvmOverloads constructor(str
 
     override fun checkEnabled(): Boolean {
         return condition&&super.checkEnabled()
-    }
-
-    internal open fun getClass(): String {
-        throw RuntimeException("$cfgName :Unsupported QQ Version")
-    }
-
-    internal open fun getID(): Int {
-        throw RuntimeException("$cfgName :Unsupported QQ Version")
     }
 
 }
