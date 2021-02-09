@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -67,7 +67,7 @@ public class FriendChunk implements Serializable, Cloneable {
         Class clz_gfr = load("friendlist/GetFriendListResp");
         validLength = 0;
         Field[] mine = FriendChunk.class.getDeclaredFields();
-        //Field[] his=clz_gfr.getDeclaredFields();
+
         Field f;
         for (Field field : mine) {
             try {
@@ -120,7 +120,7 @@ public class FriendChunk implements Serializable, Cloneable {
         try {
             for (int i = 0; i < validLength; i++) {
                 to[i].set(this, from[i].get(resp));
-                //log(from[i].getName()+"=>"+to[i].getName());
+
             }
             int len = friend_count;
             arrStatus = new byte[len];

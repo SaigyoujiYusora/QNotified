@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -180,11 +180,6 @@ public class MoleculeView extends View {
                 drawBond(canvas, dx + scaleFactor * (p1.x - mx), dy - scaleFactor * (p1.y - my), dx + scaleFactor * (p2.x - mx),
                         dy - scaleFactor * (p2.y - my), bond.type, bond.from - 1, bond.to - 1);
             }
-//            long delta = System.currentTimeMillis() - begin;
-//            paint.setTextAlign(Paint.Align.LEFT);
-//            paint.setTextSize(fontSize / 2);
-//            canvas.drawText(delta + "ms", fontSize / 2, fontSize / 1.25f, paint);
-//            paint.setTextSize(fontSize);
         }
     }
 

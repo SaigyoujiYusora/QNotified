@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -30,6 +30,7 @@ import androidx.core.view.ViewCompat;
 
 import com.tencent.mobileqq.widget.BounceScrollView;
 
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.R;
 import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.config.ConfigManager;
@@ -68,12 +69,10 @@ public class FakeBatCfgActivity extends IphoneTitleBarActivityCompat implements 
         LinearLayout __ll = new LinearLayout(FakeBatCfgActivity.this);
         __ll.setOrientation(LinearLayout.VERTICAL);
         ViewGroup bounceScrollView = new BounceScrollView(this, null);
-        //invoke_virtual(bounceScrollView,"a",true,500,500,boolean.class,int.class,int.class);
         bounceScrollView.setLayoutParams(mmlp);
         bounceScrollView.setId(R.id.rootBounceScrollView);
         ll.setId(R.id.rootMainLayout);
         bounceScrollView.addView(ll, new ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
-        //invoke_virtual(bounceScrollView,"setNeedHorizontalGesture",true,boolean.class);
         LinearLayout.LayoutParams fixlp = new LinearLayout.LayoutParams(MATCH_PARENT, dip2px(FakeBatCfgActivity.this, 48));
         RelativeLayout.LayoutParams __lp_l = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
         int mar = (int) (dip2px(FakeBatCfgActivity.this, 12) + 0.5f);
@@ -100,11 +99,9 @@ public class FakeBatCfgActivity extends IphoneTitleBarActivityCompat implements 
         pct.setInputType(TYPE_CLASS_NUMBER);
         pct.setTextColor(ResUtils.skin_black);
         pct.setTextSize(dip2sp(FakeBatCfgActivity.this, 18));
-        //pct.setBackgroundDrawable(null);
         ViewCompat.setBackground(pct,null);
         pct.setGravity(Gravity.CENTER);
         pct.setPadding(_5dp, _5dp / 2, _5dp, _5dp / 2);
-        //pct.setBackgroundDrawable(new HighContrastBorder());
         ViewCompat.setBackground(pct,new HighContrastBorder());
         pct.setHint("电量百分比, 取值范围 [1,100]");
         pct.setText(bat.getFakeBatteryCapacity() + "");
@@ -198,7 +195,7 @@ public class FakeBatCfgActivity extends IphoneTitleBarActivityCompat implements 
                                 CustomDialog.create(FakeBatCfgActivity.this).setTitle("操作失败")
                                         .setCancelable(true).setPositiveButton("确认", null)
                                         .setMessage("发生错误:\n" + getApplication().getPackageName() + ":MSF 进程响应超时\n" +
-                                                "如果您的" + Utils.getHostAppName() + "刚刚启动,您可以在十几秒后再试一次\n" +
+                                                "如果您的" + HostInformationProviderKt.getHostInformationProvider().getHostName() + "刚刚启动,您可以在十几秒后再试一次\n" +
                                                 "如果您是太极(含无极)用户,请确认您的太极版本至少为 湛泸-6.0.2(1907) ,如低于此版本,请尽快升级").show();
                             }
                         }

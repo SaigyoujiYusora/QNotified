@@ -1,3 +1,21 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package me.singleneuron.util
 
 import android.app.Activity
@@ -65,9 +83,7 @@ fun dumpIntent(intent: Intent) {
 }
 
 fun checkCardMsg(originString: String): CardMsgCheckResult {
-    //if (BuildConfig.DEBUG||LicenseStatus.isInsider()) return CardMsgCheckResult(true)
     try {
-        //Utils.logd("trying: $string")
         Utils.logd("origin string: $originString")
         val string = decodePercent(originString)
         Utils.logd("decode string: $string")
@@ -75,7 +91,6 @@ fun checkCardMsg(originString: String): CardMsgCheckResult {
         val blackList = Gson().fromJson<HashMap<String, String>>(blackListString, object : TypeToken<HashMap<String, String>>() {}.type)
         Utils.logd(Gson().toJson(blackList))
         for (rule in blackList) {
-            //Utils.logd("checking: $rule")
             if (Regex(rule.value, setOf(RegexOption.IGNORE_CASE,RegexOption.DOT_MATCHES_ALL)).containsMatchIn(string)) {
                 return CardMsgCheckResult(false, rule.key)
             }
@@ -104,7 +119,6 @@ private fun decodePercent(string:String): String {
             }
         }
         Utils.logd("processing string: $produceString")
-        //Thread.sleep(1000)
     }
 }
 

@@ -1,3 +1,21 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package me.kyuubiran.hook
 
 import android.view.View
@@ -7,8 +25,9 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import me.kyuubiran.util.setViewZeroSize
 import nil.nadph.qnotified.SyncUtils
-import nil.nadph.qnotified.step.Step
 import nil.nadph.qnotified.util.Initiator
+import nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null
+import nil.nadph.qnotified.step.Step
 import nil.nadph.qnotified.util.LicenseStatus
 import nil.nadph.qnotified.util.Utils
 import java.util.*
@@ -54,9 +73,9 @@ object SimplifyQQSettingMe : BaseMultiConfigDelayableHook() {
                     if (LicenseStatus.sDisableCommonHooks) return
                     if (!isEnabled) return
                     //中间部分(QQ会员 我的钱包等)
-                    val midcontentListLayout: LinearLayout = Utils.iget_object_or_null(param?.thisObject, "k", View::class.java) as LinearLayout
+                    val midcontentListLayout: LinearLayout = iget_object_or_null(param?.thisObject, "k", View::class.java) as LinearLayout
                     //底端部分 设置 夜间模式 达人 等
-                    val underSettingsLayout: LinearLayout = Utils.iget_object_or_null(param?.thisObject, "h", View::class.java) as LinearLayout
+                    val underSettingsLayout: LinearLayout = iget_object_or_null(param?.thisObject, "h", View::class.java) as LinearLayout
 
                     for (i in 1 until underSettingsLayout.childCount) {
                         val child = underSettingsLayout.getChildAt(i) as LinearLayout

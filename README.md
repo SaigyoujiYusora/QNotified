@@ -1,6 +1,6 @@
 # QNotified
 
-[![Build status](https://build.appcenter.ms/v0.1/apps/599b1851-3361-4e64-a277-6a4c8f6e7332/branches/master/badge)](https://install.appcenter.ms/orgs/qnotifieddev/apps/qnotified/distribution_groups/alpha)
+[![Build Status](https://dev.azure.com/Cryolitia/QNotified/_apis/build/status/ferredoxin.QNotified?branchName=master)](https://dev.azure.com/Cryolitia/QNotified/_build/latest?definitionId=1&branchName=master)
 [![license](https://img.shields.io/github/license/ferredoxin/QNotified.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 [![GitHub release](https://img.shields.io/github/release/ferredoxin/QNotified.svg)](https://github.com/ferredoxin/QNotified/releases/latest)
 
@@ -73,6 +73,10 @@ QNotified is a Xposed module for mobile QQ that aims to:
 34. 隐藏小红点
 35. 隐藏群在线人数
 36. 隐藏群总人数
+37. 批量撤回消息
+38. 隐藏移出群助手提示
+39. 修改消息左滑回复
+40. at界面以管理员优先顺序排序
 
 注1: 卡片消息及群发文本这两个功能因大量被用于广告引流而废除
 

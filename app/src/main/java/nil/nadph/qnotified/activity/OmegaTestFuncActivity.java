@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -30,10 +30,10 @@ import android.widget.TextView;
 import com.tencent.mobileqq.widget.BounceScrollView;
 
 import me.singleneuron.hook.CopyCardMsg;
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.hook.CardMsgHook;
 import nil.nadph.qnotified.ui.ResUtils;
 import nil.nadph.qnotified.util.LicenseStatus;
-import nil.nadph.qnotified.util.Utils;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -50,7 +50,7 @@ public class OmegaTestFuncActivity extends IphoneTitleBarActivityCompat {
     public boolean doOnCreate(Bundle bundle) {
         super.doOnCreate(bundle);
         RelativeLayout _t;
-        String _hostName = Utils.getHostAppName();
+        String _hostName = HostInformationProviderKt.getHostInformationProvider().getHostName();
         LinearLayout ll = new LinearLayout(this);
         ll.setOrientation(LinearLayout.VERTICAL);
         ViewGroup.LayoutParams mmlp = new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT);

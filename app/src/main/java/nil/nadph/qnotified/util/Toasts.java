@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -28,6 +28,8 @@ import androidx.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Objects;
+
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 
 import static nil.nadph.qnotified.util.Initiator.load;
 import static nil.nadph.qnotified.util.Utils.log;
@@ -61,7 +63,7 @@ public class Toasts {
     public static void showToast(@Nullable Context context, int type, @NonNull final CharSequence text, int duration) {
         Objects.requireNonNull(text, "text");
         if (context == null) {
-            context = Utils.getApplication();
+            context = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
         }
         final Context ctx = context;
         Utils.runOnUiThread(() -> {

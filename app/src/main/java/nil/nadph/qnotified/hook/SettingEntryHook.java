@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -29,23 +29,27 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 import nil.nadph.qnotified.ExfriendManager;
 import nil.nadph.qnotified.MainHook;
-import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.activity.EulaActivity;
+import nil.nadph.qnotified.activity.SettingsActivity;
 import nil.nadph.qnotified.step.DexDeobfStep;
-import nil.nadph.qnotified.step.Step;
-import nil.nadph.qnotified.util.*;
+import nil.nadph.qnotified.util.DexKit;
+import nil.nadph.qnotified.util.LicenseStatus;
+import nil.nadph.qnotified.util.NonNull;
+import nil.nadph.qnotified.util.Utils;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static nil.nadph.qnotified.util.Initiator.load;
-import static nil.nadph.qnotified.util.Utils.*;
+import static nil.nadph.qnotified.util.ReflexUtil.*;
+import static nil.nadph.qnotified.util.Utils.TOAST_TYPE_ERROR;
+import static nil.nadph.qnotified.util.Utils.log;
 
-public class SettingEntryHook extends BaseDelayableHook {
+public class SettingEntryHook extends CommonDelayableHook {
     public static final int R_ID_SETTING_ENTRY = 0x300AFF71;
     private static final SettingEntryHook self = new SettingEntryHook();
-    private boolean inited = false;
 
     private SettingEntryHook() {
+        super("__NOT_USED__", new DexDeobfStep(DexKit.C_DIALOG_UTIL));
     }
 
     @NonNull
@@ -54,8 +58,7 @@ public class SettingEntryHook extends BaseDelayableHook {
     }
 
     @Override
-    public boolean init() {
-        if (inited) return true;
+    public boolean initOnce() {
         try {
             XposedHelpers.findAndHookMethod(load("com.tencent.mobileqq.activity.QQSettingSettingActivity"), "doOnCreate", Bundle.class, new XC_MethodHook(52) {
                 @Override
@@ -64,9 +67,9 @@ public class SettingEntryHook extends BaseDelayableHook {
                     try {
                         Class<?> itemClass = null;
                         View itemRef = null;
-                        itemRef = (View) Utils.iget_object_or_null(param.thisObject, "a", load("com/tencent/mobileqq/widget/FormSimpleItem"));
+                        itemRef = (View) iget_object_or_null(param.thisObject, "a", load("com/tencent/mobileqq/widget/FormSimpleItem"));
                         if (itemRef == null && (itemClass = load("com/tencent/mobileqq/widget/FormCommonSingleLineItem")) != null)
-                            itemRef = (View) Utils.iget_object_or_null(param.thisObject, "a", itemClass);
+                            itemRef = (View) iget_object_or_null(param.thisObject, "a", itemClass);
                         if (itemRef == null) {
                             Class<?> clz = load("com/tencent/mobileqq/widget/FormCommonSingleLineItem");
                             if (clz == null)
@@ -116,7 +119,7 @@ public class SettingEntryHook extends BaseDelayableHook {
                                     Utils.showToast((Context) param.thisObject, TOAST_TYPE_ERROR, "无法使用本模块因为您已被拉黑", Toast.LENGTH_LONG);
                                 } else {
                                     if (LicenseStatus.hasUserAcceptEula()) {
-                                        MainHook.startProxyActivity((Context) param.thisObject, ActProxyMgr.ACTION_ADV_SETTINGS);
+                                        MainHook.startProxyActivity((Context) param.thisObject, SettingsActivity.class);
                                     } else {
                                         MainHook.startProxyActivity((Context) param.thisObject, EulaActivity.class);
                                         if (param.thisObject instanceof Activity) {
@@ -161,7 +164,6 @@ public class SettingEntryHook extends BaseDelayableHook {
                     }
                 }
             });
-            inited = true;
             return true;
         } catch (Throwable e) {
             log(e);
@@ -170,28 +172,13 @@ public class SettingEntryHook extends BaseDelayableHook {
     }
 
     @Override
-    public boolean checkPreconditions() {
-        return true;
-    }
-
-    @Override
-    public int getEffectiveProc() {
-        return SyncUtils.PROC_MAIN;
-    }
-
-    @Override
-    public Step[] getPreconditions() {
-        return new Step[]{new DexDeobfStep(DexKit.C_DIALOG_UTIL)};
-    }
-
-    @Override
-    public boolean isInited() {
-        return inited;
-    }
-
-    @Override
     public void setEnabled(boolean enabled) {
         //do nothing
+    }
+
+    @Override
+    public boolean checkPreconditions() {
+        return true;
     }
 
     @Override

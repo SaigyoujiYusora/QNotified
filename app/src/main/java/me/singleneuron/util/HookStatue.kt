@@ -1,3 +1,21 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package me.singleneuron.util
 
 import android.content.Context
@@ -18,12 +36,6 @@ object HookStatue {
     const val TAICHI_NOT_ACTIVE = 1
     const val TAICHI_ACTIVE = 2
 
-    fun isEnabled(): Boolean {
-        return Utils.getActiveModuleVersion() != null
-//        Log.d("singleNeuronUI", "模块未激活")
-//        return false
-    }
-
     fun Context.getStatue(useSu: Boolean): Statue {
         val isInstall = IsInstall(this)
         val getMagiskModule: BaseGetMagiskModule = if (useSu) {
@@ -32,7 +44,7 @@ object HookStatue {
             BaseGetMagiskModule()
         }
         val isExp = isExpModuleActive(this)
-        return if (isEnabled()) {
+        return if (Utils.isModuleEnable()) {
             if (edxp) Statue.Edxp_Active else if (isExp == TAICHI_ACTIVE) Statue.taichi_magisk_active else if (isInstall.isEdxpManagerInstall || getMagiskModule.edxpModule) Statue.Edxp_Active else if (isInstall.isXposedInstall) Statue.xposed_active else Statue.xposed_active
         } else {
             if (isExp == TAICHI_ACTIVE) {

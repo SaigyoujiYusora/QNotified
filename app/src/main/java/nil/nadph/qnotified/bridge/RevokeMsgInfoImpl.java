@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -36,14 +36,10 @@ public class RevokeMsgInfoImpl {
     public int istroop;
     public long shmsgseq;
     public String friendUin;
-    //@Deprecated
-    //public int longmsgid;
     public long msgUid;
     public String fromUin;
-    //public int f89926c;longMsgCount
     public long time;
     public String sendUin;
-    //public int d;longMsgIndex
     @Nullable
     public String authorUin = null;
     @Nullable

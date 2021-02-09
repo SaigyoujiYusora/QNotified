@@ -1,7 +1,26 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package me.singleneuron.util;
 
 public class QQVersion {
 
+    public static final long QQ_7_8_0 = 922;
     public static final long QQ_8_0_0 = 1024;
     public static final long QQ_8_0_5 = 1186;
     public static final long QQ_8_0_7 = 1204;
@@ -12,7 +31,8 @@ public class QQVersion {
     public static final long QQ_8_1_8 = 1276;
     public static final long QQ_8_2_0 = 1296;
     public static final long QQ_8_2_6 = 1320;
-    public static final long QQ_8_2_7 = 1334;
+    public static final long QQ_8_2_7 = 1328;
+    public static final long QQ_8_2_7_2 = 1334;
     public static final long QQ_8_2_8 = 1346;
     public static final long QQ_8_2_9 = 1352;
     public static final long QQ_8_2_10 = 1354;

@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -46,11 +46,12 @@ import java.util.Arrays;
 import java.util.Date;
 
 import me.singleneuron.util.HookStatue;
-import nil.nadph.qnotified.HookEntry;
-import nil.nadph.qnotified.MainHook;
+import nil.nadph.qnotified.BuildConfig;
 import nil.nadph.qnotified.R;
 import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.databinding.MainV2Binding;
+import nil.nadph.qnotified.lifecycle.JumpActivityEntryHook;
+import nil.nadph.qnotified.startup.HookEntry;
 import nil.nadph.qnotified.util.Natives;
 import nil.nadph.qnotified.util.UiThread;
 import nil.nadph.qnotified.util.Utils;
@@ -70,7 +71,7 @@ public class ConfigV2Activity extends AppCompatActivity {
         String str = "";
         try {
             str += "SystemClassLoader:" + ClassLoader.getSystemClassLoader() +
-                    "\nActiveModuleVersion:" + Utils.getActiveModuleVersion()
+                    "\nActiveModuleVersion:" + BuildConfig.VERSION_NAME
                     + "\nThisVersion:" + Utils.QN_VERSION_NAME + "";
         } catch (Throwable r) {
             str += r;
@@ -88,7 +89,7 @@ public class ConfigV2Activity extends AppCompatActivity {
         } catch (IOException e) {
             start = e.toString();
         }
-        if ("nil.nadph.qnotified.HookLoader".equals(start)) {
+        if ("nil.nadph.qnotified.startup.HookLoader".equals(start)) {
             isDynLoad = true;
         }
         try {
@@ -167,7 +168,7 @@ public class ConfigV2Activity extends AppCompatActivity {
             Intent intent = new Intent();
             intent.setComponent(new ComponentName(pkg, "com.tencent.mobileqq.activity.JumpActivity"));
             intent.setAction(Intent.ACTION_VIEW);
-            intent.putExtra(MainHook.JUMP_ACTION_CMD, MainHook.JUMP_ACTION_SETTING_ACTIVITY);
+            intent.putExtra(JumpActivityEntryHook.JUMP_ACTION_CMD, JumpActivityEntryHook.JUMP_ACTION_SETTING_ACTIVITY);
             try {
                 startActivity(intent);
             } catch (ActivityNotFoundException e) {

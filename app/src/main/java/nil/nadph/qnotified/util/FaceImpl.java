@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -33,6 +33,7 @@ import java.util.HashMap;
 import nil.nadph.qnotified.ui.ResUtils;
 
 import static nil.nadph.qnotified.util.Initiator.load;
+import static nil.nadph.qnotified.util.ReflexUtil.invoke_virtual_any;
 
 public class FaceImpl implements InvocationHandler {
 
@@ -47,7 +48,6 @@ public class FaceImpl implements InvocationHandler {
     private final Object mFaceDecoder;
 
     private FaceImpl() throws Throwable {
-        //private Object faceMgr;
         Object qqAppInterface = Utils.getAppRuntime();
         class_FaceDecoder = load("com/tencent/mobileqq/util/FaceDecoder");
         if (class_FaceDecoder == null) {
@@ -63,7 +63,7 @@ public class FaceImpl implements InvocationHandler {
             }
         }
         mFaceDecoder = class_FaceDecoder.getConstructor(load("com/tencent/common/app/AppInterface")).newInstance(qqAppInterface);
-        Utils.invoke_virtual_any(mFaceDecoder, createListener(), clz_DecodeTaskCompletionListener);
+        invoke_virtual_any(mFaceDecoder, createListener(), clz_DecodeTaskCompletionListener);
         cachedUserFace = new HashMap<>();
         cachedTroopFace = new HashMap<>();
         registeredView = new HashMap<>();
@@ -115,7 +115,6 @@ public class FaceImpl implements InvocationHandler {
     }
     
     public void onDecodeTaskCompleted(int code, int type, String uin, Bitmap bitmap) {
-        //Utils.log(code+","+type+","+uin+","+bitmap);
         if (bitmap != null) {
             if (type == TYPE_USER) cachedUserFace.put(uin, bitmap);
             if (type == TYPE_TROOP) cachedTroopFace.put(uin, bitmap);
@@ -141,7 +140,7 @@ public class FaceImpl implements InvocationHandler {
 
     public boolean requestDecodeFace(int type, String uin) {
         try {
-            return (boolean) Utils.invoke_virtual_any(mFaceDecoder, uin, type, true, (byte) 0, String.class, int.class, boolean.class, byte.class, boolean.class);
+            return (boolean) invoke_virtual_any(mFaceDecoder, uin, type, true, (byte) 0, String.class, int.class, boolean.class, byte.class, boolean.class);
         } catch (Exception e) {
             Utils.log(e);
             return false;

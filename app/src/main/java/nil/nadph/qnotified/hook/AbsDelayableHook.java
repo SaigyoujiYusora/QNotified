@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -20,11 +20,16 @@ package nil.nadph.qnotified.hook;
 
 import androidx.annotation.NonNull;
 
+import me.ketal.hook.MultiActionHook;
+import me.ketal.hook.SendFavoriteHook;
+import me.ketal.hook.SortAtPanel;
+import me.ketal.hook.HideAssistantRemoveTips;
+import me.ketal.hook.LeftSwipeReplyHook;
 import me.kyuubiran.hook.AutoMosaicName;
 import me.kyuubiran.hook.DisableScreenshotHelper;
 import me.kyuubiran.hook.RemoveCameraButton;
 import me.kyuubiran.hook.RemoveDailySign;
-import me.kyuubiran.hook.RemoveFuckingDiyCard;
+import me.kyuubiran.hook.RemoveDiyCard;
 import me.kyuubiran.hook.RemoveGroupApp;
 import me.kyuubiran.hook.RemovePlayTogether;
 import me.kyuubiran.hook.RemoveQbossAD;
@@ -50,21 +55,21 @@ import me.singleneuron.hook.decorator.SimpleCheckIn;
 import me.singleneuron.qn_kernel.dispacher.ItemBuilderFactoryHook;
 import me.singleneuron.qn_kernel.dispacher.StartActivityHook;
 import nil.nadph.qnotified.config.SwitchConfigItem;
-import nil.nadph.qnotified.hook.rikka.BaseApk;
-import nil.nadph.qnotified.hook.rikka.CustomDeviceModel;
-import nil.nadph.qnotified.hook.rikka.CustomMsgTimeFormat;
-import nil.nadph.qnotified.hook.rikka.CustomSplash;
-import nil.nadph.qnotified.hook.rikka.DefaultFont;
-import nil.nadph.qnotified.hook.rikka.DisableAvatarDecoration;
-import nil.nadph.qnotified.hook.rikka.DisableColorNickName;
-import nil.nadph.qnotified.hook.rikka.DisableDropSticker;
-import nil.nadph.qnotified.hook.rikka.DisableEnterEffect;
-import nil.nadph.qnotified.hook.rikka.DisablePokeEffect;
-import nil.nadph.qnotified.hook.rikka.IgnoreDiyCard;
-import nil.nadph.qnotified.hook.rikka.OneTapTwentyLikes;
-import nil.nadph.qnotified.hook.rikka.RemoveMiniProgramAd;
-import nil.nadph.qnotified.hook.rikka.RemoveSendGiftAd;
-import nil.nadph.qnotified.hook.rikka.ShowMsgCount;
+import com.rymmmmm.hook.BaseApk;
+import com.rymmmmm.hook.CustomDeviceModel;
+import com.rymmmmm.hook.CustomMsgTimeFormat;
+import com.rymmmmm.hook.CustomSplash;
+import com.rymmmmm.hook.DefaultFont;
+import com.rymmmmm.hook.DisableAvatarDecoration;
+import com.rymmmmm.hook.DisableColorNickName;
+import com.rymmmmm.hook.DisableDropSticker;
+import com.rymmmmm.hook.DisableEnterEffect;
+import com.rymmmmm.hook.DisablePokeEffect;
+import com.rymmmmm.hook.IgnoreDiyCard;
+import com.rymmmmm.hook.OneTapTwentyLikes;
+import com.rymmmmm.hook.RemoveMiniProgramAd;
+import com.rymmmmm.hook.RemoveSendGiftAd;
+import com.rymmmmm.hook.ShowMsgCount;
 import nil.nadph.qnotified.step.Step;
 import nil.nadph.qnotified.util.Utils;
 
@@ -92,7 +97,6 @@ public abstract class AbsDelayableHook implements SwitchConfigItem {
                     FlashPicHook.get(),
                     RepeaterHook.get(),
                     EmoPicHook.get(),
-                    //GalleryBgHook.get(),
                     FavMoreEmo.get(),
                     RevokeMsgHook.get(),
                     FakeVipHook.get(),
@@ -123,7 +127,6 @@ public abstract class AbsDelayableHook implements SwitchConfigItem {
                     CustomMsgTimeFormat.get(),
                     RemoveSendGiftAd.get(),
                     DisableDropSticker.get(),
-                    //DisableShakeWindow.get(),
                     DisablePokeEffect.get(),
                     RemoveMiniProgramAd.get(),
                     JumpController.get(),
@@ -154,10 +157,9 @@ public abstract class AbsDelayableHook implements SwitchConfigItem {
                     ItemBuilderFactoryHook.INSTANCE,
                     SimpleCheckIn.INSTANCE,
                     StartActivityHook.INSTANCE,
-                    //RemovePokeGrayTips.INSTANCE,
                     ArbitraryFrdSourceId.get(),
                     RemoveDailySign.INSTANCE,
-                    RemoveFuckingDiyCard.INSTANCE,
+                    RemoveDiyCard.INSTANCE,
                     RemoveRedDot.INSTANCE,
                     EnableQLog.INSTANCE,
                     ForcedSendOriginalPhoto.INSTANCE,
@@ -165,7 +167,12 @@ public abstract class AbsDelayableHook implements SwitchConfigItem {
                     HideTotalNumber.INSTANCE,
                     HideOnlineNumber.INSTANCE,
                     BlockFluxThief.INSTANCE,
-                    MultiActionHook.get(),
+                    MultiActionHook.INSTANCE,
+                    HideAssistantRemoveTips.INSTANCE,
+                    LeftSwipeReplyHook.INSTANCE,
+                    HideMiniAppPullEntry.INSTANCE,
+                    SortAtPanel.INSTANCE,
+                    SendFavoriteHook.INSTANCE,
             };
         }
         return sAllHooks;

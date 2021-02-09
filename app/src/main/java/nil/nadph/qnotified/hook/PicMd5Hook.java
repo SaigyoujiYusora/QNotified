@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -33,23 +33,21 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import nil.nadph.qnotified.MainHook;
 import nil.nadph.qnotified.R;
-import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.config.ConfigManager;
-import nil.nadph.qnotified.step.Step;
+import nil.nadph.qnotified.util.Initiator;
 import nil.nadph.qnotified.ui.CustomDialog;
 import nil.nadph.qnotified.util.CustomMenu;
-import nil.nadph.qnotified.util.Initiator;
 import nil.nadph.qnotified.util.LicenseStatus;
 
 import static nil.nadph.qnotified.util.Initiator.load;
+import static nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null;
 import static nil.nadph.qnotified.util.Utils.*;
 
-public class PicMd5Hook extends BaseDelayableHook {
-    public static final String qn_show_pic_md5 = "qn_show_pic_md5";
+public class PicMd5Hook extends CommonDelayableHook {
     private static final PicMd5Hook self = new PicMd5Hook();
-    private boolean inited = false;
 
     PicMd5Hook() {
+        super("qn_show_pic_md5");
     }
 
     public static PicMd5Hook get() {
@@ -57,8 +55,7 @@ public class PicMd5Hook extends BaseDelayableHook {
     }
 
     @Override
-    public boolean init() {
-        if (inited) return true;
+    public boolean initOnce() {
         try {
             Class cl_PicItemBuilder = Initiator._PicItemBuilder();
             Class cl_BasePicItemBuilder = cl_PicItemBuilder.getSuperclass();
@@ -80,7 +77,6 @@ public class PicMd5Hook extends BaseDelayableHook {
                     break;
                 }
             }
-            inited = true;
             return true;
         } catch (Throwable e) {
             log(e);
@@ -146,49 +142,11 @@ public class PicMd5Hook extends BaseDelayableHook {
     }
 
     @Override
-    public int getEffectiveProc() {
-        return SyncUtils.PROC_MAIN;
-    }
-
-    @Override
-    public Step[] getPreconditions() {
-        return new Step[]{};
-    }
-
-    @Override
-    public boolean isInited() {
-        return inited;
-    }
-
-    @Override
     public void setEnabled(boolean enabled) {
-//        try {
-//            ConfigManager mgr = ConfigManager.getDefaultConfig();
-//            mgr.getAllConfig().put(qn_show_pic_md5, enabled);
-//            mgr.save();
-//        } catch (final Exception e) {
-//            Utils.log(e);
-//            if (Looper.myLooper() == Looper.getMainLooper()) {
-//                Utils.showToast(getApplication(), TOAST_TYPE_ERROR, e + "", Toast.LENGTH_SHORT);
-//            } else {
-//                SyncUtils.post(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        Utils.showToast(getApplication(), TOAST_TYPE_ERROR, e + "", Toast.LENGTH_SHORT);
-//                    }
-//                });
-//            }
-//        }
     }
 
     @Override
     public boolean isEnabled() {
         return true;
-//        try {
-//            return ConfigManager.getDefaultConfig().getBooleanOrFalse(qn_show_pic_md5);
-//        } catch (Exception e) {
-//            log(e);
-//            return false;
-//        }
     }
 }

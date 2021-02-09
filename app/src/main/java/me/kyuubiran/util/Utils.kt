@@ -1,3 +1,21 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package me.kyuubiran.util
 
 import android.content.Context
@@ -5,6 +23,8 @@ import android.os.Looper
 import android.view.View
 import android.widget.Toast
 import nil.nadph.qnotified.util.Initiator
+import nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null
+import nil.nadph.qnotified.util.ReflexUtil.iput_object
 import nil.nadph.qnotified.util.Utils
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
@@ -27,11 +47,11 @@ fun View.setViewZeroSize() {
 }
 
 fun getObjectOrNull(obj: Any?, objName: String, clz: Class<*>? = null): Any? {
-    return Utils.iget_object_or_null(obj, objName, clz)
+    return iget_object_or_null(obj, objName, clz)
 }
 
 fun putObject(obj: Any?, name: String, value: Any?, type: Class<*>? = null) {
-    Utils.iput_object(obj, name, type, value)
+    iput_object(obj, name, type, value)
 }
 
 fun loadClass(clzName: String): Class<*> {
@@ -46,29 +66,20 @@ fun getMethods(clz: Class<Any>): Array<Method> {
     return clz.declaredMethods
 }
 
-//fun Method.isStatic(): Boolean {
-//    return Modifier.isStatic(this.modifiers)
-//}
 
 val Method.isStatic: Boolean
     get() = Modifier.isStatic(this.modifiers)
 
-//fun Method.isPrivate(): Boolean {
-//    return Modifier.isPrivate(this.modifiers)
-//}
 
 val Method.isPrivate: Boolean
     get() = Modifier.isPrivate(this.modifiers)
 
-//fun Method.isPublic(): Boolean {
-//    return Modifier.isPublic(this.modifiers)
-//}
 
 val Method.isPublic: Boolean
     get() = Modifier.isPublic(this.modifiers)
 
 
-fun makeKongeMsg(str: String): String {
+fun makeSpaceMsg(str: String): String {
     val sb = StringBuilder()
     if (str.length > 1) {
         for (i in str.indices) {

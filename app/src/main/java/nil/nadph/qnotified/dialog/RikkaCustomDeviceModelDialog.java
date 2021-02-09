@@ -1,3 +1,21 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package nil.nadph.qnotified.dialog;
 
 import android.annotation.SuppressLint;
@@ -7,17 +25,15 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
+
+import com.rymmmmm.hook.CustomMsgTimeFormat;
 
 import java.io.IOException;
 
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.R;
 import nil.nadph.qnotified.config.ConfigManager;
-import nil.nadph.qnotified.hook.rikka.CustomMsgTimeFormat;
 import nil.nadph.qnotified.ui.CustomDialog;
 import nil.nadph.qnotified.util.NonNull;
 import nil.nadph.qnotified.util.Nullable;
@@ -146,7 +162,7 @@ public class RikkaCustomDeviceModelDialog extends RikkaDialog.RikkaConfigItem {
                 }
                 try {
                     cfg.save();
-                    Utils.showToast(ctx, Utils.TOAST_TYPE_SUCCESS, "重启" + Utils.getHostAppName() + "生效!", Toast.LENGTH_SHORT);
+                    Utils.showToast(ctx, Utils.TOAST_TYPE_SUCCESS, "重启" + HostInformationProviderKt.getHostInformationProvider().getHostName() + "生效!", Toast.LENGTH_SHORT);
                 } catch (IOException e) {
                     log(e);
                 }
@@ -171,7 +187,7 @@ public class RikkaCustomDeviceModelDialog extends RikkaDialog.RikkaConfigItem {
 
     @Override
     public String getName() {
-        return "自定义机型[需要重启" + Utils.getHostAppName() + "]";
+        return "自定义机型[需要重启" + HostInformationProviderKt.getHostInformationProvider().getHostName() + "]";
     }
 
     @Nullable

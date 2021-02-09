@@ -1,3 +1,21 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package nil.nadph.qnotified.dialog;
 
 import android.annotation.SuppressLint;
@@ -6,6 +24,8 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.*;
+
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.R;
 import nil.nadph.qnotified.script.QNScript;
 import nil.nadph.qnotified.script.QNScriptManager;
@@ -70,7 +90,7 @@ public class ScriptSettingDialog implements CompoundButton.OnCheckedChangeListen
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         script.setEnable(isChecked);
-        Utils.showToast(ctx, Utils.TOAST_TYPE_ERROR, "重启" + Utils.getHostAppName() + "生效", Toast.LENGTH_SHORT);
+        Utils.showToast(ctx, Utils.TOAST_TYPE_ERROR, "重启" + HostInformationProviderKt.getHostInformationProvider().getHostName() + "生效", Toast.LENGTH_SHORT);
     }
 
     public static void createAndShowDialog(Context ctx, QNScript qs) {

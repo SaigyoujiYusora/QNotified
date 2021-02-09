@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -24,16 +24,18 @@ import android.widget.Toast;
 
 import java.io.File;
 
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.SyncUtils;
-import nil.nadph.qnotified.step.Step;
 import nil.nadph.qnotified.util.Utils;
 
-import static nil.nadph.qnotified.util.Utils.*;
+import static nil.nadph.qnotified.util.Utils.TOAST_TYPE_ERROR;
+import static nil.nadph.qnotified.util.Utils.log;
 
-public class DefaultBubbleHook extends BaseDelayableHook {
+public class DefaultBubbleHook extends CommonDelayableHook {
     private static final DefaultBubbleHook self = new DefaultBubbleHook();
 
     private DefaultBubbleHook() {
+        super("__NOT_USED__");
     }
 
     public static DefaultBubbleHook get() {
@@ -41,35 +43,20 @@ public class DefaultBubbleHook extends BaseDelayableHook {
     }
 
     @Override
-    public boolean init() {
-        return true;
-    }
-
-    @Override
-    public Step[] getPreconditions() {
-        return new Step[0];
-    }
-
-    @Override
-    public int getEffectiveProc() {
-        return SyncUtils.PROC_MAIN;
-    }
-
-    @Override
-    public boolean isInited() {
+    public boolean initOnce() {
         return true;
     }
 
     @Override
     public boolean isValid() {
-        Application app = getApplication();
-        return app == null || !isTim(app);
+        Application app = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
+        return app == null || !HostInformationProviderKt.getHostInformationProvider().isTim();
     }
 
     @Override
     public void setEnabled(boolean enabled) {
         try {
-            File dir = new File(getApplication().getFilesDir().getAbsolutePath() + "/bubble_info");
+            File dir = new File(HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getFilesDir().getAbsolutePath() + "/bubble_info");
             boolean curr = !dir.exists() || !dir.canRead();
             if (dir.exists()) {
                 if (enabled && !curr) {
@@ -86,12 +73,12 @@ public class DefaultBubbleHook extends BaseDelayableHook {
         } catch (final Exception e) {
             Utils.log(e);
             if (Looper.myLooper() == Looper.getMainLooper()) {
-                Utils.showToast(getApplication(), TOAST_TYPE_ERROR, e + "", Toast.LENGTH_SHORT);
+                Utils.showToast(HostInformationProviderKt.getHostInformationProvider().getApplicationContext(), TOAST_TYPE_ERROR, e + "", Toast.LENGTH_SHORT);
             } else {
                 SyncUtils.post(new Runnable() {
                     @Override
                     public void run() {
-                        Utils.showToast(getApplication(), TOAST_TYPE_ERROR, e + "", Toast.LENGTH_SHORT);
+                        Utils.showToast(HostInformationProviderKt.getHostInformationProvider().getApplicationContext(), TOAST_TYPE_ERROR, e + "", Toast.LENGTH_SHORT);
                     }
                 });
             }
@@ -101,8 +88,8 @@ public class DefaultBubbleHook extends BaseDelayableHook {
     @Override
     public boolean isEnabled() {
         try {
-            Application app = getApplication();
-            if (app != null && isTim(app)) return false;
+            Application app = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
+            if (app != null && HostInformationProviderKt.getHostInformationProvider().isTim()) return false;
             File dir = new File(app.getFilesDir().getAbsolutePath() + "/bubble_info");
             return !dir.exists() || !dir.canRead();
         } catch (Exception e) {

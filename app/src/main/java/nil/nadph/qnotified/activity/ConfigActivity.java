@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -37,9 +37,10 @@ import java.util.Arrays;
 import java.util.Date;
 
 import me.singleneuron.util.HookStatue;
-import nil.nadph.qnotified.HookEntry;
-import nil.nadph.qnotified.MainHook;
+import nil.nadph.qnotified.BuildConfig;
 import nil.nadph.qnotified.R;
+import nil.nadph.qnotified.lifecycle.JumpActivityEntryHook;
+import nil.nadph.qnotified.startup.HookEntry;
 import nil.nadph.qnotified.util.Natives;
 import nil.nadph.qnotified.util.Utils;
 
@@ -106,7 +107,7 @@ public class ConfigActivity extends Activity implements Runnable {
         mainLooper = Looper.getMainLooper();
         try {
             str += "SystemClassLoader:" + ClassLoader.getSystemClassLoader() +
-                    "\nActiveModuleVersion:" + Utils.getActiveModuleVersion()
+                    "\nActiveModuleVersion:" + BuildConfig.VERSION_NAME
                     + "\nThisVersion:" + Utils.QN_VERSION_NAME;
         } catch (Throwable r) {
             str += r;
@@ -139,12 +140,11 @@ public class ConfigActivity extends Activity implements Runnable {
             start = e.toString();
         }
         TextView vtv = findViewById(R.id.mainTextViewVersion);
-        if (start.equals("nil.nadph.qnotified.HookLoader")) {
+        if (start.equals("nil.nadph.qnotified.startup.HookLoader")) {
             vtv.setText("动态加载");
             vtv.setTextColor(Color.BLUE);
-        } else if (start.equals("nil.nadph.qnotified.HookEntry")) {
+        } else if (start.equals("nil.nadph.qnotified.startup.HookEntry")) {
             vtv.setText("静态");
-            //vtv.setTextColor(Color.BLUE);
         } else {
             vtv.setText(start);
             vtv.setTextColor(Color.RED);
@@ -162,54 +162,6 @@ public class ConfigActivity extends Activity implements Runnable {
         }
         TextView tvbt = findViewById(R.id.mainTextViewBuildTime);
         tvbt.setText(text);
-/*
-		new Thread(new Runnable(){
-				@Override
-				public void run(){
-					final ColorStateList color_=ResUtils.getStateColorInXml("/tmp/hyc.xml");
-					/*try{
-					 FileInputStream is = new FileInputStream("/tmp/skin_black.xml");
-					 /*byte[] buf = new byte[is.available()];
-					 int bytesRead = is.read(buf);       
-					 is.close();*
-					 AXmlResourceParser axml=new AXmlResourceParser();
-					 axml.open(is);
-					 final ColorStateList color=ResInflater.inflateColorFromXml(getResources(),axml,null);
-					 }catch(XmlPullParserException e){}catch(IOException e){}*
-					runOnUiThread(new Runnable(){
-							@Override
-							public void run(){
-								TextView t=findViewById(R.id.mainTextViewStatusB);
-								t.setEnabled(true);
-								t.setClickable(true);
-								t.setTextColor(color_);
-							}
-						});
-				}
-			}).start();*/
-//        Molecule mol = null;
-//        try {
-//            String molstr = new String(ResUtils.readAll(ResUtils.openAsset("9280425.mol")));
-//            mol = MdlMolParser.parseString(molstr);
-//        } catch (Exception e) {
-//            Utils.log(e);
-//        }
-//        MoleculeView moleculeView = new MoleculeView(this);
-//        moleculeView.setTextColor(0xFFFFFFFF);
-//        moleculeView.setGravity(Gravity.CENTER);
-//        moleculeView.setMolecule(mol);
-//        try {
-//            long begin = System.currentTimeMillis();
-//            HashSet<Integer> chiral = ChiralCarbonHelper.getMoleculeChiralCarbons(mol);
-//            long delta = System.currentTimeMillis() - begin;
-//            Log.i("QNdump", "getMoleculeChiralCarbons took " + delta + "ms");
-//            moleculeView.setSelectedChiral(Utils.integerSetToArray(chiral));
-//        } catch (Exception e) {
-//            Log.e("QNdump", "onCreate: getMoleculeChiralCarbons", e);
-//        }
-//        LinearLayout ll = findViewById(R.id.mainLinearLayout2);
-//        ll.removeAllViews();
-//        ll.addView(moleculeView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
 
@@ -257,7 +209,7 @@ public class ConfigActivity extends Activity implements Runnable {
             Intent intent = new Intent();
             intent.setComponent(new ComponentName(pkg, "com.tencent.mobileqq.activity.JumpActivity"));
             intent.setAction(Intent.ACTION_VIEW);
-            intent.putExtra(MainHook.JUMP_ACTION_CMD, MainHook.JUMP_ACTION_SETTING_ACTIVITY);
+            intent.putExtra(JumpActivityEntryHook.JUMP_ACTION_CMD, JumpActivityEntryHook.JUMP_ACTION_SETTING_ACTIVITY);
             try {
                 startActivity(intent);
             } catch (ActivityNotFoundException e) {

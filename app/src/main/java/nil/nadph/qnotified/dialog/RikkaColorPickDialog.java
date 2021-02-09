@@ -1,5 +1,24 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package nil.nadph.qnotified.dialog;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -37,10 +56,11 @@ public class RikkaColorPickDialog extends RikkaDialog.RikkaConfigItem {
         super(d);
     }
 
+    @SuppressLint("InflateParams")
     @Override
     public void onClick(View v) {
         dialog = (AlertDialog) CustomDialog.createFailsafe(v.getContext()).setTitle("花Q主题").setNegativeButton("取消", null)
-                .setPositiveButton("保存", null).create();
+            .setPositiveButton("保存", null).create();
         dialog.setCancelable(true);
         dialog.setCanceledOnTouchOutside(false);
         final Context ctx = dialog.getContext();
@@ -77,7 +97,7 @@ public class RikkaColorPickDialog extends RikkaDialog.RikkaConfigItem {
                     String colorStr = s.toString();
                     colorStr = colorStr.replace("色", "");
                     colorStr = colorStr.replace("红", "red").replace("绿", "green").replace("黄", "yellow").replace("蓝", "blue")
-                            .replace("黑", "black").replace("灰", "gray").replace("白", "white").replace("紫", "purple");
+                        .replace("黑", "black").replace("灰", "gray").replace("白", "white").replace("紫", "purple");
                     currentColor = Color.parseColor(colorStr);
                     currentColorValid = true;
                     preview.setVisibility(View.VISIBLE);

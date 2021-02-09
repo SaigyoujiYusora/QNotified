@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -60,7 +60,6 @@ public class LinearLayoutDelegate extends LinearLayout {
     @SuppressWarnings("deprecation")
     public void setBackgroundDrawable(Drawable background) {
         if (delegate != null)
-            //delegate.setBackgroundDrawable(background);
             ViewCompat.setBackground(delegate,background);
     }
 

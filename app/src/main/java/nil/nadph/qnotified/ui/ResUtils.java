@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -27,19 +27,23 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.widget.Button;
+
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
-import de.robv.android.xposed.XposedHelpers;
-import nil.nadph.qnotified.util.ArscKit;
-import nil.nadph.qnotified.util.Nullable;
-import nil.nadph.qnotified.util.Utils;
 
 import java.io.*;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.robv.android.xposed.XposedHelpers;
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+import nil.nadph.qnotified.util.ArscKit;
+import nil.nadph.qnotified.util.Nullable;
+
 import static nil.nadph.qnotified.util.Initiator.load;
+import static nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null;
+import static nil.nadph.qnotified.util.ReflexUtil.invoke_static;
 import static nil.nadph.qnotified.util.Utils.*;
 
 public class ResUtils {
@@ -61,7 +65,7 @@ public class ResUtils {
     static private final Map<String, Drawable> cachedDrawable = new HashMap<>();
 
     public static void requireResourcesNonNull(Context ctx) {
-        if (ctx == null) ctx = Utils.getApplication();
+        if (ctx == null) ctx = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
         if (!inited) initTheme(ctx);
     }
 
@@ -210,7 +214,6 @@ public class ResUtils {
     }
 
     public static void applyStyleCommonBtnBlue(Button btn) {
-        //btn.setBackgroundDrawable(getCommonBtnBlueBackground());
         ViewCompat.setBackground(btn,getCommonBtnBlueBackground());
         btn.setTextColor(skin_color_button_blue);
         btn.setTextSize(17);
@@ -220,7 +223,6 @@ public class ResUtils {
     public static StateListDrawable getListItemBackground() {
         StateListDrawable sd = new StateListDrawable();
         sd.addState(new int[]{android.R.attr.state_pressed}, skin_list_item_pressed);
-        //sd.addState(new int[]{android.R.attr.state_focused}, skin_list_item_unread);
         sd.addState(new int[]{android.R.attr.state_selected}, skin_list_item_pressed);
         sd.addState(new int[]{}, skin_list_item_normal);
         return sd;
@@ -250,9 +252,7 @@ public class ResUtils {
         try {
             Bitmap bitmap = BitmapFactory.decodeStream(in);
             bitmap.setDensity(320);// qq has xhdpi
-            //log(name+"BiHeight:"+bitmap.getHeight());
             byte[] chunk = bitmap.getNinePatchChunk();
-            //log("Res == "+res);
             if (NinePatch.isNinePatchChunk(chunk)) {
                 Class clz = load("com/tencent/theme/SkinnableNinePatchDrawable");
                 ret = (Drawable) XposedHelpers.findConstructorBestMatch(clz, Resources.class, Bitmap.class, byte[].class, Rect.class, String.class)
@@ -260,7 +260,6 @@ public class ResUtils {
             } else {
                 ret = new BitmapDrawable(res, bitmap);
             }
-            //log(name+"DrHiMin="+ret.getMinimumHeight());
             return ret.mutate();
         } catch (Exception e) {
             log(e);
@@ -273,7 +272,6 @@ public class ResUtils {
         if ((ret = cachedDrawable.get(name)) != null) return ret;
         try {
             if (res == null && mContext != null) res = mContext.getResources();
-            //log(res + "is not null");
             InputStream fin = openAsset(name);
             ret = loadDrawableFromStream(fin, name, res);
             cachedDrawable.put(name, ret);
@@ -315,7 +313,7 @@ public class ResUtils {
             String themeId = (String) invoke_static(load("com/tencent/mobileqq/theme/ThemeUtil"), "getUserCurrentThemeId", getAppRuntime(), load("mqq/app/AppRuntime"));
             return "1103".endsWith(themeId) || "2920".endsWith(themeId);
         } catch (Exception e) {
-            if (isTim(getApplication())) {
+            if (HostInformationProviderKt.getHostInformationProvider().isTim()) {
                 return false;
             }
             log(e);

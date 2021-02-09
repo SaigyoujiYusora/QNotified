@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.ExfriendManager;
 import nil.nadph.qnotified.R;
 import nil.nadph.qnotified.config.FriendRecord;
@@ -178,7 +179,6 @@ public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
 
         ll.addView(subtitle(FriendlistExportActivity.this, "请输入要导出列表的QQ号(默认为当前登录的QQ号):"));
         final EditText etuin = new EditText(FriendlistExportActivity.this);
-        //etuin.setBackgroundDrawable(new HighContrastBorder());
         ViewCompat.setBackground(etuin, new HighContrastBorder());
         etuin.setPadding(__3_, __3_, __3_, __3_);
         etuin.setTextSize(Utils.dip2sp(FriendlistExportActivity.this, 18));
@@ -194,7 +194,6 @@ public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
 
         ll.addView(subtitle(FriendlistExportActivity.this, "导出文件保存路径(默认在内置存储根目录下):"));
         final EditText expath = new EditText(FriendlistExportActivity.this);
-       // expath.setBackgroundDrawable(new HighContrastBorder());
         ViewCompat.setBackground(expath, new HighContrastBorder());
         expath.setPadding(__3_, __3_, __3_, __3_);
         expath.setTextSize(Utils.dip2sp(FriendlistExportActivity.this, 18));
@@ -231,11 +230,8 @@ public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
         FriendlistExportActivity.this.setContentView(bounceScrollView);
         LinearLayout.LayoutParams _lp_fat = new LinearLayout.LayoutParams(MATCH_PARENT, 0);
         _lp_fat.weight = 1;
-        //__ll.addView(bounceScrollView,_lp_fat);
         setContentBackgroundDrawable(ResUtils.skin_background);
         setTitle("导出好友列表");
-        //TextView rightBtn=(TextView)invoke_virtual(FriendlistExportActivity.this,"getRightTextView");
-        //log("Title:"+invoke_virtual(FriendlistExportActivity.this,"getTextTitle"));
         return true;
     }
 
@@ -248,7 +244,7 @@ public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
             Utils.showToast(FriendlistExportActivity.this, Utils.TOAST_TYPE_ERROR, "请输入有效QQ号", Toast.LENGTH_LONG);
             return;
         }
-        if (!new File(Utils.getApplication().getFilesDir().getAbsolutePath() + "/qnotified_" + luin + ".dat").exists()) {
+        if (!new File(HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getFilesDir().getAbsolutePath() + "/qnotified_" + luin + ".dat").exists()) {
 
             Utils.showToast(FriendlistExportActivity.this, Utils.TOAST_TYPE_ERROR, "此QQ在本机没有记录", Toast.LENGTH_LONG);
             return;

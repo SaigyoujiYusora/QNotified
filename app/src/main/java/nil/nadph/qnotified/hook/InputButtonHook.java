@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -31,18 +31,8 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.tencent.mobileqq.app.QQAppInterface;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
-import me.singleneuron.hook.CopyCardMsg;
-import nil.nadph.qnotified.SyncUtils;
-import nil.nadph.qnotified.activity.ChatTailActivity;
-import nil.nadph.qnotified.dialog.RikkaCustomMsgTimeFormatDialog;
-import nil.nadph.qnotified.step.DexDeobfStep;
-import nil.nadph.qnotified.step.Step;
-import nil.nadph.qnotified.ui.InterceptLayout;
-import nil.nadph.qnotified.ui.TouchEventToLongClickAdapter;
-import nil.nadph.qnotified.util.*;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -50,18 +40,32 @@ import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
+import me.singleneuron.hook.CopyCardMsg;
+import nil.nadph.qnotified.activity.ChatTailActivity;
+import nil.nadph.qnotified.dialog.RikkaCustomMsgTimeFormatDialog;
+import nil.nadph.qnotified.util.Initiator;
+import nil.nadph.qnotified.step.DexDeobfStep;
+import nil.nadph.qnotified.ui.InterceptLayout;
+import nil.nadph.qnotified.ui.TouchEventToLongClickAdapter;
+import nil.nadph.qnotified.util.*;
+
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static nil.nadph.qnotified.util.Initiator._SessionInfo;
 import static nil.nadph.qnotified.util.Initiator.load;
+import static nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null;
+import static nil.nadph.qnotified.util.ReflexUtil.invoke_virtual;
 import static nil.nadph.qnotified.util.Utils.*;
 
 
-public class InputButtonHook extends BaseDelayableHook {
+public class InputButtonHook extends CommonDelayableHook {
     public static final int R_ID_COPY_CODE = 0x00EE77CC;
     private static final InputButtonHook self = new InputButtonHook();
-    private boolean inited = false;
 
     private InputButtonHook() {
+        super("__NOT_USED__", new DexDeobfStep(DexKit.C_ARK_APP_ITEM_BUBBLE_BUILDER), new DexDeobfStep(DexKit.C_FACADE),
+            new DexDeobfStep(DexKit.C_TEST_STRUCT_MSG), new DexDeobfStep(DexKit.N_BASE_CHAT_PIE__INIT));
     }
 
     public static InputButtonHook get() {
@@ -69,18 +73,9 @@ public class InputButtonHook extends BaseDelayableHook {
     }
 
     @Override
-    public boolean init() {
-        if (inited) return true;
+    public boolean initOnce() {
         try {
             //Begin: send btn
-//            for (Method method : cl_BaseChatPie.getDeclaredMethods()) {
-//                if (method.getParameterTypes().length != 0
-//                        || !method.getReturnType().equals(void.class)) continue;
-//                if (method.getName().equals(_BaseChatPie_init_name)) {
-//                    _BaseChatPie_init = method;
-//                    break;
-//                }
-//            }
             XposedBridge.hookMethod(DexKit.doFindMethod(DexKit.N_BASE_CHAT_PIE__INIT), new XC_MethodHook(40) {
                 @Override
                 public void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -253,7 +248,6 @@ public class InputButtonHook extends BaseDelayableHook {
 //                    break;
 //                }
 //            }
-            inited = true;
             return true;
         } catch (Throwable throwable) {
             log(throwable);
@@ -313,22 +307,6 @@ public class InputButtonHook extends BaseDelayableHook {
                 }
             }
         }
-    }
-
-    @Override
-    public int getEffectiveProc() {
-        return SyncUtils.PROC_MAIN;
-    }
-
-    @Override
-    public Step[] getPreconditions() {
-        return new Step[]{new DexDeobfStep(DexKit.C_ARK_APP_ITEM_BUBBLE_BUILDER), new DexDeobfStep(DexKit.C_FACADE),
-                new DexDeobfStep(DexKit.C_TEST_STRUCT_MSG), new DexDeobfStep(DexKit.N_BASE_CHAT_PIE__INIT)};
-    }
-
-    @Override
-    public boolean isInited() {
-        return inited;
     }
 
     @Override

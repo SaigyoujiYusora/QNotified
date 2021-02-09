@@ -1,10 +1,26 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package me.kyuubiran.hook
 
 import android.os.Bundle
-import android.os.Looper
 import android.os.Parcelable
 import android.text.TextUtils
-import android.widget.Toast
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
@@ -13,12 +29,11 @@ import me.kyuubiran.util.logdt
 import nil.nadph.qnotified.SyncUtils
 import nil.nadph.qnotified.bridge.ContactUtils
 import nil.nadph.qnotified.bridge.RevokeMsgInfoImpl
-import nil.nadph.qnotified.config.ConfigManager
-import nil.nadph.qnotified.hook.BaseDelayableHook
-import nil.nadph.qnotified.step.DexDeobfStep
-import nil.nadph.qnotified.step.Step
-import nil.nadph.qnotified.util.DexKit
+import nil.nadph.qnotified.hook.CommonDelayableHook
 import nil.nadph.qnotified.util.Initiator
+import nil.nadph.qnotified.util.ReflexUtil.*
+import nil.nadph.qnotified.step.DexDeobfStep
+import nil.nadph.qnotified.util.DexKit
 import nil.nadph.qnotified.util.LicenseStatus
 import nil.nadph.qnotified.util.Utils
 import java.lang.reflect.Method
@@ -26,8 +41,7 @@ import java.lang.reflect.Modifier
 import java.util.*
 
 //防撤回狐狸狸版
-object RevokeMsg : BaseDelayableHook() {
-    var isInit = false
+object RevokeMsg : CommonDelayableHook("kr_revoke_msg", SyncUtils.PROC_MAIN or SyncUtils.PROC_MSF, DexDeobfStep(DexKit.C_MSG_REC_FAC), DexDeobfStep(DexKit.C_CONTACT_UTILS)) {
     var mQQMsgFacade: Any? = null
 
     //总开关 b
@@ -42,13 +56,7 @@ object RevokeMsg : BaseDelayableHook() {
     //自定义未收到消息提示文本 str
     const val kr_revoke_unreceived_msg_tips_text = "kr_revoke_unreceived_msg_tips_text"
 
-
-    override fun getPreconditions(): Array<Step> {
-        return arrayOf(DexDeobfStep(DexKit.C_MSG_REC_FAC), DexDeobfStep(DexKit.C_CONTACT_UTILS))
-    }
-
-    override fun init(): Boolean {
-        if (isInited) return true
+    override fun initOnce(): Boolean {
         return try {
             var doRevokeMsg: Method? = null
             for (m: Method in Initiator._QQMessageFacade().declaredMethods) {
@@ -79,7 +87,6 @@ object RevokeMsg : BaseDelayableHook() {
                     list.clear()
                 }
             })
-            isInit = true
             true
         } catch (t: Throwable) {
             logdt(t)
@@ -176,7 +183,7 @@ object RevokeMsg : BaseDelayableHook() {
         }
         val list: MutableList<Any> = ArrayList()
         list.add(revokeGreyTip)
-        Utils.invoke_virtual_declared_ordinal_modifier(mQQMsgFacade, 0, 4, false, Modifier.PUBLIC, 0,
+        invoke_virtual_declared_ordinal_modifier(mQQMsgFacade, 0, 4, false, Modifier.PUBLIC, 0,
                 list, Utils.getAccount(), MutableList::class.java, String::class.java, Void.TYPE)
     }
 
@@ -191,7 +198,7 @@ object RevokeMsg : BaseDelayableHook() {
 
     private fun createBareHighlightGreyTip(entityUin: String, istroop: Int, fromUin: String, time: Long, msg: String, msgUid: Long, shmsgseq: Long): Any {
         val msgtype = -2030 // MessageRecord.MSG_TYPE_TROOP_GAP_GRAY_TIPS
-        val messageRecord = Utils.invoke_static_declared_ordinal_modifier(DexKit.doFindClass(DexKit.C_MSG_REC_FAC), 0, 1, true, Modifier.PUBLIC, 0, msgtype, Int::class.javaPrimitiveType)
+        val messageRecord = invoke_static_declared_ordinal_modifier(DexKit.doFindClass(DexKit.C_MSG_REC_FAC), 0, 1, true, Modifier.PUBLIC, 0, msgtype, Int::class.javaPrimitiveType)
         XposedHelpers.callMethod(messageRecord, "init", Utils.getAccount(), entityUin, fromUin, msg, time, msgtype, istroop, time)
         XposedHelpers.setObjectField(messageRecord, "msgUid", msgUid)
         XposedHelpers.setObjectField(messageRecord, "shmsgseq", shmsgseq)
@@ -202,7 +209,7 @@ object RevokeMsg : BaseDelayableHook() {
 
     private fun createBarePlainGreyTip(entityUin: String, istroop: Int, fromUin: String, time: Long, msg: String, msgUid: Long, shmsgseq: Long): Any {
         val msgtype = -2031 // MessageRecord.MSG_TYPE_REVOKE_GRAY_TIPS
-        val messageRecord = Utils.invoke_static_declared_ordinal_modifier(DexKit.doFindClass(DexKit.C_MSG_REC_FAC), 0, 1, true, Modifier.PUBLIC, 0, msgtype, Int::class.javaPrimitiveType)
+        val messageRecord = invoke_static_declared_ordinal_modifier(DexKit.doFindClass(DexKit.C_MSG_REC_FAC), 0, 1, true, Modifier.PUBLIC, 0, msgtype, Int::class.javaPrimitiveType)
         XposedHelpers.callMethod(messageRecord, "init", Utils.getAccount(), entityUin, fromUin, msg, time, msgtype, istroop, time)
         XposedHelpers.setObjectField(messageRecord, "msgUid", msgUid)
         XposedHelpers.setObjectField(messageRecord, "shmsgseq", shmsgseq)
@@ -212,7 +219,7 @@ object RevokeMsg : BaseDelayableHook() {
 
     private fun addHightlightItem(msgForGreyTip: Any, start: Int, end: Int, bundle: Bundle) {
         try {
-            Utils.invoke_virtual(msgForGreyTip, "addHightlightItem", start, end, bundle, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType, Bundle::class.java)
+            invoke_virtual(msgForGreyTip, "addHightlightItem", start, end, bundle, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType, Bundle::class.java)
         } catch (e: Exception) {
             logdt(e)
         }
@@ -221,7 +228,7 @@ object RevokeMsg : BaseDelayableHook() {
     private fun getMessage(uin: String, istroop: Int, shmsgseq: Long, msgUid: Long): Any? {
         var list: List<*>? = null
         try {
-            list = Utils.invoke_virtual_declared_ordinal(mQQMsgFacade, 0, 2, false,
+            list = invoke_virtual_declared_ordinal(mQQMsgFacade, 0, 2, false,
                     uin, istroop, shmsgseq, msgUid, String::class.java, Int::class.javaPrimitiveType, Long::class.javaPrimitiveType, Long::class.javaPrimitiveType, MutableList::class.java) as List<*>
         } catch (e: Exception) {
             logdt(e)
@@ -231,7 +238,7 @@ object RevokeMsg : BaseDelayableHook() {
 
     private fun getMessageContentStripped(msgObject: Any): String? {
         var msg = try {
-            Utils.iget_object_or_null(msgObject, "msg") as String
+            iget_object_or_null(msgObject, "msg") as String
         } catch (e: Exception) {
             ""
         }
@@ -241,46 +248,12 @@ object RevokeMsg : BaseDelayableHook() {
     }
 
     private fun getMessageUid(msgObject: Any?): Long {
-        return if (msgObject == null) 0 else Utils.iget_object_or_null(msgObject, "msgUid") as Long
+        return if (msgObject == null) 0 else iget_object_or_null(msgObject, "msgUid") as Long
     }
 
     private fun getMessageType(msgObject: Any?): Int {
-        return if (msgObject == null) -1 else Utils.iget_object_or_null(msgObject, "msgtype") as Int
+        return if (msgObject == null) -1 else iget_object_or_null(msgObject, "msgtype") as Int
     }
-
-
-    override fun isInited(): Boolean {
-        return isInit
-    }
-
-    override fun getEffectiveProc(): Int {
-        return SyncUtils.PROC_MAIN or SyncUtils.PROC_MSF
-    }
-
-    override fun isEnabled(): Boolean {
-        return try {
-            ConfigManager.getDefaultConfig().getBooleanOrFalse(kr_revoke_msg)
-        } catch (e: Exception) {
-            logdt(e)
-            false
-        }
-    }
-
-    override fun setEnabled(enabled: Boolean) {
-        try {
-            val mgr = ConfigManager.getDefaultConfig()
-            mgr.allConfig[kr_revoke_msg] = enabled
-            mgr.save()
-        } catch (e: Exception) {
-            logdt(e)
-            if (Looper.myLooper() == Looper.getMainLooper()) {
-                Utils.showToast(Utils.getApplication(), Utils.TOAST_TYPE_ERROR, e.toString() + "", Toast.LENGTH_SHORT)
-            } else {
-                SyncUtils.post { Utils.showToast(Utils.getApplication(), Utils.TOAST_TYPE_ERROR, e.toString() + "", Toast.LENGTH_SHORT) }
-            }
-        }
-    }
-
 
     private fun isShowMsgTextEnabled(): Boolean {
         return try {

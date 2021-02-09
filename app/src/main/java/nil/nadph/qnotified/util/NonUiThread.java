@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -21,10 +21,14 @@ package nil.nadph.qnotified.util;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 
+/**
+ * This method is time-consuming and must NOT run on UI thread.
+ */
 @Retention(CLASS)
-@Target({METHOD})
+@Target({METHOD, CONSTRUCTOR})
 public @interface NonUiThread {
 }

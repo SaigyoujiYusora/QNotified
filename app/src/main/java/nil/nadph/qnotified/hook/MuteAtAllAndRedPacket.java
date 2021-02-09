@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -23,21 +23,22 @@ import java.lang.reflect.Method;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+import me.singleneuron.util.QQVersion;
 import nil.nadph.qnotified.ExfriendManager;
 import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.config.ConfigItems;
-import nil.nadph.qnotified.step.Step;
 import nil.nadph.qnotified.util.LicenseStatus;
-import nil.nadph.qnotified.util.Utils;
 
 import static nil.nadph.qnotified.util.Initiator.*;
-import static nil.nadph.qnotified.util.Utils.*;
+import static nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null;
+import static nil.nadph.qnotified.util.Utils.log;
 
-public class MuteAtAllAndRedPacket extends BaseDelayableHook {
+public class MuteAtAllAndRedPacket extends CommonDelayableHook {
     private static final MuteAtAllAndRedPacket self = new MuteAtAllAndRedPacket();
-    private boolean inited = false;
 
     private MuteAtAllAndRedPacket() {
+        super("__NOT_USED__", SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF);
     }
 
     public static MuteAtAllAndRedPacket get() {
@@ -45,8 +46,7 @@ public class MuteAtAllAndRedPacket extends BaseDelayableHook {
     }
 
     @Override
-    public boolean init() {
-        if (inited) return true;
+    public boolean initOnce() {
         try {
             Class<?> cl_MessageInfo = load("com/tencent/mobileqq/troop/data/MessageInfo");
             if (cl_MessageInfo == null) {
@@ -54,7 +54,7 @@ public class MuteAtAllAndRedPacket extends BaseDelayableHook {
                 cl_MessageInfo = c.getDeclaredField("mMessageInfo").getType();
             }
             /* @author qiwu */
-            final int at_all_type = (Utils.getHostInfo(getApplication()).versionName.compareTo("7.8.0") >= 0) ? 13 : 12;
+            final int at_all_type = (HostInformationProviderKt.getHostInformationProvider().getVersionCode()> QQVersion.QQ_7_8_0) ? 13 : 12;
             for (Method m : cl_MessageInfo.getDeclaredMethods()) {
                 if (m.getReturnType().equals(int.class)) {
                     Class<?>[] argt = m.getParameterTypes();
@@ -95,7 +95,6 @@ public class MuteAtAllAndRedPacket extends BaseDelayableHook {
                     if (mute) XposedHelpers.setObjectField(param.thisObject, "isread", true);
                 }
             });
-            inited = true;
             return true;
         } catch (Throwable e) {
             log(e);
@@ -111,21 +110,6 @@ public class MuteAtAllAndRedPacket extends BaseDelayableHook {
     @Override
     public boolean checkPreconditions() {
         return true;
-    }
-
-    @Override
-    public int getEffectiveProc() {
-        return SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF;
-    }
-
-    @Override
-    public Step[] getPreconditions() {
-        return new Step[0];
-    }
-
-    @Override
-    public boolean isInited() {
-        return inited;
     }
 
     @Override

@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -46,6 +46,7 @@ import nil.nadph.qnotified.config.ConfigManager;
 import nil.nadph.qnotified.ui.CustomDialog;
 import nil.nadph.qnotified.ui.ViewBuilder;
 
+import static nil.nadph.qnotified.util.DateTimeUtil.getRelTimeStrSec;
 import static nil.nadph.qnotified.util.Utils.log;
 
 public class UpdateCheck implements View.OnClickListener, Runnable {
@@ -172,22 +173,8 @@ public class UpdateCheck implements View.OnClickListener, Runnable {
             CustomDialog dialog = CustomDialog.create(ctx);
             dialog.setTitle("当前" + currVerName + " (" + currVerCode + ")");
             dialog.setCancelable(true);
-            //dialog.setNegativeButton("关闭", null);
             dialog.setNegativeButton("关闭", new Utils.DummyCallback());
-			/*PopupWindow pop=new PopupWindow();
-			 pop.setWidth(WRAP_CONTENT);
-			 pop.setHeight(WRAP_CONTENT);*/
-            //LinearLayout main = new LinearLayout(ctx);
-            //pop.setContentView(main);
-            //main.setOrientation(LinearLayout.VERTICAL);
-            //ScrollView scrollView = new ScrollView(ctx);
-            //.setView(scrollView);
-            //scrollView.addView(main, WRAP_CONTENT, WRAP_CONTENT);
             SpannableStringBuilder sb = new SpannableStringBuilder();
-            //StringBuilder sb=new StringBuilder();
-            //TextView list = new TextView(ctx);
-            //main.addView(list, WRAP_CONTENT, WRAP_CONTENT);
-            //list.setAutoLinkMask(Linkify.WEB_URLS);
 
             PHPArray ver = (PHPArray) result;
             String vn = (String) ver.__("short_version")._$();
@@ -196,7 +183,7 @@ public class UpdateCheck implements View.OnClickListener, Runnable {
             String md5 = (String) ver.__("fingerprint")._$();
             String download_url = (String) ver.__("download_url")._$();
             long time = iso8601ToTimestampMs((String) ver.__("uploaded_at")._$());
-            String date = Utils.getRelTimeStrSec(time / 1000L);
+            String date = getRelTimeStrSec(time / 1000L);
 
             SpannableString tmp = new SpannableString(vn + " (" + vc + ")");
             tmp.setSpan(new RelativeSizeSpan(1.8f), 0, tmp.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -221,7 +208,6 @@ public class UpdateCheck implements View.OnClickListener, Runnable {
             sb.append("\n");
             sb.append("\n");
 
-            //list.setText(sb);
             dialog.setMessage(sb);
             TextView tv = dialog.getMessageTextView();
             if (tv != null) {
@@ -269,7 +255,6 @@ public class UpdateCheck implements View.OnClickListener, Runnable {
         int mm = Integer.parseInt(p2[1]);
         int ss = Integer.parseInt(p2[2]);
         int ms = Integer.parseInt(p2[3]);
-        //return Date.UTC(yyyy - 1900, MM - 1, dd, HH, mm, ss) + ms;
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         calendar.set(yyyy, MM - 1, dd, HH, mm, ss);
         return calendar.getTime().getTime() + ms;

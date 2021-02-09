@@ -1,16 +1,28 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package nil.nadph.qnotified.script;
 
-import android.os.Parcelable;
-import bsh.util.Util;
-import com.tencent.mobileqq.app.QQAppInterface;
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.bridge.ChatActivityFacade;
 import nil.nadph.qnotified.bridge.SessionInfoImpl;
 import nil.nadph.qnotified.util.LicenseStatus;
 import nil.nadph.qnotified.util.Utils;
-
-import static nil.nadph.qnotified.util.Initiator._SessionInfo;
-import static nil.nadph.qnotified.util.Utils.getApplication;
-import static nil.nadph.qnotified.util.Utils.getFirstNSFByType;
 
 public class QNClient {
     /*
@@ -33,7 +45,7 @@ public class QNClient {
     public static void send(String uin, String content, int type) {
         // to do
         ChatActivityFacade.sendMessage(
-                Utils.getQQAppInterface(), getApplication(), SessionInfoImpl.createSessionInfo(uin, type), content
+                Utils.getQQAppInterface(), HostInformationProviderKt.getHostInformationProvider().getApplicationContext(), SessionInfoImpl.createSessionInfo(uin, type), content
         );
     }
 
@@ -69,9 +81,7 @@ public class QNClient {
 
     /**
      * 发送卡片消息
-     * ====================
-     * 警告：需要高级白名单
-     * ====================
+     * NOTICE：需要高级白名单
      *
      * @param uin     要发送的 群/好友
      * @param content xml/json

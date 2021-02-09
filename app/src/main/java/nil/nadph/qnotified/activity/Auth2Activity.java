@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -297,7 +297,6 @@ public class Auth2Activity extends IphoneTitleBarActivityCompat implements View.
                     cc = ChiralCarbonHelper.getMoleculeChiralCarbons(mol);
                     long t2 = System.currentTimeMillis();
                     lastProcMs = (int) (t2 - t1);
-//                    log("getMoleculeChiralCarbons(" + mol.atomCount() + "atoms," + mol.bondCount() + "bonds) took " + (t2 - t1) + "ms");
                 } else {
                     lastProcMs = -1;
                 }

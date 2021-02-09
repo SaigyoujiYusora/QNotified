@@ -1,30 +1,39 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package nil.nadph.qnotified.script;
 
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import bsh.EvalError;
 import bsh.Interpreter;
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.config.ConfigItems;
 import nil.nadph.qnotified.config.ConfigManager;
 import nil.nadph.qnotified.util.Initiator;
 import nil.nadph.qnotified.util.Utils;
 
-import static nil.nadph.qnotified.util.Utils.getApplication;
-import static nil.nadph.qnotified.util.Utils.isNullOrEmpty;
-import static nil.nadph.qnotified.util.Utils.log;
-import static nil.nadph.qnotified.util.Utils.readByReader;
+import static nil.nadph.qnotified.util.Utils.*;
 
 public class QNScriptManager {
 
@@ -208,7 +217,7 @@ public class QNScriptManager {
 
     public static void init() {
         if (init) return;
-        scriptsPath = getApplication().getFilesDir().getAbsolutePath() + "/qn_script/";
+        scriptsPath = HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getFilesDir().getAbsolutePath() + "/qn_script/";
         for (String code : getScriptCodes()) {
             try {
                 QNScript qs = execute(code);
@@ -271,7 +280,7 @@ public class QNScriptManager {
     public static void enableAll(CompoundButton compoundButton, boolean b) {
         if (b) enableAll();
         else disableAll();
-        Utils.showToast(compoundButton.getContext(), Utils.TOAST_TYPE_ERROR, "重启" + Utils.getHostAppName() + "生效", Toast.LENGTH_SHORT);
+        Utils.showToast(compoundButton.getContext(), Utils.TOAST_TYPE_ERROR, "重启" + HostInformationProviderKt.getHostInformationProvider().getHostName() + "生效", Toast.LENGTH_SHORT);
     }
 
     public static boolean isEnableAll() {

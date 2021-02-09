@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -22,12 +22,14 @@ import android.app.Application;
 
 import com.microsoft.appcenter.crashes.Crashes;
 
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+
 public class BugCollector {
 
     public static void onThrowable(Throwable th) {
         try {
             if (Utils.isCallingFrom("BugCollector")) return;
-            Application ctx = Utils.getApplication();
+            Application ctx = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
             if (ctx != null) {
                 CliOper.__init__(ctx);
                 Crashes.trackError(th);

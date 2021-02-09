@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -21,6 +21,7 @@ package nil.nadph.qnotified;
 import de.robv.android.xposed.XC_MethodHook;
 import nil.nadph.qnotified.util.NonNull;
 
+@SuppressWarnings("JavaJniMissingFunction")
 public final class NativeHookCallback extends XC_MethodHook {
     public final long a;
 

@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -26,11 +26,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.ExfriendManager;
 import nil.nadph.qnotified.util.MainProcess;
 import nil.nadph.qnotified.util.Utils;
 
-import static nil.nadph.qnotified.util.Utils.*;
+import static nil.nadph.qnotified.util.Utils.QN_VERSION_CODE;
+import static nil.nadph.qnotified.util.Utils.log;
 
 public class ConfigItems {
     public static final String qn_hide_msg_list_miniapp = "qn_hide_msg_list_miniapp";
@@ -63,7 +65,7 @@ public class ConfigItems {
         @Override
         public boolean isEnabled() {
             try {
-                Context ctx = getApplication();
+                Context ctx = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
                 return new File(ctx.getFilesDir(), "qn_disable_hot_patch").exists();
             } catch (Throwable e) {
                 Utils.showErrorToastAnywhere(e.toString());
@@ -74,7 +76,7 @@ public class ConfigItems {
         @Override
         public void setEnabled(boolean enabled) {
             try {
-                Context ctx = getApplication();
+                Context ctx = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
                 File f = new File(ctx.getFilesDir(), "qn_disable_hot_patch");
                 if (enabled != f.exists()) {
                     if (enabled) {

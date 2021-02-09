@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -28,6 +28,7 @@ import nil.nadph.qnotified.chiral.Molecule;
 import nil.nadph.qnotified.config.ConfigManager;
 
 import static nil.nadph.qnotified.util.Utils.log;
+import static nil.nadph.qnotified.util.Utils.showErrorToastAnywhere;
 
 public class LicenseStatus {
     public static final String qn_eula_status = "qh_eula_status";//typo, ignore it
@@ -47,7 +48,7 @@ public class LicenseStatus {
             ConfigManager.getDefaultConfig().save();
         } catch (IOException e) {
             log(e);
-            Utils.showErrorToastAnywhere(e.toString());
+            showErrorToastAnywhere(e.toString());
         }
     }
 
@@ -100,7 +101,7 @@ public class LicenseStatus {
             cfg.save();
         } catch (IOException e) {
             log(e);
-            Utils.showErrorToastAnywhere(e.toString());
+            showErrorToastAnywhere(e.toString());
         }
     }
 
@@ -119,7 +120,7 @@ public class LicenseStatus {
             cfg.save();
         } catch (IOException e) {
             log(e);
-            Utils.showErrorToastAnywhere(e.toString());
+            showErrorToastAnywhere(e.toString());
         }
     }
 
@@ -146,7 +147,6 @@ public class LicenseStatus {
         return (getCurrentUserBlackFlags() & UserFlagConst.BF_SILENT_GONE) != 0;
     }
 
-    //@Deprecated
     public static boolean isBypassAuth2() {
         return (getCurrentUserWhiteFlags() & UserFlagConst.WF_BYPASS_AUTH_2) != 1;
     }

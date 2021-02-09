@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -76,28 +76,6 @@ public class FriendRecord implements Serializable, Cloneable {
         sb.append(friendStatus);
         sb.append(",serverTime=");
         sb.append(serverTime);
-		/*if(events==null){
-			sb.append("null}");
-			return sb.toString();
-		}
-		sb.append("[");
-		for(int i=0;i<events.length;i++){
-			sb.append("{timeRangeBegin=");
-			sb.append(events[i].timeRangeBegin);
-			sb.append(",timeRangeEnd=");
-			sb.append(events[i].timeRangeEnd);
-			sb.append(",event=");
-			sb.append(events[i].event);
-			sb.append(",operand=");
-			sb.append(events[i].operand);
-			sb.append(",before=");
-			sb.append(en(events[i].before));
-			sb.append(",after=");
-			sb.append(en(events[i].after));
-			sb.append(",extra=");
-			sb.append(en(events[i].extra));
-			sb.append("},");
-		}*/
         if (sb.charAt(sb.length() - 1) == ',') sb.deleteCharAt(sb.length() - 1);
         sb.append("}");
         return sb.toString();

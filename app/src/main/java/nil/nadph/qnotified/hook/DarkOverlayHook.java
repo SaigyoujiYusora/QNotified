@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -18,10 +18,7 @@
  */
 package nil.nadph.qnotified.hook;
 
-import android.app.Application;
-import android.os.Looper;
 import android.view.View;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -29,20 +26,20 @@ import java.lang.reflect.Method;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
-import nil.nadph.qnotified.SyncUtils;
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.config.ConfigManager;
+import nil.nadph.qnotified.util.Initiator;
 import nil.nadph.qnotified.step.DexDeobfStep;
 import nil.nadph.qnotified.step.Step;
 import nil.nadph.qnotified.util.*;
 
 import static nil.nadph.qnotified.util.Utils.*;
 
-public class DarkOverlayHook extends BaseDelayableHook {
-    public static final String qn_disable_dark_overlay = "qn_disable_dark_overlay";
+public class DarkOverlayHook extends CommonDelayableHook {
     private static final DarkOverlayHook self = new DarkOverlayHook();
-    private boolean inited = false;
 
     DarkOverlayHook() {
+        super("qn_disable_dark_overlay", new DexDeobfStep(DexKit.N_BASE_CHAT_PIE__handleNightMask), new FindNightMask());
     }
 
     public static DarkOverlayHook get() {
@@ -50,8 +47,7 @@ public class DarkOverlayHook extends BaseDelayableHook {
     }
 
     @Override
-    public boolean init() {
-        if (inited) return true;
+    public boolean initOnce() {
         try {
             Method handleNightMask = DexKit.doFindMethod(DexKit.N_BASE_CHAT_PIE__handleNightMask);
             XposedBridge.hookMethod(handleNightMask, new XC_MethodHook(49) {
@@ -77,58 +73,8 @@ public class DarkOverlayHook extends BaseDelayableHook {
                     }
                 }
             });
-            inited = true;
             return true;
         } catch (Throwable e) {
-            log(e);
-            return false;
-        }
-    }
-
-    @Override
-    public int getEffectiveProc() {
-        //NOTICE: does qzone also has?
-        return SyncUtils.PROC_MAIN;
-    }
-
-    @Override
-    public Step[] getPreconditions() {
-        return new Step[]{new DexDeobfStep(DexKit.N_BASE_CHAT_PIE__handleNightMask), new FindNightMask()};
-    }
-
-    @Override
-    public boolean isInited() {
-        return inited;
-    }
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        try {
-            ConfigManager mgr = ConfigManager.getDefaultConfig();
-            mgr.getAllConfig().put(qn_disable_dark_overlay, enabled);
-            mgr.save();
-        } catch (final Exception e) {
-            Utils.log(e);
-            if (Looper.myLooper() == Looper.getMainLooper()) {
-                Utils.showToast(getApplication(), TOAST_TYPE_ERROR, e + "", Toast.LENGTH_SHORT);
-            } else {
-                SyncUtils.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Utils.showToast(getApplication(), TOAST_TYPE_ERROR, e + "", Toast.LENGTH_SHORT);
-                    }
-                });
-            }
-        }
-    }
-
-    @Override
-    public boolean isEnabled() {
-        try {
-            Application app = getApplication();
-            if (app != null && isTim(app)) return false;
-            return ConfigManager.getDefaultConfig().getBooleanOrFalse(qn_disable_dark_overlay);
-        } catch (Exception e) {
             log(e);
             return false;
         }
@@ -144,7 +90,7 @@ public class DarkOverlayHook extends BaseDelayableHook {
             String fieldName = null;
             ConfigManager cache = ConfigManager.getCache();
             int lastVersion = cache.getIntOrDefault(cache_night_mask_field_version_code, 0);
-            int version = Utils.getHostVersionCode32();
+            int version = HostInformationProviderKt.getHostInformationProvider().getVersionCode32();
             if (version == lastVersion) {
                 String name = cache.getString(cache_night_mask_field);
                 if (name != null && name.length() > 0) {
@@ -191,7 +137,7 @@ public class DarkOverlayHook extends BaseDelayableHook {
             try {
                 ConfigManager cache = ConfigManager.getCache();
                 int lastVersion = cache.getIntOrDefault(cache_night_mask_field_version_code, 0);
-                if (getHostVersionCode32() != lastVersion) {
+                if (HostInformationProviderKt.getHostInformationProvider().getVersionCode32() != lastVersion) {
                     return false;
                 }
                 String name = cache.getString(cache_night_mask_field);

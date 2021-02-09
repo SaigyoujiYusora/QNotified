@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -72,12 +72,10 @@ public class HcbBackgroundDrawable extends Drawable {
 
     @Override
     public void setAlpha(int alpha) {
-        //throw new UnsupportedOperationException("Stub!");
     }
 
     @Override
     public void setColorFilter(ColorFilter colorFilter) {
-        //throw new UnsupportedOperationException("Stub!");
     }
 
     @Override

@@ -1,3 +1,21 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package nil.nadph.qnotified.dialog;
 
 import android.app.Dialog;
@@ -20,9 +38,9 @@ import androidx.core.view.ViewCompat;
 
 import nil.nadph.qnotified.activity.IphoneTitleBarActivityCompat;
 import nil.nadph.qnotified.hook.BaseDelayableHook;
-import nil.nadph.qnotified.hook.rikka.OneTapTwentyLikes;
-import nil.nadph.qnotified.hook.rikka.RemoveSendGiftAd;
-import nil.nadph.qnotified.hook.rikka.ShowMsgCount;
+import com.rymmmmm.hook.OneTapTwentyLikes;
+import com.rymmmmm.hook.RemoveSendGiftAd;
+import com.rymmmmm.hook.ShowMsgCount;
 import nil.nadph.qnotified.ui.DummyDrawable;
 import nil.nadph.qnotified.ui.ResUtils;
 import nil.nadph.qnotified.ui.ViewBuilder;
@@ -90,9 +108,7 @@ public class RikkaDialog extends Dialog implements View.OnClickListener {
         Window win = getWindow();
         win.setBackgroundDrawable(new DummyDrawable());
         ScrollView outer = new ScrollView(mContext);
-        //outer.setBackgroundDrawable(dialogBgDrawable);
         ViewCompat.setBackground(outer,dialogBgDrawable);
-        //outer.setVerticalScrollbarTrackDrawable(null);
         LinearLayout ll = new LinearLayout(mContext);
         ll.setClickable(true);
         LinearLayout root = new LinearLayout(mContext);
@@ -149,7 +165,6 @@ public class RikkaDialog extends Dialog implements View.OnClickListener {
         return new RikkaConfigItem[]{
                 RikkaConfigItem.create(this, "显示具体消息数量", ShowMsgCount.get()),
                 new RikkaBaseApkFormatDialog(this),
-//                RikkaConfigItem.create(this, "屏蔽抖动窗口", DisableShakeWindow.get()),
                 RikkaConfigItem.create(this, "回赞界面一键20赞", OneTapTwentyLikes.get()),
                 new RikkaCustomMsgTimeFormatDialog(this),
                 RikkaConfigItem.create(this, "免广告送免费礼物[仅限群聊送礼物]", RemoveSendGiftAd.get()),
@@ -175,7 +190,6 @@ public class RikkaDialog extends Dialog implements View.OnClickListener {
         public void invalidateStatus() {
             View v = view;
             if (v == null) return;
-            //v.setBackgroundDrawable(isEnabled() ? rikkaDialog.itemOnDrawable : rikkaDialog.itemOffDrawable);
             ViewCompat.setBackground(v, isEnabled() ? rikkaDialog.itemOnDrawable : rikkaDialog.itemOffDrawable);
         }
 

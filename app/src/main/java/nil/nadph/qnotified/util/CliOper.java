@@ -1,3 +1,21 @@
+/* QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
+ * https://github.com/ferredoxin/QNotified
+ *
+ * This software is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ */
 package nil.nadph.qnotified.util;
 
 import android.app.Application;
@@ -9,10 +27,9 @@ import com.microsoft.appcenter.crashes.Crashes;
 import java.util.HashMap;
 import java.util.Map;
 
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.BuildConfig;
 import nil.nadph.qnotified.config.ConfigManager;
-
-import static nil.nadph.qnotified.util.Utils.getApplication;
 
 public class CliOper {
 
@@ -21,7 +38,6 @@ public class CliOper {
 
     public static void __init__(Application app) {
         if (app == null) return;
-        //if (BuildConfig.DEBUG) return;
         if (appCenterInit) return;
 
         long longAccount = Utils.getLongAccountUin();
@@ -34,7 +50,7 @@ public class CliOper {
     }
 
     public static void onLoad() {
-        CliOper.__init__(getApplication());
+        CliOper.__init__(HostInformationProviderKt.getHostInformationProvider().getApplicationContext());
         final String LAST_TRACE_HASHCODE_CONFIG = "lastTraceHashcode";
         ConfigManager configManager = ConfigManager.getDefaultConfig();
         Integer oldHashCode = null;
@@ -63,13 +79,13 @@ public class CliOper {
         } catch (Exception e) {
             //ignored
         }
-        __init__(Utils.getApplication());
+        __init__(HostInformationProviderKt.getHostInformationProvider().getApplicationContext());
         Analytics.trackEvent("onLoad", properties);
         Utils.logd("start App Center Trace OnLoad:" + properties.toString());
     }
 
     public static void passAuth2Once(int retryCount, int chiralCount) {
-        __init__(Utils.getApplication());
+        __init__(HostInformationProviderKt.getHostInformationProvider().getApplicationContext());
         Map<String, String> prop = new HashMap<>();
         prop.put("retryCount", String.valueOf(retryCount));
         prop.put("chiralCount", String.valueOf(chiralCount));
@@ -77,22 +93,14 @@ public class CliOper {
     }
 
     public static void abortAuth2Once(int retryCount) {
-        /*__init__(Utils.getApplication());
-        Map<String, String> prop = new HashMap<>();
-        prop.put("retryCount", String.valueOf(retryCount));
-        Analytics.trackEvent("abortAuth2Once", prop);*/
     }
 
     public static void revokeAuth2Once() {
-        /*__init__(Utils.getApplication());
-        Map<String, String> prop = new HashMap<>();
-        prop.put("isAuth2Whitelist", String.valueOf(LicenseStatus.isBypassAuth2()));
-        Analytics.trackEvent("revokeAuth2Once", prop);*/
     }
 
     public static void copyCardMsg(String msg) {
         if (msg == null) return;
-        __init__(Utils.getApplication());
+        __init__(HostInformationProviderKt.getHostInformationProvider().getApplicationContext());
         try {
             Analytics.trackEvent("copyCardMsg", digestCardMsg(msg));
         } catch (Throwable e) {
@@ -102,7 +110,7 @@ public class CliOper {
 
     public static void sendCardMsg(long uin, String msg) {
         if (msg == null) return;
-        __init__(Utils.getApplication());
+        __init__(HostInformationProviderKt.getHostInformationProvider().getApplicationContext());
         try {
             Map<String, String> prop = digestCardMsg(msg);
             prop.put("uin", String.valueOf(uin));
@@ -121,7 +129,7 @@ public class CliOper {
         properties.put("msg", msg);
         properties.put("uin", String.valueOf(uin));
         properties.put("count", String.valueOf(count));
-        __init__(Utils.getApplication());
+        __init__(HostInformationProviderKt.getHostInformationProvider().getApplicationContext());
         Analytics.trackEvent("batchSendMsg", properties);
     }
 
@@ -212,7 +220,7 @@ public class CliOper {
 
     public static void enterModuleActivity(String shortName) {
         try {
-            __init__(Utils.getApplication());
+            __init__(HostInformationProviderKt.getHostInformationProvider().getApplicationContext());
             Map<String, String> prop = new HashMap<>();
             prop.put("name", shortName);
             Analytics.trackEvent("enterModuleActivity", prop);

@@ -1,5 +1,5 @@
 /* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2020 xenonhydride@gmail.com
+ * Copyright (C) 2019-2021 xenonhydride@gmail.com
  * https://github.com/ferredoxin/QNotified
  *
  * This software is free software: you can redistribute it and/or
@@ -20,38 +20,34 @@ package nil.nadph.qnotified.hook;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Looper;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 import de.robv.android.xposed.XC_MethodHook;
 import nil.nadph.qnotified.MainHook;
-import nil.nadph.qnotified.SyncUtils;
-import nil.nadph.qnotified.config.ConfigManager;
 import nil.nadph.qnotified.step.DexDeobfStep;
-import nil.nadph.qnotified.step.Step;
 import nil.nadph.qnotified.ui.CustomDialog;
 import nil.nadph.qnotified.ui.ViewBuilder;
 import nil.nadph.qnotified.util.*;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static nil.nadph.qnotified.util.Initiator.load;
+import static nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null;
+import static nil.nadph.qnotified.util.ReflexUtil.invoke_static_any;
 import static nil.nadph.qnotified.util.Utils.*;
 
-public class MultiForwardAvatarHook extends BaseDelayableHook {
+public class MultiForwardAvatarHook extends CommonDelayableHook {
 
-    public static final String qn_multi_forward_avatar_profile = "qn_multi_forward_avatar_profile";
     private static final MultiForwardAvatarHook self = new MultiForwardAvatarHook();
-    private boolean inited = false;
     private static Field mLeftCheckBoxVisible = null;
 
     private MultiForwardAvatarHook() {
+        super("qn_multi_forward_avatar_profile", new DexDeobfStep(DexKit.C_AIO_UTILS)/*, new FindAvatarLongClickListener()*/);
     }
 
     public static MultiForwardAvatarHook get() {
@@ -81,8 +77,7 @@ public class MultiForwardAvatarHook extends BaseDelayableHook {
     }
 
     @Override
-    public boolean init() {
-        if (inited) return true;
+    public boolean initOnce() {
         try {
             findAndHookMethod(load("com/tencent/mobileqq/activity/aio/BaseBubbleBuilder"), "onClick", View.class, new XC_MethodHook(49) {
                 @Override
@@ -114,59 +109,8 @@ public class MultiForwardAvatarHook extends BaseDelayableHook {
                     } else {
                         createAndShowDialogForDetail(ctx, msg);
                     }
-                    /*else if (activityName.endsWith(".SplashActivity") || activityName.endsWith(".ChatActivity")) {
-                        final Object msg = getChatMessageByView(view);
-                        if (msg == null || (0 != ((int) iget_object_or_null(msg, "istroop")))) return;
-                        Object chatpie = null;
-                        try {
-                            Object fmgr = invoke_virtual(ctx, "getSupportFragmentManager");
-                            Object fragment = invoke_virtual(fmgr, "findFragmentByTag", "com.tencent.mobileqq.activity.ChatFragment", String.class);
-                            chatpie = invoke_virtual(fragment, "a", _BaseChatPie());
-                        } catch (Exception e) {
-                            log(e);
-                        }
-                        if (chatpie != null) {
-                            final Object finalChatpie = chatpie;
-                            CustomDialog.createFailsafe(ctx).setTitle(Utils.getShort$Name(msg)).setMessage(chatpie.getClass().getName() + "\n" + msg.toString())
-                                    .setCancelable(true).setPositiveButton("确定", null).setNegativeButton("撤回", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    QQMessageFacade.revokeMessage(msg);
-                                }
-                            }).show();
-                            param.setResult(true);
-                        }
-                    }*/
                 }
             });
-//            Class<?> listener = FindAvatarLongClickListener.getLongClickListenerClass();
-//            Method onLongClick = listener.getMethod("onLongClick", View.class);
-//            XposedBridge.hookMethod(onLongClick, new XC_MethodHook(48) {
-//                @Override
-//                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-//                    if (!isEnabled()) return;
-//                    Object builder = null;
-//                    for (Field f : param.thisObject.getClass().getDeclaredFields()) {
-//                        if (Modifier.isFinal(f.getModifiers()) && !Modifier.isStatic(f.getModifiers())) {
-//                            f.setAccessible(true);
-//                            builder = f.get(param.thisObject);
-//                            break;
-//                        }
-//                    }
-//                    Context ctx = iget_object_or_null(builder, "a", Context.class);
-//                    if (ctx == null) ctx = getFirstNSFByType(builder, Context.class);
-//                    View view = (View) param.args[0];
-//                    if (ctx == null || isLeftCheckBoxVisible()) return;
-//                    String activityName = ctx.getClass().getName();
-//                    if (activityName.equals("com.tencent.mobileqq.activity.MultiForwardActivity")) {
-//                        Object msg = getChatMessageByView(view);
-//                        if (msg == null) return;
-//                        CustomDialog.createFailsafe(ctx).setTitle(Utils.getShort$Name(msg)).setMessage(msg.toString())
-//                                .setCancelable(true).setPositiveButton("确定", null).show();
-//                    }
-//                }
-//            });
-            inited = true;
             return true;
         } catch (Throwable e) {
             log(e);
@@ -262,145 +206,6 @@ public class MultiForwardAvatarHook extends BaseDelayableHook {
         }
         CustomDialog.createFailsafe(ctx).setTitle(Utils.getShort$Name(msg)).setMessage(msg.toString())
                 .setCancelable(true).setPositiveButton("确定", null).show();
-    }
-
-    @Override
-    public Step[] getPreconditions() {
-        return new Step[]{new DexDeobfStep(DexKit.C_AIO_UTILS)/*, new FindAvatarLongClickListener()*/};
-    }
-
-//    private static final String cache_avatar_long_click_listener_class = "cache_avatar_long_click_listener_class";
-//    private static final String cache_avatar_long_click_listener_version_code = "cache_avatar_long_click_listener_version_code";
-//
-//    private static class FindAvatarLongClickListener extends Step {
-//
-//        public static Class<?> getLongClickListenerClass() {
-//            String klass = null;
-//            ConfigManager cache = ConfigManager.getCache();
-//            int lastVersion = cache.getIntOrDefault(cache_avatar_long_click_listener_version_code, 0);
-//            int version = getHostInfo(getApplication()).versionCode;
-//            if (version == lastVersion) {
-//                String name = cache.getString(cache_avatar_long_click_listener_class);
-//                if (name != null && name.length() > 0) {
-//                    klass = name;
-//                }
-//            }
-//            Class<?> c = Initiator.load(klass);
-//            if (c != null) return c;
-//            Class<?> decl = Initiator.load("com/tencent/mobileqq/activity/aio/BaseBubbleBuilder");
-//            if (decl == null) return null;
-//            String fname = null;
-//            for (Field f : decl.getDeclaredFields()) {
-//                if (f.getType().equals(View.OnLongClickListener.class)) {
-//                    fname = f.getName();
-//                    break;
-//                }
-//            }
-//            if (fname == null) {
-//                log("getLongClickListenerClass: field name is null");
-//                return null;
-//            }
-//            DexMethodDescriptor _init_ = null;
-//            byte[] dex = DexKit.getClassDeclaringDex("Lcom/tencent/mobileqq/activity/aio/BaseBubbleBuilder;", new int[]{7, 11, 6});
-//            for (DexMethodDescriptor m : DexFlow.getDeclaredDexMethods(dex, "Lcom/tencent/mobileqq/activity/aio/BaseBubbleBuilder;")) {
-//                if ("<init>".equals(m.name)) {
-//                    _init_ = m;
-//                    break;
-//                }
-//            }
-//            DexFieldDescriptor f = new DexFieldDescriptor("Lcom/tencent/mobileqq/activity/aio/BaseBubbleBuilder;",
-//                    fname, DexMethodDescriptor.getTypeSig(View.OnLongClickListener.class));
-//            try {
-//                klass = DexFlow.guessNewInstanceType(dex, _init_, f);
-//            } catch (Exception e) {
-//                log(e);
-//                return null;
-//            }
-//            if (klass != null && klass.startsWith("L")) {
-//                klass = klass.replace('/', '.').substring(1, klass.length() - 1);
-//                cache.putString(cache_avatar_long_click_listener_class, klass);
-//                cache.putInt(cache_avatar_long_click_listener_version_code, version);
-//                try {
-//                    cache.save();
-//                } catch (IOException e) {
-//                    log(e);
-//                }
-//                return Initiator.load(klass);
-//            }
-//            return null;
-//        }
-//
-//        @Override
-//        public boolean step() {
-//            return getLongClickListenerClass() != null;
-//        }
-//
-//        @Override
-//        public boolean isDone() {
-//            try {
-//                ConfigManager cache = ConfigManager.getCache();
-//                int lastVersion = cache.getIntOrDefault(cache_avatar_long_click_listener_version_code, 0);
-//                if (getHostInfo(getApplication()).versionCode != lastVersion) {
-//                    return false;
-//                }
-//                String name = cache.getString(cache_avatar_long_click_listener_class);
-//                return name != null && name.length() > 0;
-//            } catch (Exception e) {
-//                log(e);
-//                return false;
-//            }
-//        }
-//
-//        @Override
-//        public int getPriority() {
-//            return 20;
-//        }
-//
-//        @Override
-//        public String getDescription() {
-//            return "定位com/tencent/mobileqq/activity/aio/BaseBubbleBuilder$3";
-//        }
-//    }
-
-    @Override
-    public int getEffectiveProc() {
-        return SyncUtils.PROC_MAIN;
-    }
-
-    @Override
-    public boolean isInited() {
-        return inited;
-    }
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        try {
-            ConfigManager mgr = ConfigManager.getDefaultConfig();
-            mgr.getAllConfig().put(qn_multi_forward_avatar_profile, enabled);
-            mgr.save();
-        } catch (final Exception e) {
-            Utils.log(e);
-            if (Looper.myLooper() == Looper.getMainLooper()) {
-                Utils.showToast(getApplication(), TOAST_TYPE_ERROR, e + "", Toast.LENGTH_SHORT);
-            } else {
-                SyncUtils.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Utils.showToast(getApplication(), TOAST_TYPE_ERROR, e + "", Toast.LENGTH_SHORT);
-                    }
-                });
-            }
-        }
-    }
-
-    @Override
-    public boolean isEnabled() {
-        try {
-            return ConfigManager.getDefaultConfig().getBooleanOrDefault(qn_multi_forward_avatar_profile, true);
-        } catch (Exception e) {
-            log(e);
-            return true;
-        }
     }
 
     public static boolean isLeftCheckBoxVisible() {
