@@ -1,22 +1,30 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 package nil.nadph.qnotified.config;
+
+import android.content.Intent;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.*;
 import java.security.MessageDigest;
@@ -27,8 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.SyncUtils;
-import nil.nadph.qnotified.util.NonNull;
-import nil.nadph.qnotified.util.Nullable;
 import nil.nadph.qnotified.util.Utils;
 
 import static nil.nadph.qnotified.config.Table.*;
@@ -55,7 +61,7 @@ public class ConfigManager implements SyncUtils.OnFileChangedListener, MultiConf
     public static ConfigManager getDefaultConfig() {
         try {
             if (sDefConfig == null) {
-                sDefConfig = new ConfigManager(new File(HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getFilesDir().getAbsolutePath() + "/qnotified_config.dat"), SyncUtils.FILE_DEFAULT_CONFIG, 0);
+                sDefConfig = new ConfigManager(new File(HostInformationProviderKt.getHostInfo().getApplication().getFilesDir().getAbsolutePath() + "/qnotified_config.dat"), SyncUtils.FILE_DEFAULT_CONFIG, 0);
                 SyncUtils.addOnFileChangedListener(sDefConfig);
             }
             return sDefConfig;
@@ -67,7 +73,7 @@ public class ConfigManager implements SyncUtils.OnFileChangedListener, MultiConf
     public static ConfigManager getCache() {
         try {
             if (sCache == null)
-                sCache = new ConfigManager(new File(HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getFilesDir().getAbsolutePath() + "/qnotified_cache.dat"), SyncUtils.FILE_CACHE, 0);
+                sCache = new ConfigManager(new File(HostInformationProviderKt.getHostInfo().getApplication().getFilesDir().getAbsolutePath() + "/qnotified_cache.dat"), SyncUtils.FILE_CACHE, 0);
             SyncUtils.addOnFileChangedListener(sCache);
             return sCache;
         } catch (IOException e) {
@@ -114,7 +120,11 @@ public class ConfigManager implements SyncUtils.OnFileChangedListener, MultiConf
             return false;
         }
         try {
-            return ((Boolean) config.get(key)).booleanValue();
+            Boolean z = (Boolean) config.get(key);
+            if (z == null) {
+                return false;
+            }
+            return z;
         } catch (ClassCastException e) {
             return false;
         }
@@ -129,7 +139,11 @@ public class ConfigManager implements SyncUtils.OnFileChangedListener, MultiConf
             return def;
         }
         try {
-            return ((Boolean) config.get(key)).booleanValue();
+            Boolean z = (Boolean) config.get(key);
+            if (z == null) {
+                return def;
+            }
+            return z;
         } catch (ClassCastException e) {
             return def;
         }
@@ -144,7 +158,11 @@ public class ConfigManager implements SyncUtils.OnFileChangedListener, MultiConf
             return def;
         }
         try {
-            return ((Integer) config.get(key)).intValue();
+            Integer z = (Integer) config.get(key);
+            if (z == null) {
+                return def;
+            }
+            return z;
         } catch (ClassCastException e) {
             return def;
         }
@@ -337,7 +355,11 @@ public class ConfigManager implements SyncUtils.OnFileChangedListener, MultiConf
             return i;
         }
         try {
-            return ((Long) config.get(key)).longValue();
+            Long z = (Long) config.get(key);
+            if (z == null) {
+                return i;
+            }
+            return z;
         } catch (ClassCastException e) {
             return i;
         }

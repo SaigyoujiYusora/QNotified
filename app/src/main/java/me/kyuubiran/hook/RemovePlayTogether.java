@@ -1,20 +1,23 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 package me.kyuubiran.hook;
 
@@ -43,10 +46,15 @@ public class RemovePlayTogether extends CommonDelayableHook {
     }
 
     @Override
+    public boolean checkPreconditions() {
+        return !HostInformationProviderKt.getHostInfo().isPlayQQ() && super.checkPreconditions();
+    }
+
+    @Override
     public boolean initOnce() {
         try {
             String method = "h";
-            if (HostInformationProviderKt.getHostInformationProvider().getVersionCode() >= QQVersion.QQ_8_4_8) {
+            if (HostInformationProviderKt.requireMinQQVersion(QQVersion.QQ_8_4_8)) {
                 //QQ 8.4.8 除了一起嗨按钮，同一个位置还有一个群打卡按钮。默认显示群打卡，如果已经打卡就显示一起嗨，两个按钮点击之后都会打开同一个界面，但是要同时hook两个
                 String entryMethod = "d";
                 for (Method m : DexKit.doFindClass(DexKit.C_ClockInEntryHelper).getDeclaredMethods()) {

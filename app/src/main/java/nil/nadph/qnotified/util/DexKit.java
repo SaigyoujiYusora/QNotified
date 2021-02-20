@@ -1,24 +1,29 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 package nil.nadph.qnotified.util;
 
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -45,7 +50,6 @@ import static nil.nadph.qnotified.util.Utils.log;
 import static nil.nadph.qnotified.util.Utils.logi;
 
 /**
- * What the fuck?
  * I hadn't obfuscated the source code.
  * I just don't want to name it,
  * leaving it a()
@@ -90,8 +94,9 @@ public class DexKit {
     //for old version qq NewRoundHead
     public static final int C_FaceManager = 34;
     public static final int C_SmartDeviceProxyMgr = 35;
+    public static final int C_AIOPictureView = 36;
     //the last index
-    public static final int DEOBF_NUM_C = 35;
+    public static final int DEOBF_NUM_C = 36;
     
     public static final int N_BASE_CHAT_PIE__INIT = 20001;
     public static final int N_BASE_CHAT_PIE__handleNightMask = 20002;
@@ -101,9 +106,8 @@ public class DexKit {
     public static final int N_LeftSwipeReply_Helper__reply = 20006;
     public static final int N_AtPanel__showDialogAtView = 20007;
     public static final int N_AtPanel__refreshUI = 20008;
-    public static final int N_PluginProxyActivity__initPlugin = 20009;
     
-    public static final int DEOBF_NUM_N = 9;
+    public static final int DEOBF_NUM_N = 8;
     
     
     @Nullable
@@ -200,7 +204,7 @@ public class DexKit {
         try {
             ConfigManager cache = ConfigManager.getCache();
             int lastVersion = cache.getIntOrDefault("cache_" + a(i) + "_code", 0);
-            if (HostInformationProviderKt.getHostInformationProvider().getVersionCode32() != lastVersion) {
+            if (HostInformationProviderKt.getHostInfo().getVersionCode32() != lastVersion) {
                 return null;
             }
             String name = cache.getString("cache_" + a(i) + "_method");
@@ -222,7 +226,7 @@ public class DexKit {
         }
         int ver = -1;
         try {
-            ver = HostInformationProviderKt.getHostInformationProvider().getVersionCode32();
+            ver = HostInformationProviderKt.getHostInfo().getVersionCode32();
         } catch (Throwable ignored) {
         }
         try {
@@ -250,7 +254,7 @@ public class DexKit {
                 return null;
             }
             cache.putString("cache_" + a(i) + "_method", ret.toString());
-            cache.getAllConfig().put("cache_" + a(i) + "_code", HostInformationProviderKt.getHostInformationProvider().getVersionCode32());
+            cache.getAllConfig().put("cache_" + a(i) + "_code", HostInformationProviderKt.getHostInfo().getVersionCode32());
             cache.save();
         } catch (Exception e) {
             log(e);
@@ -329,6 +333,8 @@ public class DexKit {
                 return "facemanager";
             case C_SmartDeviceProxyMgr:
                 return "smartdeviceproxymgr";
+            case C_AIOPictureView:
+                return "aiopictureview";
             case N_BASE_CHAT_PIE__INIT:
                 return "base_chat_pie__init";
             case N_BASE_CHAT_PIE__handleNightMask:
@@ -345,8 +351,6 @@ public class DexKit {
                 return "atpanel__showDialogAtView";
             case N_AtPanel__refreshUI:
                 return "atpanel__refreshUI";
-            case N_PluginProxyActivity__initPlugin:
-                return "pluginproxyact__initplugin";
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -461,6 +465,9 @@ public class DexKit {
             case C_FaceManager:
                 ret = "com.tencent.mobileqq.app.face.FaceManager";
                 break;
+            case C_AIOPictureView:
+                ret = "com.tencent.mobileqq.richmediabrowser.view.AIOPictureView";
+                break;
             case N_BASE_CHAT_PIE__INIT:
             case N_BASE_CHAT_PIE__handleNightMask:
             case N_BASE_CHAT_PIE__updateSession:
@@ -471,9 +478,6 @@ public class DexKit {
             case N_AtPanel__refreshUI:
             case N_AtPanel__showDialogAtView:
                 ret = "com/tencent/mobileqq/troop/quickat/ui/AtPanel";
-                break;
-            case N_PluginProxyActivity__initPlugin:
-                ret = "com/tencent/mobileqq/pluginsdk/PluginProxyActivity";
                 break;
             default:
                 ret = null;
@@ -579,8 +583,8 @@ public class DexKit {
                 return new byte[][]{new byte[]{0x11, 0x72, 0x65, 0x73, 0x75, 0x6C, 0x74, 0x4C, 0x69, 0x73, 0x74, 0x20, 0x3D, 0x20, 0x6E, 0x75, 0x6C, 0x6C}};
             case N_AtPanel__showDialogAtView:
                 return new byte[][]{new byte[]{0x1b, 0x73, 0x68, 0x6F, 0x77, 0x44, 0x69, 0x61, 0x6C, 0x6F, 0x67, 0x41, 0x74, 0x56, 0x69, 0x65, 0x77}};
-            case N_PluginProxyActivity__initPlugin:
-                return new byte[][]{new byte[]{0x33, 0x50, 0x6C, 0x75, 0x67, 0x69, 0x6E, 0x50, 0x72, 0x6F, 0x78, 0x79, 0x41, 0x63, 0x74, 0x69, 0x76, 0x69, 0x74, 0x79, 0x2E, 0x69}};
+            case C_AIOPictureView:
+                return new byte[][]{new byte[]{0x0e, 0x41, 0x49, 0x4F, 0x50, 0x69, 0x63, 0x74, 0x75, 0x72, 0x65, 0x56, 0x69, 0x65, 0x77}};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -655,8 +659,6 @@ public class DexKit {
             case N_AtPanel__refreshUI:
             case N_AtPanel__showDialogAtView:
                 return new int[]{10, 4};
-            case N_PluginProxyActivity__initPlugin:
-                return new int[]{1};
             case C_CustomWidgetUtil:
                 return new int[]{5, 4, 9};
             case C_ClockInEntryHelper:
@@ -669,6 +671,8 @@ public class DexKit {
                 return new int[]{3};
             case C_SmartDeviceProxyMgr:
                 return new int[]{5, 2};
+            case C_AIOPictureView:
+                return new int[]{10, 4};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -870,12 +874,6 @@ public class DexKit {
                         return m;
                 }
                 break;
-            case N_PluginProxyActivity__initPlugin:
-                for (DexMethodDescriptor m : __methods) {
-                    if (m.declaringClass.replace('/', '.').contains("com.tencent.mobileqq.pluginsdk.PluginProxyActivity"))
-                        return m;
-                }
-                break;
             case N_LeftSwipeReply_Helper__reply:
                 //NOTICE: this must only has one result
     
@@ -954,6 +952,7 @@ public class DexKit {
             case C_MultiMsg_Manager:
             case N_AtPanel__refreshUI:
             case N_AtPanel__showDialogAtView:
+            case C_AIOPictureView:
                 //has superclass
                 for (DexMethodDescriptor m : __methods) {
                     Class clz = Initiator.load(m.declaringClass);

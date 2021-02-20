@@ -1,20 +1,23 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 package nil.nadph.qnotified.util;
 
@@ -29,12 +32,13 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 import com.tencent.mobileqq.app.QQAppInterface;
 
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -72,14 +76,6 @@ public class Utils {
 
     private Utils() {
         throw new AssertionError("No instance for you!");
-    }
-
-    public static boolean isModuleEnable() {
-        Math.sqrt(1);
-        Math.random();
-        Math.expm1(0.001);
-        //Just make the function longer,so that it will get hooked by Epic
-        return false;
     }
 
     public static boolean isNullOrEmpty(String str) {
@@ -182,54 +178,17 @@ public class Utils {
         return -1;
     }
 
-    public static Method hasMethod(Object obj, String name, Object... argsTypesAndReturnType) throws IllegalArgumentException {
-        Class clazz;
-        if (obj == null) throw new NullPointerException("obj/clazz == null");
-        if (obj instanceof Class) clazz = (Class) obj;
-        else clazz = obj.getClass();
-        return hasMethod(clazz, name, argsTypesAndReturnType);
-    }
-
-    public static Method hasMethod(Class clazz, String name, Object... argsTypesAndReturnType) throws IllegalArgumentException {
-        int argc = argsTypesAndReturnType.length / 2;
-        Class[] argt = new Class[argc];
-        Object[] argv = new Object[argc];
-        Class returnType = null;
-        if (argc * 2 + 1 == argsTypesAndReturnType.length)
-            returnType = (Class) argsTypesAndReturnType[argsTypesAndReturnType.length - 1];
-        int i, ii;
-        Method[] m;
-        Method method = null;
-        Class[] _argt;
-        for (i = 0; i < argc; i++) {
-            argt[i] = (Class) argsTypesAndReturnType[argc + i];
-            argv[i] = argsTypesAndReturnType[i];
-        }
-        loop_main:
-        do {
-            m = clazz.getDeclaredMethods();
-            loop:
-            for (i = 0; i < m.length; i++) {
-                if (m[i].getName().equals(name)) {
-                    _argt = m[i].getParameterTypes();
-                    if (_argt.length == argt.length) {
-                        for (ii = 0; ii < argt.length; ii++) {
-                            if (!argt[ii].equals(_argt[ii])) continue loop;
-                        }
-                        if (returnType != null && !returnType.equals(m[i].getReturnType()))
-                            continue;
-                        method = m[i];
-                        break loop_main;
-                    }
-                }
-            }
-        } while (!Object.class.equals(clazz = clazz.getSuperclass()));
-        if (method != null) method.setAccessible(true);
-        return method;
-    }
-
+    @MainProcess
     public static QQAppInterface getQQAppInterface() {
-        return (QQAppInterface) getAppRuntime();
+        AppRuntime art = getAppRuntime();
+        if (art == null) {
+            return null;
+        }
+        if (art instanceof QQAppInterface) {
+            return (QQAppInterface) art;
+        } else {
+            throw new IllegalStateException("QQAppInterface is not available in current process");
+        }
     }
 
     public static String get_RGB(int color) {
@@ -260,7 +219,7 @@ public class Utils {
             logw("getAppRuntime/W invoked before NewRuntime.step");
             return null;
         }
-        Object baseApplicationImpl = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
+        Object baseApplicationImpl = HostInformationProviderKt.getHostInfo().getApplication();
         try {
             if (f_mAppRuntime == null) {
                 f_mAppRuntime = Class.forName("mqq.app.MobileQQ").getDeclaredField("mAppRuntime");
@@ -284,7 +243,7 @@ public class Utils {
     }
 
     public static Object getFriendListHandler() {
-        if (HostInformationProviderKt.getHostInformationProvider().getVersionCode() >= QQVersion.QQ_8_5_0) {
+        if (HostInformationProviderKt.requireMinQQVersion(QQVersion.QQ_8_5_0)) {
             try {
                 Class cl_bh = load("com/tencent/mobileqq/app/BusinessHandler");
                 Class cl_flh = load("com/tencent/mobileqq/app/FriendListHandler");
@@ -356,78 +315,6 @@ public class Utils {
             log(e);
             return null;
         }
-    }
-
-    public static <T> T getFirstByType(Object obj, Class<T> type) {
-        if (obj == null) throw new NullPointerException("obj == null");
-        if (type == null) throw new NullPointerException("type == null");
-        Class clz = obj.getClass();
-        while (clz != null && !clz.equals(Object.class)) {
-            for (Field f : clz.getDeclaredFields()) {
-                if (!f.getType().equals(type)) continue;
-                f.setAccessible(true);
-                try {
-                    return (T) f.get(obj);
-                } catch (IllegalAccessException ignored) {
-                    //should not happen
-                }
-            }
-            clz = clz.getSuperclass();
-        }
-        return null;
-    }
-
-    /**
-     * NSF: Neither Static nor Final
-     *
-     * @param obj  thisObj
-     * @param type Field type
-     * @return the FIRST(as declared seq in dex) field value meeting the type
-     */
-    //@Deprecated
-    public static <T> T getFirstNSFByType(Object obj, Class<T> type) {
-        if (obj == null) throw new NullPointerException("obj == null");
-        if (type == null) throw new NullPointerException("type == null");
-        Class clz = obj.getClass();
-        while (clz != null && !clz.equals(Object.class)) {
-            for (Field f : clz.getDeclaredFields()) {
-                if (!f.getType().equals(type)) continue;
-                int m = f.getModifiers();
-                if (Modifier.isStatic(m) || Modifier.isFinal(m)) continue;
-                f.setAccessible(true);
-                try {
-                    return (T) f.get(obj);
-                } catch (IllegalAccessException ignored) {
-                    //should not happen
-                }
-            }
-            clz = clz.getSuperclass();
-        }
-        return null;
-    }
-
-    /**
-     * NSF: Neither Static nor Final
-     *
-     * @param clz  Obj class
-     * @param type Field type
-     * @return the FIRST(as declared seq in dex) field value meeting the type
-     */
-    //@Deprecated
-    public static Field getFirstNSFFieldByType(Class clz, Class type) {
-        if (clz == null) throw new NullPointerException("clz == null");
-        if (type == null) throw new NullPointerException("type == null");
-        while (clz != null && !clz.equals(Object.class)) {
-            for (Field f : clz.getDeclaredFields()) {
-                if (!f.getType().equals(type)) continue;
-                int m = f.getModifiers();
-                if (Modifier.isStatic(m) || Modifier.isFinal(m)) continue;
-                f.setAccessible(true);
-                return f;
-            }
-            clz = clz.getSuperclass();
-        }
-        return null;
     }
 
     public static boolean isEmpty(String str) {
@@ -584,7 +471,7 @@ public class Utils {
     }
 
     public static void showErrorToastAnywhere(String text) {
-        Toasts.error(HostInformationProviderKt.getHostInformationProvider().getApplicationContext(), text, Toasts.LENGTH_SHORT);
+        Toasts.error(HostInformationProviderKt.getHostInfo().getApplication(), text, Toasts.LENGTH_SHORT);
     }
 
     public static void dumpTrace() {
@@ -784,7 +671,7 @@ public class Utils {
     public static long getBuildTimestamp() {
         Context ctx = null;
         try {
-            ctx = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
+            ctx = HostInformationProviderKt.getHostInfo().getApplication();
         } catch (Throwable ignored) {
         }
         if (ctx == null) {

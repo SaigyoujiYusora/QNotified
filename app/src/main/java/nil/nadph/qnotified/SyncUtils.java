@@ -1,20 +1,23 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 package nil.nadph.qnotified;
 
@@ -176,7 +179,7 @@ public class SyncUtils {
     }
 
     public static void sendGenericBroadcast(Context ctx, Intent intent) {
-        if (ctx == null) ctx = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
+        if (ctx == null) ctx = HostInformationProviderKt.getHostInfo().getApplication();
         intent.putExtra(_REAL_INTENT, intent.getAction());
         intent.setAction(GENERIC_WRAPPER);
         intent.setPackage(ctx.getPackageName());
@@ -193,7 +196,7 @@ public class SyncUtils {
      * @param what 0 for unspecified
      */
     public static void onFileChanged(int file, long uin, int what) {
-        Context ctx = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
+        Context ctx = HostInformationProviderKt.getHostInfo().getApplication();
         Intent changed = new Intent(SYNC_FILE_CHANGED);
         changed.setPackage(ctx.getPackageName());
         initId();
@@ -205,7 +208,7 @@ public class SyncUtils {
     }
 
     public static void requestInitHook(int hookId, int process) {
-        Context ctx = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
+        Context ctx = HostInformationProviderKt.getHostInfo().getApplication();
         Intent changed = new Intent(HOOK_DO_INIT);
         changed.setPackage(ctx.getPackageName());
         initId();
@@ -269,7 +272,7 @@ public class SyncUtils {
         int retry = 0;
         do {
             try {
-                List<ActivityManager.RunningAppProcessInfo> runningAppProcesses = ((ActivityManager) HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE)).getRunningAppProcesses();
+                List<ActivityManager.RunningAppProcessInfo> runningAppProcesses = ((ActivityManager) HostInformationProviderKt.getHostInfo().getApplication().getSystemService(Context.ACTIVITY_SERVICE)).getRunningAppProcesses();
                 if (runningAppProcesses != null) {
                     for (ActivityManager.RunningAppProcessInfo runningAppProcessInfo : runningAppProcesses) {
                         if (runningAppProcessInfo != null && runningAppProcessInfo.pid == android.os.Process.myPid()) {

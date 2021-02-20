@@ -1,20 +1,23 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 package nil.nadph.qnotified.activity;
 
@@ -47,7 +50,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import me.nextalone.hook.EnableQLog;
+import cc.ioctl.activity.ExfriendListActivity;
+import ltd.nextalone.hook.EnableQLog;
 import me.singleneuron.activity.BugReportActivity;
 import me.singleneuron.activity.DatabaseTestActivity;
 import me.singleneuron.data.CardMsgCheckResult;
@@ -62,20 +66,15 @@ import nil.nadph.qnotified.config.EventRecord;
 import nil.nadph.qnotified.config.FriendRecord;
 import nil.nadph.qnotified.lifecycle.ActProxyMgr;
 import nil.nadph.qnotified.lifecycle.Parasitics;
-import nil.nadph.qnotified.remote.GetUserStatusResp;
-import nil.nadph.qnotified.util.Initiator;
-import nil.nadph.qnotified.util.Natives;
 import nil.nadph.qnotified.ui.CustomDialog;
 import nil.nadph.qnotified.ui.ResUtils;
-import nil.nadph.qnotified.util.DexKit;
-import nil.nadph.qnotified.util.DexMethodDescriptor;
-import nil.nadph.qnotified.util.Utils;
+import nil.nadph.qnotified.util.*;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static nil.nadph.qnotified.ui.ViewBuilder.*;
 import static nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null;
 import static nil.nadph.qnotified.util.ReflexUtil.iput_object;
-import static nil.nadph.qnotified.ui.ViewBuilder.*;
 import static nil.nadph.qnotified.util.Utils.*;
 
 @SuppressLint("Registered")
@@ -130,7 +129,7 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                     configManager.remove(LAST_TRACE_HASHCODE_CONFIG);
                     configManager.save();
                 } catch (Exception e) {
-                    Utils.runOnUiThread(() -> Toast.makeText(HostInformationProviderKt.getHostInformationProvider().getApplicationContext(),e.toString(),Toast.LENGTH_LONG).show());
+                    Utils.runOnUiThread(() -> Toast.makeText(HostInformationProviderKt.getHostInfo().getApplication(),e.toString(),Toast.LENGTH_LONG).show());
                     Utils.log(e);
                 }
             }
@@ -230,7 +229,7 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                     wrapper.setClassName(getApplication().getPackageName(), ActProxyMgr.STUB_DEFAULT_ACTIVITY);
                     wrapper.putExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT, inner);
                     PendingIntent pi = PendingIntent.getActivity(getApplication(), 0, wrapper, 0);
-                    NotificationManager nm = (NotificationManager) HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                    NotificationManager nm = (NotificationManager) HostInformationProviderKt.getHostInfo().getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
                     Notification n = ExfriendManager.getCurrent().createNotiComp(nm, "Ticker", "Title", "Content", new long[]{100, 200, 200, 100}, pi);
                     nm.notify(ExfriendManager.ID_EX_NOTIFY, n);
                 } catch (Throwable e) {
@@ -334,81 +333,38 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
     }
 
     public View.OnClickListener clickToRefreshUserStatus() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                long uin = Utils.getLongAccountUin();
-                if (uin < 10000) {
-                    return;
-                }
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        StringBuilder sb;
-                        String msg;
-                        Throwable t = null;
-                        try {
-                            GetUserStatusResp resp = ExfriendManager.get(uin).doUpdateUserStatusFlags();
-                            sb = new StringBuilder();
-                            sb.append(resp.uin).append(": ");
-                            if (resp.whitelistFlags == 0 && resp.blacklistFlags == 0) {
-                                sb.append("Everything is ok");
-                            } else {
-                                if (resp.whitelistFlags != 0) {
-                                    sb.append("\nWhite: 0x").append(Integer.toHexString(resp.whitelistFlags));
-                                }
-                                if (resp.blacklistFlags != 0) {
-                                    sb.append("\nBlack: 0x").append(Integer.toHexString(resp.blacklistFlags));
-                                }
-                            }
-                            msg = sb.toString();
-                        } catch (Exception e) {
-                            msg = e.toString();
-                            t = e;
-                        }
-                        Throwable finalT = t;
-                        String finalMsg = msg;
-                        view.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                CustomDialog.createFailsafe(view.getContext()).setTitle(finalT == null ? "状态" : "失败")
-                                        .setCancelable(true).setMessage(finalMsg).setPositiveButton("确认", null).show();
-                            }
-                        });
-                    }
-                }).start();
+        return view -> {
+            long uin = Utils.getLongAccountUin();
+            if (uin < 10000) {
+                return;
             }
+            CustomDialog.createFailsafe(view.getContext()).setTitle("状态")
+                .setCancelable(true).setMessage("破解版没有黑白名单哦").setPositiveButton("确认", null).show();
         };
     }
 
     public View.OnClickListener clickToWipeDeletedFriends() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CustomDialog dialog = CustomDialog.create(TroubleshootActivity.this);
-                dialog.setPositiveButton("确认", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            ExfriendManager exm = ExfriendManager.getCurrent();
-                            Iterator it = exm.getEvents().entrySet().iterator();
-                            while (it.hasNext()) {
-                                EventRecord ev = (EventRecord) ((Map.Entry) it.next()).getValue();
-                                if (exm.getPersons().get(ev.operand).friendStatus == FriendRecord.STATUS_FRIEND_MUTUAL)
-                                    it.remove();
-                            }
-                            exm.saveConfigure();
-                            showToast(TroubleshootActivity.this, TOAST_TYPE_SUCCESS, "操作成功", Toast.LENGTH_SHORT);
-                        } catch (Throwable e) {
-                        }
+        return v -> {
+            CustomDialog dialog = CustomDialog.create(TroubleshootActivity.this);
+            dialog.setPositiveButton("确认", (dialog1, which) -> {
+                try {
+                    ExfriendManager exm = ExfriendManager.getCurrent();
+                    Iterator it = exm.getEvents().entrySet().iterator();
+                    while (it.hasNext()) {
+                        EventRecord ev = (EventRecord) ((Map.Entry) it.next()).getValue();
+                        if (exm.getPersons().get(ev.operand).friendStatus == FriendRecord.STATUS_FRIEND_MUTUAL)
+                            it.remove();
                     }
-                });
-                dialog.setNegativeButton("取消", new Utils.DummyCallback());
-                dialog.setCancelable(true);
-                dialog.setMessage("此操作将删除当前帐号(" + getLongAccountUin() + ")下的 已恢复 的历史好友记录(记录可单独删除).如果因bug大量好友被标记为已删除,请先刷新好友列表,然后再点击此按钮.\n此操作不可恢复");
-                dialog.setTitle("确认操作");
-                dialog.show();
-            }
+                    exm.saveConfigure();
+                    showToast(TroubleshootActivity.this, TOAST_TYPE_SUCCESS, "操作成功", Toast.LENGTH_SHORT);
+                } catch (Throwable e) {
+                }
+            });
+            dialog.setNegativeButton("取消", new DummyCallback());
+            dialog.setCancelable(true);
+            dialog.setMessage("此操作将删除当前帐号(" + getLongAccountUin() + ")下的 已恢复 的历史好友记录(记录可单独删除).如果因bug大量好友被标记为已删除,请先刷新好友列表,然后再点击此按钮.\n此操作不可恢复");
+            dialog.setTitle("确认操作");
+            dialog.show();
         };
     }
 
@@ -420,56 +376,50 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
     }
 
     public View.OnClickListener clickToWipeAllFriends() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CustomDialog dialog = CustomDialog.create(TroubleshootActivity.this);
-                dialog.setPositiveButton("确认", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            ExfriendManager exm = ExfriendManager.getCurrent();
-                            exm.getConfig().getFile().delete();
-                            exm.getConfig().reinit();
-                            exm.reinit();
-                            showToast(TroubleshootActivity.this, TOAST_TYPE_SUCCESS, "操作成功", Toast.LENGTH_SHORT);
-                        } catch (Throwable e) {
-                        }
+        return v -> {
+            CustomDialog dialog = CustomDialog.create(TroubleshootActivity.this);
+            dialog.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    try {
+                        ExfriendManager exm = ExfriendManager.getCurrent();
+                        exm.getConfig().getFile().delete();
+                        exm.getConfig().reinit();
+                        exm.reinit();
+                        showToast(TroubleshootActivity.this, TOAST_TYPE_SUCCESS, "操作成功", Toast.LENGTH_SHORT);
+                    } catch (Throwable e) {
                     }
-                });
-                dialog.setNegativeButton("取消", new Utils.DummyCallback());
-                dialog.setCancelable(true);
-                dialog.setMessage("此操作将删除当前帐号(" + getLongAccountUin() + ")下的 全部 的历史好友记录,通常您不需要进行此操作.如果您的历史好友列表中因bug出现大量好友,请在联系人列表下拉刷新后点击 删除标记为已恢复的好友 .\n此操作不可恢复");
-                dialog.setTitle("确认操作");
-                dialog.show();
-            }
+                }
+            });
+            dialog.setNegativeButton("取消", new DummyCallback());
+            dialog.setCancelable(true);
+            dialog.setMessage("此操作将删除当前帐号(" + getLongAccountUin() + ")下的 全部 的历史好友记录,通常您不需要进行此操作.如果您的历史好友列表中因bug出现大量好友,请在联系人列表下拉刷新后点击 删除标记为已恢复的好友 .\n此操作不可恢复");
+            dialog.setTitle("确认操作");
+            dialog.show();
         };
     }
 
     public View.OnClickListener clickToCleanCache() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CustomDialog dialog = CustomDialog.create(TroubleshootActivity.this);
-                dialog.setPositiveButton("确认", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            ConfigManager cfg = ConfigManager.getCache();
-                            cfg.getAllConfig().clear();
-                            cfg.getFile().delete();
-                            System.exit(0);
-                        } catch (Throwable e) {
-                            log(e);
-                        }
+        return v -> {
+            CustomDialog dialog = CustomDialog.create(TroubleshootActivity.this);
+            dialog.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    try {
+                        ConfigManager cfg = ConfigManager.getCache();
+                        cfg.getAllConfig().clear();
+                        cfg.getFile().delete();
+                        System.exit(0);
+                    } catch (Throwable e) {
+                        log(e);
                     }
-                });
-                dialog.setNegativeButton("取消", new Utils.DummyCallback());
-                dialog.setCancelable(true);
-                dialog.setMessage("确认清除缓存,并重新计算适配数据?\n点击确认后请等待3秒后手动重启" + HostInformationProviderKt.getHostInformationProvider().getHostName() + ".");
-                dialog.setTitle("确认操作");
-                dialog.show();
-            }
+                }
+            });
+            dialog.setNegativeButton("取消", new DummyCallback());
+            dialog.setCancelable(true);
+            dialog.setMessage("确认清除缓存,并重新计算适配数据?\n点击确认后请等待3秒后手动重启" + HostInformationProviderKt.getHostInfo().getHostName() + ".");
+            dialog.setTitle("确认操作");
+            dialog.show();
         };
     }
 
@@ -490,7 +440,7 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                 });
                 dialog.setNegativeButton("取消", new Utils.DummyCallback());
                 dialog.setCancelable(true);
-                dialog.setMessage("此操作将删除该模块的所有配置信息,包括屏蔽通知的群列表,但不包括历史好友列表.点击确认后请等待3秒后手动重启" + HostInformationProviderKt.getHostInformationProvider().getHostName() + ".\n此操作不可恢复");
+                dialog.setMessage("此操作将删除该模块的所有配置信息,包括屏蔽通知的群列表,但不包括历史好友列表.点击确认后请等待3秒后手动重启" + HostInformationProviderKt.getHostInfo().getHostName() + ".\n此操作不可恢复");
                 dialog.setTitle("确认操作");
                 dialog.show();
             }

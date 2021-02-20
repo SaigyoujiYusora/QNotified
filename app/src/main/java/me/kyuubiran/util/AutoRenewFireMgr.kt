@@ -1,28 +1,31 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 package me.kyuubiran.util
 
 import android.os.Handler
 import android.os.Looper
 import com.topjohnwu.superuser.internal.UiThreadHandler.handler
-import me.singleneuron.qn_kernel.data.hostInformationProvider
-import nil.nadph.qnotified.script.QNClient
+import me.singleneuron.qn_kernel.data.hostInfo
+import cc.ioctl.script.QNClient
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
@@ -39,13 +42,13 @@ object AutoRenewFireMgr {
             if (autoRenewList.isEmpty()) return
             if (needSend()) {
                 thread {
-                    hostInformationProvider.applicationContext.showToastBySystem("好耶 开始自动续火了 请不要关闭QQ哦")
+                    hostInfo.application.showToastBySystem("好耶 开始自动续火了 请不要关闭QQ哦")
                     for (u in autoRenewList) {
                         if (u.isGlobalMode) QNClient.send(u.uin, autoRenewMsg, 0)
                         else QNClient.send(u.uin, u.msg, 0)
                         Thread.sleep(5000)
                     }
-                    hostInformationProvider.applicationContext.showToastBySystem("好耶 续火完毕了")
+                    hostInfo.application.showToastBySystem("好耶 续火完毕了")
                 }
             }
             handler.postDelayed(this, 600000L)

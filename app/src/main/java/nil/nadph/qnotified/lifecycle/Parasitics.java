@@ -1,20 +1,23 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 package nil.nadph.qnotified.lifecycle;
 
@@ -44,10 +47,11 @@ import dalvik.system.BaseDexClassLoader;
 import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.MainHook;
 import nil.nadph.qnotified.R;
-import nil.nadph.qnotified.util.Initiator;
 import nil.nadph.qnotified.ui.___WindowIsTranslucent;
+import nil.nadph.qnotified.util.Initiator;
 import nil.nadph.qnotified.util.MainProcess;
-import nil.nadph.qnotified.util.Nullable;
+
+import androidx.annotation.Nullable;
 
 import static nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null;
 import static nil.nadph.qnotified.util.Utils.*;
@@ -251,7 +255,7 @@ public class Parasitics {
                 if (index != -1) {
                     Intent raw = (Intent) args[index];
                     ComponentName component = raw.getComponent();
-                    Context hostApp = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
+                    Context hostApp = HostInformationProviderKt.getHostInfo().getApplication();
                     if (hostApp != null && component != null
                         && hostApp.getPackageName().equals(component.getPackageName())
                         && ActProxyMgr.isModuleProxyActivity(component.getClassName())) {
@@ -592,40 +596,26 @@ public class Parasitics {
 
         @Override
         public void callActivityOnCreate(Activity activity, Bundle icicle) {
-            try {
-                if (icicle != null) {
-                    String className = activity.getClass().getName();
-                    if (ActProxyMgr.isResourceInjectionRequired(className)) {
-                        icicle.setClassLoader(MainHook.class.getClassLoader());
-                    }
+            if (icicle != null) {
+                String className = activity.getClass().getName();
+                if (ActProxyMgr.isResourceInjectionRequired(className)) {
+                    icicle.setClassLoader(MainHook.class.getClassLoader());
                 }
-                injectModuleResources(activity.getResources());
-                mBase.callActivityOnCreate(activity, icicle);
-            } catch (Exception e) {
-                if (Pattern.matches("[\\W]me\\.|nil\\.nadph", Log.getStackTraceString(e).replace("nil.nadph.qnotified.MainHook$MyInstrumentation.callActivityOnStart", ""))) {
-                    throw e;
-                }
-                //else ignore
             }
+            injectModuleResources(activity.getResources());
+            mBase.callActivityOnCreate(activity, icicle);
         }
 
         @Override
         public void callActivityOnCreate(Activity activity, Bundle icicle, PersistableBundle persistentState) {
-            try {
-                if (icicle != null) {
-                    String className = activity.getClass().getName();
-                    if (ActProxyMgr.isResourceInjectionRequired(className)) {
-                        icicle.setClassLoader(MainHook.class.getClassLoader());
-                    }
+            if (icicle != null) {
+                String className = activity.getClass().getName();
+                if (ActProxyMgr.isResourceInjectionRequired(className)) {
+                    icicle.setClassLoader(MainHook.class.getClassLoader());
                 }
-                injectModuleResources(activity.getResources());
-                mBase.callActivityOnCreate(activity, icicle, persistentState);
-            } catch (Exception e) {
-                if (Pattern.matches("[\\W]me\\.|nil\\.nadph", Log.getStackTraceString(e).replace("nil.nadph.qnotified.MainHook$MyInstrumentation.callActivityOnStart", ""))) {
-                    throw e;
-                }
-                //else ignore
             }
+            injectModuleResources(activity.getResources());
+            mBase.callActivityOnCreate(activity, icicle, persistentState);
         }
 
         @Override

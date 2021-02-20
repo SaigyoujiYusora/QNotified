@@ -13,6 +13,9 @@
 3. 一个Commit做一件事情
 4. 请勿在Commit附上任何有关[skip ci]的字段
 
+## Pull Request
+1. 请勿在修改会被编译分发至用户的部分时在PR标题添加[skip ci]；请务必在文档、模板等不会影响编译流程和实际分发的目标生成，或完全无法编译但出于必要目的必须提交的PR标题添加[skip ci]
+
 ## 开发
 
 1. 请确认您的编辑器支持EditorConfig，否则请注意您的编码、行位序列及其其他事项。
@@ -39,7 +42,7 @@
 
 11. 针对适配指定QQ/TIM版本的methods扔进[QQConfigTable.kt](app/src/main/java/me/singleneuron/qn_kernel/tlb/QQConfigTable.kt)或[TIMConfigTable.kt](app/src/main/java/me/singleneuron/qn_kernel/tlb/TIMConfigTable.kt)
 
-12. 除个别情况，需添加代码头
+12. 除个别情况，必须添加代码头
 
 13. **在任何时候，您都不应该随意更改[build.gradle](build.gradle)，特别是升级 `com.android.tools.build:gradle` 版本**
 

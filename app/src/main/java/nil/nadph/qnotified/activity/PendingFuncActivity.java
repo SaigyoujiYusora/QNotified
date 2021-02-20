@@ -1,20 +1,23 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 package nil.nadph.qnotified.activity;
 
@@ -63,9 +66,6 @@ public class PendingFuncActivity extends IphoneTitleBarActivityCompat {
         ll.addView(newListItemSwitchStub(this, "无视QQ电话与语音冲突", "允许在QQ电话时播放语音和短视频", false));
         ll.addView(newListItemSwitchStub(this, "QQ电话关麦时解除占用", "再开麦时如麦被其他程序占用可能崩溃", false));
         ll.addView(newListItemSwitchStub(this, "QQ视频通话旋转锁定", "可在通话界面设置旋转方向", false));
-        ll.addView(newListItemSwitchStub(this, "屏蔽好友热播", "隐藏动态里的好友热播", false));
-        ll.addView(newListItemSwitchConfigStub(this, "屏蔽回执消息的通知", null, ConfigItems.qn_mute_talk_back, false));
-        ll.addView(newListItemButton(this, "聊天图片自动接收原图", null, "禁用", clickTheComing()));
         ll.addView(newListItemButton(this, "隐藏联系人", "和自带的\"隐藏会话\"有所不同", "0人", clickTheComing()));
         ll.addView(newListItemButton(this, "自定义本地头像", "仅本机生效", "禁用", clickTheComing()));
         ll.addView(newListItemButton(this, "高级通知设置", "通知展开, channel等", null, clickTheComing()));
@@ -74,6 +74,15 @@ public class PendingFuncActivity extends IphoneTitleBarActivityCompat {
         ll.addView(newListItemButton(this, "AddFriendReq.sourceID", "自定义加好友来源", "[不改动]", clickTheComing()));
         ll.addView(newListItemButton(this, "DelFriendReq.delType", "只能为1或2", "[不改动]", clickTheComing()));
         ll.addView(newListItemSwitchStub(this, "隐藏聊天界面右侧滑条", "强迫症专用", false));
+        ll.addView(newListItemSwitchStub(this, "复制群公告", "希望能在关键时刻帮到你",false));
+        ll.addView(newListItemSwitchStub(this, "隐藏底部消息数量", null, false));
+        ll.addView(newListItemSwitchStub(this, "屏蔽QQ资料页送礼按钮", null, false));
+        ll.addView(newListItemSwitchStub(this, "一键已读/去除批量已读动画", null, false));
+        ll.addView(newListItemSwitchStub(this, "取消聊天中开通会员提示", "如果我们能触发关键词的话", false));
+        ll.addView(newListItemSwitchStub(this, "去除底部动态或联系人页面", "如果你觉得你喜欢这样的QQ的话", false));
+        ll.addView(newListItemSwitchStub(this, "空间说说自动回赞", "真正的友谊应该手动点", false));
+        ll.addView(newListItemSwitchStub(this, "一键退出已封禁群聊", null, false));
+        ll.addView(newListItemSwitchStub(this, "清理全部非置顶/清理群聊", null, false));
 
         __ll.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
         this.setContentView(bounceScrollView);

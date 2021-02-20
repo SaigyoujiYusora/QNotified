@@ -1,20 +1,23 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 
 #include <errno.h>
@@ -495,7 +498,7 @@ jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject sessio
             env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "404: TestStructMsg");
             return false;
         }
-        jclass cl_Utils = env->FindClass("nil/nadph/qnotified/util/Utils");
+        jclass cl_Utils = env->FindClass("nil/nadph/qnotified/util/ReflexUtil");
         cid = env->GetStaticMethodID(cl_Utils, "invoke_static_any",
                                      "(Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;");
         jobjectArray va = env->NewObjectArray(3, env->FindClass("java/lang/Object"), nullptr);
@@ -558,7 +561,7 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         env->ExceptionClear();
         __android_log_print(ANDROID_LOG_WARN, "QNdump", "not seeming in host, skip native hooks");
     } else {
-        clazz = env->FindClass("nil/nadph/qnotified/hook/CardMsgHook");
+        clazz = env->FindClass("cc/ioctl/hook/CardMsgHook");
         lMethods[0].name = "ntSendCardMsg";
         lMethods[0].signature = "(Lcom/tencent/mobileqq/app/QQAppInterface;Landroid/os/Parcelable;Ljava/lang/String;)Z";
         lMethods[0].fnPtr = (void *) &handleSendCardMsg;
@@ -566,7 +569,7 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
             __android_log_print(ANDROID_LOG_INFO, "QNdump", "register native method[1] failed!\n");
             return -1;
         }
-        clazz = env->FindClass("nil/nadph/qnotified/util/SendBatchMsg");
+        clazz = env->FindClass("cc/ioctl/util/SendBatchMsg");
         lMethods[0].name = "ntSendBatchMessages";
         lMethods[0].signature = "(Lcom/tencent/mobileqq/app/QQAppInterface;Landroid/content/Context;Ljava/lang/String;[I[J)Z";
         lMethods[0].fnPtr = (void *) &handleSendBatchMessages;

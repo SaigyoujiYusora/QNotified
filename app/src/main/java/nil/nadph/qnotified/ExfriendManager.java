@@ -1,20 +1,23 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 package nil.nadph.qnotified;
 
@@ -27,6 +30,8 @@ import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,24 +46,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
-import nil.nadph.qnotified.activity.ExfriendListActivity;
+import cc.ioctl.activity.ExfriendListActivity;
 import nil.nadph.qnotified.bridge.FriendChunk;
 import nil.nadph.qnotified.config.ConfigManager;
 import nil.nadph.qnotified.config.EventRecord;
 import nil.nadph.qnotified.config.FriendRecord;
 import nil.nadph.qnotified.config.Table;
-import nil.nadph.qnotified.hook.DelDetectorHook;
+import cc.ioctl.hook.DelDetectorHook;
 import nil.nadph.qnotified.lifecycle.ActProxyMgr;
 import nil.nadph.qnotified.lifecycle.Parasitics;
-import nil.nadph.qnotified.remote.GetUserStatusResp;
-import nil.nadph.qnotified.remote.TransactionHelper;
 import nil.nadph.qnotified.util.*;
 
 import static nil.nadph.qnotified.config.Table.*;
+import static cc.ioctl.util.DateTimeUtil.getRelTimeStrSec;
 import static nil.nadph.qnotified.util.Initiator.load;
 import static nil.nadph.qnotified.util.ReflexUtil.invoke_virtual;
 import static nil.nadph.qnotified.util.ReflexUtil.invoke_virtual_any;
-import static nil.nadph.qnotified.util.DateTimeUtil.getRelTimeStrSec;
 import static nil.nadph.qnotified.util.Utils.*;
 
 public class ExfriendManager implements SyncUtils.OnFileChangedListener {
@@ -154,7 +157,7 @@ public class ExfriendManager implements SyncUtils.OnFileChangedListener {
     }
 
     /**
-     * @return f**k! Do NOT edit the cfg!!!
+     * @return Do NOT edit the cfg!!!
      * @hide
      */
     //@Deprecated
@@ -218,7 +221,7 @@ public class ExfriendManager implements SyncUtils.OnFileChangedListener {
         synchronized (this) {
             try {
                 if (fileData == null) {
-                    File f = new File(HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getFilesDir().getAbsolutePath() + "/qnotified_" + mUin + ".dat");
+                    File f = new File(HostInformationProviderKt.getHostInfo().getApplication().getFilesDir().getAbsolutePath() + "/qnotified_" + mUin + ".dat");
                     fileData = new ConfigManager(f, SyncUtils.FILE_UIN_DATA, mUin);
                     SyncUtils.addOnFileChangedListener(this);
                 }
@@ -450,7 +453,7 @@ public class ExfriendManager implements SyncUtils.OnFileChangedListener {
                 if (persons == null) {
                     persons = new ConcurrentHashMap<Long, FriendRecord>();
                 }
-                File f = new File(HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getFilesDir().getAbsolutePath() + "/qnotified_" + mUin + ".dat");
+                File f = new File(HostInformationProviderKt.getHostInfo().getApplication().getFilesDir().getAbsolutePath() + "/qnotified_" + mUin + ".dat");
                 if (dirtySerializedFlag) {
                     friendToTable();
                     eventsToTable();
@@ -586,7 +589,7 @@ public class ExfriendManager implements SyncUtils.OnFileChangedListener {
     public void clearUnreadFlag() {
         fileData.getAllConfig().put("unread", 0);
         try {
-            NotificationManager nm = (NotificationManager) HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationManager nm = (NotificationManager) HostInformationProviderKt.getHostInfo().getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
             nm.cancel(ID_EX_NOTIFY);
         } catch (Exception e) {
             log(e);
@@ -692,12 +695,12 @@ public class ExfriendManager implements SyncUtils.OnFileChangedListener {
         saveConfigure();
         try {
             if (isNotifyWhenDeleted() && ((int) ptr[0]) > 0) {
-                Intent inner = new Intent(HostInformationProviderKt.getHostInformationProvider().getApplicationContext(), ExfriendListActivity.class);
+                Intent inner = new Intent(HostInformationProviderKt.getHostInfo().getApplication(), ExfriendListActivity.class);
                 Intent wrapper = new Intent();
-                wrapper.setClassName(HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getPackageName(), ActProxyMgr.STUB_DEFAULT_ACTIVITY);
+                wrapper.setClassName(HostInformationProviderKt.getHostInfo().getApplication().getPackageName(), ActProxyMgr.STUB_DEFAULT_ACTIVITY);
                 wrapper.putExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT, inner);
-                PendingIntent pi = PendingIntent.getActivity(HostInformationProviderKt.getHostInformationProvider().getApplicationContext(), 0, wrapper, 0);
-                NotificationManager nm = (NotificationManager) HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                PendingIntent pi = PendingIntent.getActivity(HostInformationProviderKt.getHostInfo().getApplication(), 0, wrapper, 0);
+                NotificationManager nm = (NotificationManager) HostInformationProviderKt.getHostInfo().getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
                 Notification n = createNotiComp(nm, (String) ptr[1], (String) ptr[2], (String) ptr[3], new long[]{100, 200, 200, 100}, pi);
                 nm.notify(ID_EX_NOTIFY, n);
                 setRedDot();
@@ -712,7 +715,7 @@ public class ExfriendManager implements SyncUtils.OnFileChangedListener {
         return false;
     }
 
-    //TODO: f**k with IPC notify
+    //TODO: IPC notify
     public boolean isNotifyWhenDeleted() {
         return getBooleanOrDefault("qn_notify_when_del", true);
     }
@@ -724,7 +727,7 @@ public class ExfriendManager implements SyncUtils.OnFileChangedListener {
 
     @SuppressWarnings("deprecation")
     public Notification createNotiComp(NotificationManager nm, String ticker, String title, String content, long[] vibration, PendingIntent pi) {
-        Application app = HostInformationProviderKt.getHostInformationProvider().getApplicationContext();
+        Application app = HostInformationProviderKt.getHostInfo().getApplication();
         //Do not use NotificationCompat, NotificationCompat does NOT support setSmallIcon with Bitmap.
         Notification.Builder builder;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -774,13 +777,7 @@ public class ExfriendManager implements SyncUtils.OnFileChangedListener {
     public void timeToUpdateFl() {
         long t = System.currentTimeMillis() / 1000;
         if (t - lastUpdateTimeSec > FL_UPDATE_INT_MIN) {
-            tp.execute(new Runnable() {
-                @Override
-                public void run() {
-                    doRequestFlRefresh();
-                    doTryToUpdateUserStatusFlags();
-                }
-            });
+            tp.execute(this::doRequestFlRefresh);
         }
     }
 
@@ -804,41 +801,4 @@ public class ExfriendManager implements SyncUtils.OnFileChangedListener {
         fileData.putObject(key, val);
     }
 
-    public void doTryToUpdateUserStatusFlags() {
-        try {
-            doUpdateUserStatusFlags();
-        } catch (Exception ignored) {
-        }
-    }
-
-    public GetUserStatusResp doUpdateUserStatusFlags() throws Exception {
-        GetUserStatusResp resp = TransactionHelper.doQueryUserStatus(getUin());
-        putObject(LicenseStatus.qn_auth_uin_white_flags, resp.whitelistFlags);
-        putObject(LicenseStatus.qn_auth_uin_black_flags, resp.blacklistFlags);
-        putObject(LicenseStatus.qn_auth_uin_update_time, System.currentTimeMillis());
-        saveConfigure();
-        ConfigManager cfg = ConfigManager.getDefaultConfig();
-        boolean changed = false;
-        if ((resp.whitelistFlags & UserFlagConst.WF_FUNC_STICKY) != 0) {
-            int old = cfg.getIntOrDefault(LicenseStatus.qn_sticky_white_flags, 0);
-            int curr = old | resp.whitelistFlags;
-            if (curr != old) {
-                changed = true;
-                cfg.putInt(LicenseStatus.qn_sticky_white_flags, curr);
-            }
-        }
-        if ((resp.blacklistFlags & UserFlagConst.BF_FUNC_STICKY) != 0) {
-            int old = cfg.getIntOrDefault(LicenseStatus.qn_sticky_black_flags, 0);
-            int curr = old | resp.blacklistFlags;
-            if (curr != old) {
-                changed = true;
-                cfg.putInt(LicenseStatus.qn_sticky_black_flags, curr);
-            }
-        }
-        LicenseStatus.sDisableCommonHooks = LicenseStatus.isBlacklisted() || LicenseStatus.isSilentGone();
-        if (changed) {
-            cfg.save();
-        }
-        return resp;
-    }
 }

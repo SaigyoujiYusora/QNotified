@@ -1,20 +1,23 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 package nil.nadph.qnotified.activity;
 
@@ -31,51 +34,75 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 
-import androidx.core.text.HtmlCompat;
 import androidx.core.view.ViewCompat;
 
+import cn.lliiooll.hook.AntiMessage;
 import com.rymmmmm.hook.RemoveMiniProgramAd;
 import com.tencent.mobileqq.widget.BounceScrollView;
 
 import java.io.File;
 import java.io.IOException;
 
+import cc.ioctl.activity.ExfriendListActivity;
+import cc.ioctl.activity.FakeBatCfgActivity;
+import cc.ioctl.activity.FriendlistExportActivity;
+import cc.ioctl.activity.JefsRulesActivity;
+import cc.ioctl.hook.$endGiftHook;
+import cc.ioctl.hook.CheatHook;
+import cc.ioctl.hook.DarkOverlayHook;
+import cc.ioctl.hook.FakeBatteryHook;
+import cc.ioctl.hook.FavMoreEmo;
+import cc.ioctl.hook.FileRecvRedirect;
+import cc.ioctl.hook.GagInfoDisclosure;
+import cc.ioctl.hook.InspectMessage;
+import cc.ioctl.hook.JumpController;
+import cc.ioctl.hook.MultiForwardAvatarHook;
+import cc.ioctl.hook.MuteQZoneThumbsUp;
+import cc.ioctl.hook.PreUpgradeHook;
+import cc.ioctl.hook.PttForwardHook;
+import cc.ioctl.hook.RepeaterHook;
+import cc.ioctl.hook.ReplyNoAtHook;
+import cc.ioctl.hook.RevokeMsgHook;
+import cc.ioctl.hook.RoundAvatarHook;
+import cc.ioctl.hook.ShowPicGagHook;
+import ltd.nextalone.hook.AutoReceiveOriginalPhoto;
+import ltd.nextalone.hook.AutoSendOriginalPhoto;
+import ltd.nextalone.hook.ChatWordsCount;
+import ltd.nextalone.hook.SimplifyContactTabs;
 import me.ketal.activity.ModifyLeftSwipeReplyActivity;
+import me.ketal.hook.ChatItemShowQQUin;
+import me.ketal.hook.FakeBalance;
 import me.ketal.hook.LeftSwipeReplyHook;
 import me.ketal.hook.MultiActionHook;
+import me.ketal.hook.QWalletNoAD;
+import me.ketal.hook.QZoneNoAD;
 import me.ketal.hook.SendFavoriteHook;
 import me.ketal.hook.SortAtPanel;
 import me.kyuubiran.hook.AutoMosaicName;
 import me.kyuubiran.hook.ShowSelfMsgByLeft;
+import ltd.nextalone.hook.SimplifyChatLongItem;
+import ltd.nextalone.hook.SimplifyPlusPanel;
+import ltd.nextalone.hook.SimplifyQQSettings;
 import me.singleneuron.activity.ChangeDrawerWidthActivity;
 import me.singleneuron.hook.*;
 import me.singleneuron.hook.decorator.DisableQzoneSlideCamera;
 import me.singleneuron.hook.decorator.SimpleReceiptMessage;
 import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import me.singleneuron.util.KotlinUtilsKt;
-import nil.nadph.qnotified.ExfriendManager;
 import nil.nadph.qnotified.MainHook;
 import nil.nadph.qnotified.R;
 import nil.nadph.qnotified.config.ConfigItems;
 import nil.nadph.qnotified.config.ConfigManager;
-import nil.nadph.qnotified.dialog.RepeaterIconSettingDialog;
-import nil.nadph.qnotified.dialog.RikkaDialog;
-import nil.nadph.qnotified.hook.*;
-import nil.nadph.qnotified.util.Initiator;
+import cc.ioctl.dialog.RepeaterIconSettingDialog;
+import cc.ioctl.dialog.RikkaDialog;
 import nil.nadph.qnotified.ui.CustomDialog;
 import nil.nadph.qnotified.ui.HighContrastBorder;
 import nil.nadph.qnotified.ui.ResUtils;
-import nil.nadph.qnotified.util.LicenseStatus;
-import nil.nadph.qnotified.util.NewsHelper;
-import nil.nadph.qnotified.util.Toasts;
-import nil.nadph.qnotified.util.UpdateCheck;
-import nil.nadph.qnotified.util.Utils;
+import nil.nadph.qnotified.util.*;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY;
 import static me.singleneuron.util.KotlinUtilsKt.addViewConditionally;
-import static me.singleneuron.util.QQVersion.QQ_8_2_0;
 import static me.singleneuron.util.QQVersion.QQ_8_2_6;
 import static nil.nadph.qnotified.ui.ViewBuilder.*;
 import static nil.nadph.qnotified.util.Utils.*;
@@ -86,12 +113,12 @@ public class SettingsActivity extends IphoneTitleBarActivityCompat implements Ru
     private static final int R_ID_BTN_FILE_RECV = 0x300AFF91;
     private static final String qn_enable_fancy_rgb = "qn_enable_fancy_rgb";
 
-    private TextView __tv_muted_atall, __tv_muted_redpacket, __tv_fake_bat_status, __recv_status, __recv_desc, __jmp_ctl_cnt;
+    private TextView __tv_fake_bat_status, __recv_status, __recv_desc, __jmp_ctl_cnt;
 
     @Override
     public boolean doOnCreate(Bundle bundle) {
         super.doOnCreate(bundle);
-        String _hostName = HostInformationProviderKt.getHostInformationProvider().getHostName();
+        String _hostName = HostInformationProviderKt.getHostInfo().getHostName();
         LinearLayout ll = new LinearLayout(this);
         ll.setId(R.id.rootMainLayout);
         ll.setOrientation(LinearLayout.VERTICAL);
@@ -126,12 +153,10 @@ public class SettingsActivity extends IphoneTitleBarActivityCompat implements Ru
         if (LicenseStatus.isAsserted()) {
             ll.addView(newListItemButton(this, "狐狸狸测试功能", "不管你是什么人都别动这里的东西", null, clickToProxyActAction(AlphaTestFuncActivity.class)));
         }
-        if (!LicenseStatus.hasBlackFlags()) {
-            ll.addView(newListItemButton(this, "Beta测试性功能", "仅用于测试稳定性", null, clickToProxyActAction(BetaTestFuncActivity.class)));
-            ll.addView(newListItemButton(this, "Omega测试性功能", "这是个不存在的功能", null, v -> KotlinUtilsKt.showEulaDialog(SettingsActivity.this)));
-        }
+        ll.addView(newListItemButton(this, "Beta测试性功能", "仅用于测试稳定性", null, clickToProxyActAction(BetaTestFuncActivity.class)));
+        ll.addView(newListItemButton(this, "Omega测试性功能", "这是个不存在的功能", null, v -> KotlinUtilsKt.showEulaDialog(SettingsActivity.this)));
         ll.addView(subtitle(this, "基本功能"));
-        if (!HostInformationProviderKt.getHostInformationProvider().isTim() && HostInformationProviderKt.getHostInformationProvider().getVersionCode() >= QQ_8_2_6) {
+        if (HostInformationProviderKt.requireMinQQVersion(QQ_8_2_6)) {
             ll.addView(_t = newListItemButton(this, "自定义电量", "[QQ>=8.2.6]在线模式为我的电量时生效", "N/A", clickToProxyActAction(FakeBatCfgActivity.class)));
             __tv_fake_bat_status = _t.findViewById(R_ID_VALUE);
         }
@@ -165,23 +190,13 @@ public class SettingsActivity extends IphoneTitleBarActivityCompat implements Ru
         ll.addView(newListItemHookSwitchInit(this, " +1", "不是复读机", RepeaterHook.get()));
         ll.addView(newListItemButton(this, "自定义+1图标", null, null, RepeaterIconSettingDialog.OnClickListener_createDialog(this)));
         ll.addView(subtitle(this, "净化设置"));
-        if (ReplyNoAtHook.get().isValid()) {
-            ll.addView(newListItemHookSwitchInit(this, "禁止回复自动@", "去除回复消息时自动@特性", ReplyNoAtHook.get()));
-        }
+        ll.addView(newListItemConfigSwitchIfValid(this, "禁止回复自动@", "去除回复消息时自动@特性", ReplyNoAtHook.get()));
         ll.addView(newListItemHookSwitchInit(this, "禁用$打开送礼界面", "禁止聊天时输入$自动弹出[选择赠送对象]窗口", $endGiftHook.get()));
         ll.addView(subtitle(this, "消息通知设置(不影响接收消息)屏蔽后可能仍有[橙字],但通知栏不会有通知,赞说说不提醒仅屏蔽通知栏的通知"));
         ll.addView(subtitle(this, "    注:屏蔽后可能仍有[橙字],但不会有通知"));
-        ll.addView(_t = newListItemButton(this, "屏蔽指定群@全体成员通知", HtmlCompat.fromHtml("<font color='"
-                + get_RGB(hiColor.getDefaultColor()) + "'>[@全体成员]</font>就这点破事", FROM_HTML_MODE_LEGACY), "%d个群",
-            v -> TroopSelectActivity.startToSelectTroopsAndSaveToExfMgr(SettingsActivity.this, ConfigItems.qn_muted_at_all, "屏蔽@全体成员")));
-        __tv_muted_atall = _t.findViewById(R_ID_VALUE);
-        ll.addView(_t = newListItemButton(this, "屏蔽指定群的红包通知", HtmlCompat.fromHtml("<font color='"
-                + get_RGB(hiColor.getDefaultColor()) + "'>[QQ红包][有红包]</font>恭喜发财", FROM_HTML_MODE_LEGACY), "%d个群",
-            v -> TroopSelectActivity.startToSelectTroopsAndSaveToExfMgr(SettingsActivity.this, ConfigItems.qn_muted_red_packet, "屏蔽群红包")));
-        __tv_muted_redpacket = _t.findViewById(R_ID_VALUE);
         ll.addView(newListItemHookSwitchInit(this, "被赞说说不提醒", "不影响评论,转发或击掌的通知", MuteQZoneThumbsUp.get()));
         ll.addView(newListItemHookSwitchInit(this, "转发消息点头像查看详细信息", "仅限合并转发的消息", MultiForwardAvatarHook.get()));
-        if (!HostInformationProviderKt.getHostInformationProvider().isTim()) {
+        if (!HostInformationProviderKt.getHostInfo().isTim()) {
             ll.addView(subtitle(this, "图片相关"));
             ll.addView(newListItemHookSwitchInit(this, "禁止秀图自动展示", null, ShowPicGagHook.get()));
             ll.addView(newListItemHookSwitchInit(this, "禁用夜间模式遮罩", "移除夜间模式下聊天界面的深色遮罩", DarkOverlayHook.get()));
@@ -199,33 +214,36 @@ public class SettingsActivity extends IphoneTitleBarActivityCompat implements Ru
         ll.addView(newListItemHookSwitchInit(this, "屏蔽小程序广告", "需要手动关闭广告, 请勿反馈此功能无效", RemoveMiniProgramAd.get()));
         ll.addView(newListItemHookSwitchInit(this, "昵称/群名字打码", "娱乐功能 不进行维护", AutoMosaicName.INSTANCE));
         ll.addView(newListItemHookSwitchInit(this, "自己的消息和头像居左显示", "娱乐功能 不进行维护", ShowSelfMsgByLeft.INSTANCE));
-        if (HostInformationProviderKt.getHostInformationProvider().getVersionCode() < QQ_8_2_0) {
-            ll.addView(newListItemHookSwitchInit(this, "收藏更多表情", "[暂不支持>=8.2.0]保存在本地", FavMoreEmo.get()));
-        }
+        ll.addView(newListItemConfigSwitchIfValid(this, "收藏更多表情", "[暂不支持>=8.2.0]保存在本地", FavMoreEmo.get()));
         ll.addView(newListItemHookSwitchInit(this, "屏蔽更新提醒", null, PreUpgradeHook.get()));
         ll.addView(newListItemHookSwitchInit(this, "检查消息", "暂时有点用（聊天界面长按+号后点击头像）", InspectMessage.get()));
-        if (!HostInformationProviderKt.getHostInformationProvider().isTim()) {
+        if (!HostInformationProviderKt.getHostInfo().isTim()) {
             ll.addView(newListItemHookSwitchInit(this, "自定义猜拳骰子", null, CheatHook.get()));
             ll.addView(newListItemHookSwitchInit(this, "简洁模式圆头像", "From Rikka", RoundAvatarHook.get()));
         }
-        ll.addView(newListItemHookSwitchInit(this, "新版简洁模式圆头像", "From Rikka, 支持8.3.6及更高，重启后生效", NewRoundHead.INSTANCE));
+        ll.addView(newListItemSwitchConfigNext(this, "新版简洁模式圆头像", "From Rikka, 支持8.3.6及更高，重启后生效", NewRoundHead.INSTANCE));
         ll.addView(newListItemHookSwitchInit(this, "强制使用系统相机", "仅能录像，支持8.3.6及更高", ForceSystemCamera.INSTANCE));
         addViewConditionally(ll, this, "强制使用系统相册", "支持8.3.6及更高", ForceSystemAlbum.INSTANCE);
         ll.addView(newListItemHookSwitchInit(this, "强制使用系统文件", "支持8.3.6及更高", ForceSystemFile.INSTANCE));
         ll.addView(newListItemButton(this, "修改侧滑边距", "感谢祈无，支持8.4.1及更高，重启后生效", "", clickToProxyActAction(ChangeDrawerWidthActivity.class)));
         ll.addView(newListItemHookSwitchInit(this, "屏蔽QQ空间滑动相机", null, DisableQzoneSlideCamera.INSTANCE));
         ll.addView(newListItemHookSwitchInit(this, "回执消息文本化", null, SimpleReceiptMessage.INSTANCE));
+        ll.addView(newListItemButtonIfValid(this, "静默指定类型消息通知", null, null, AntiMessage.INSTANCE));
+        ll.addView(newListItemButtonIfValid(this, "聊天字数统计", null, null, ChatWordsCount.INSTANCE, v -> ChatWordsCount.INSTANCE.showChatWordsCountDialog(this)));
+        ll.addView(newListItemButtonIfValid(this, "精简聊天气泡长按菜单", null, null, SimplifyChatLongItem.INSTANCE, SimplifyChatLongItem.INSTANCE.listener()));
+        ll.addView(newListItemButtonIfValid(this, "精简加号菜单", null, null, SimplifyPlusPanel.INSTANCE));
+        ll.addView(newListItemButtonIfValid(this, "精简设置菜单", null, null, SimplifyQQSettings.INSTANCE));
+        ll.addView(newListItemButtonIfValid(this, "精简联系人页面", null, null, SimplifyContactTabs.INSTANCE));
+        ll.addView(newListItemHookSwitchInit(this, "聊天自动发送原图", null, AutoSendOriginalPhoto.INSTANCE));
+        ll.addView(newListItemConfigSwitchIfValid(this, "聊天自动接收原图", null, AutoReceiveOriginalPhoto.INSTANCE));
         ll.addView(newListItemHookSwitchInit(this, "批量撤回消息", "多选消息后撤回", MultiActionHook.INSTANCE));
-        if (LeftSwipeReplyHook.INSTANCE.isValid()) {
-            ll.addView(newListItemButton(this, "修改消息左滑动作", "", null, clickToProxyActAction(ModifyLeftSwipeReplyActivity.class)));
-        }
-        if (SortAtPanel.INSTANCE.isValid()) {
-            ll.addView(newListItemHookSwitchInit(this, "修改@界面排序", "排序由群主管理员至正常人员", SortAtPanel.INSTANCE));
-        }
-        if (SendFavoriteHook.INSTANCE.isValid()) {
-            ll.addView(newListItemHookSwitchInit(this, "发送收藏消息添加分组", "", SendFavoriteHook.INSTANCE));
-        }
-
+        ll.addView(newListItemButtonIfValid(this, "修改消息左滑动作", null, null, LeftSwipeReplyHook.INSTANCE, ModifyLeftSwipeReplyActivity.class));
+        ll.addView(newListItemConfigSwitchIfValid(this, "修改@界面排序", "排序由群主管理员至正常人员", SortAtPanel.INSTANCE));
+        ll.addView(newListItemConfigSwitchIfValid(this, "发送收藏消息添加分组", null, SendFavoriteHook.INSTANCE));
+        ll.addView(newListItemConfigSwitchIfValid(this, "隐藏空间好友热播和广告", null, QZoneNoAD.INSTANCE));
+        ll.addView(newListItemConfigSwitchIfValid(this, "隐藏QQ钱包超值精选", null, QWalletNoAD.INSTANCE));
+        ll.addView(newListItemButton(this, "自定义钱包余额", "仅供娱乐", null, FakeBalance.INSTANCE.listener()));
+        ll.addView(newListItemConfigSwitchIfValid(this, "消息显示发送者QQ号和时间", null, ChatItemShowQQUin.INSTANCE));
         ll.addView(subtitle(this, "好友列表"));
         ll.addView(newListItemButton(this, "打开资料卡", "打开指定用户的资料卡", null, new View.OnClickListener() {
             @Override
@@ -272,7 +290,7 @@ public class SettingsActivity extends IphoneTitleBarActivityCompat implements Ru
         ll.addView(newListItemButton(this, "历史好友", null, null, clickToProxyActAction(ExfriendListActivity.class)));
         ll.addView(newListItemButton(this, "导出历史好友列表", "支持csv/json格式", null, clickToProxyActAction(FriendlistExportActivity.class)));
         ll.addView(newListItemConfigSwitchIfValid(this, "被删好友通知", "检测到你被好友删除后发出通知", ConfigItems.qn_notify_when_del));
-        if (!HostInformationProviderKt.getHostInformationProvider().isTim()) {
+        if (!HostInformationProviderKt.getHostInfo().isTim()) {
             ll.addView(newListItemSwitchConfigNext(this, "隐藏分组下方入口", "隐藏分组列表最下方的历史好友按钮", ConfigItems.qn_hide_ex_entry_group, false));
         }
         ll.addView(newListItemSwitchConfigNext(this, "禁用" + _hostName + "热补丁", "一般无需开启", ConfigItems.qn_disable_hot_patch));
@@ -290,7 +308,7 @@ public class SettingsActivity extends IphoneTitleBarActivityCompat implements Ru
         __jmp_ctl_cnt = _t.findViewById(R_ID_VALUE);
         ll.addView(newListItemSwitchStub(this, "禁用特别关心长震动", "他女朋友都没了他也没开发这个功能", false));
         ll.addView(subtitle(this, "关于"));
-        ll.addView(newListItemDummy(this, HostInformationProviderKt.getHostInformationProvider().getHostName(), null, HostInformationProviderKt.getHostInformationProvider().getVersionName() + "(" + HostInformationProviderKt.getHostInformationProvider().getVersionCode() + ")"));
+        ll.addView(newListItemDummy(this, HostInformationProviderKt.getHostInfo().getHostName(), null, HostInformationProviderKt.getHostInfo().getVersionName() + "(" + HostInformationProviderKt.getHostInfo().getVersionCode() + ")"));
         ll.addView(newListItemDummy(this, "模块版本", null, Utils.QN_VERSION_NAME));
         UpdateCheck uc = new UpdateCheck();
         ll.addView(_t = newListItemButton(this, "检查更新", null, "点击检查", uc));
@@ -320,15 +338,28 @@ public class SettingsActivity extends IphoneTitleBarActivityCompat implements Ru
             getString(R.string.res_inject_success);
         } catch (Resources.NotFoundException e) {
             CustomDialog.createFailsafe(this).setTitle("FATAL Exception").setCancelable(true).setPositiveButton(getString(android.R.string.yes), null)
-                    .setNeutralButton("重启" + HostInformationProviderKt.getHostInformationProvider().getHostName(), (dialog, which) -> {
-                        try {
-                            android.os.Process.killProcess(android.os.Process.myPid());
-                        } catch (Throwable e1) {
-                            log(e1);
-                        }
-                    })
-                    .setMessage("Resources injection failure!\nApplication may misbehave.\n" + e.toString()
-                            + "\n如果您刚刚更新了插件, 您可能需要重启" + HostInformationProviderKt.getHostInformationProvider().getHostName() + "(太/无极阴,应用转生,天鉴等虚拟框架)或者重启手机(EdXp, Xposed, 太极阳), 如果重启手机后问题仍然存在, 请向作者反馈, 并提供详细日志").show();
+                .setNeutralButton("重启" + HostInformationProviderKt.getHostInfo().getHostName(), (dialog, which) -> {
+                    try {
+                        android.os.Process.killProcess(android.os.Process.myPid());
+                    } catch (Throwable e1) {
+                        log(e1);
+                    }
+                })
+                .setMessage("Resources injection failure!\nApplication may misbehave.\n" + e.toString()
+                    + "\n如果您刚刚更新了插件, 您可能需要重启" + HostInformationProviderKt.getHostInfo().getHostName() + "(太/无极阴,应用转生,天鉴等虚拟框架)或者重启手机(EdXp, Xposed, 太极阳), 如果重启手机后问题仍然存在, 请向作者反馈, 并提供详细日志").show();
+        }
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        if (HostInformationProviderKt.getHostInfo().isPlayQQ() && !cfg.getBooleanOrFalse("isShowPlayQQTip")) {
+            CustomDialog.createFailsafe(this).setTitle("警告")
+                .setPositiveButton("我已了解后果并愿意继续使用", (dialog, which) -> {
+                    cfg.putBoolean("isShowPlayQQTip", true);
+                    try {
+                        cfg.save();
+                    } catch (IOException ignored) {
+                    }
+                })
+                .setMessage("你正在使用Play版QQ，该版本QQ版本号与国内版有很大区别，QNotified的部分功能的版本适配依赖软件版本号，可能会出现预想不到的情况，且任何play版本都未进行测试。").show();
+
         }
         return true;
     }
@@ -339,14 +370,6 @@ public class SettingsActivity extends IphoneTitleBarActivityCompat implements Ru
         super.doOnResume();
         ConfigManager cfg = ConfigManager.getDefaultConfig();//改这里的话可能会引发其他问题，所以只把红包和全体改了
         rgbEnabled = cfg.getBooleanOrFalse(qn_enable_fancy_rgb);
-        String str = ExfriendManager.getCurrent().getConfig().getString(ConfigItems.qn_muted_at_all);
-        int n = 0;
-        if (str != null && str.length() > 4) n = str.split(",").length;
-        __tv_muted_atall.setText(n + "个群");
-        str = ExfriendManager.getCurrent().getConfig().getString(ConfigItems.qn_muted_red_packet);
-        n = 0;
-        if (str != null && str.length() > 4) n = str.split(",").length;
-        __tv_muted_redpacket.setText(n + "个群");
         if (__tv_fake_bat_status != null) {
             FakeBatteryHook bat = FakeBatteryHook.get();
             if (bat.isEnabled()) {
@@ -529,8 +552,8 @@ public class SettingsActivity extends IphoneTitleBarActivityCompat implements Ru
                     recv.setEnabled(false);
                     updateRecvRedirectStatus();
                 }
-                })
-                .create();
+            })
+            .create();
         alertDialog.show();
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override

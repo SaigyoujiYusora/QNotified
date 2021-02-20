@@ -1,20 +1,23 @@
-/* QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2021 xenonhydride@gmail.com
+/*
+ * QNotified - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2021 dmca@ioctl.cc
  * https://github.com/ferredoxin/QNotified
  *
- * This software is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
+ * version 3 of the License, or any later version and our eula as published
+ * by ferredoxin.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
 package com.rymmmmm.hook;
 
@@ -31,7 +34,7 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
-import nil.nadph.qnotified.dialog.RikkaBaseApkFormatDialog;
+import cc.ioctl.dialog.RikkaBaseApkFormatDialog;
 import nil.nadph.qnotified.hook.CommonDelayableHook;
 import nil.nadph.qnotified.util.Initiator;
 import nil.nadph.qnotified.util.LicenseStatus;
@@ -67,7 +70,7 @@ public class BaseApk extends CommonDelayableHook {
                                 Field localFile = XposedHelpers.findField(_ItemManagerClz, "LocalFile");
                                 Field fileName = XposedHelpers.findField(_ItemManagerClz, "FileName");
                                 if (fileName.get(item).equals("base.apk")) {
-                                    PackageManager packageManager = HostInformationProviderKt.getHostInformationProvider().getApplicationContext().getPackageManager();
+                                    PackageManager packageManager = HostInformationProviderKt.getHostInfo().getApplication().getPackageManager();
                                     PackageInfo packageArchiveInfo = packageManager.getPackageArchiveInfo((String) localFile.get(item), PackageManager.GET_ACTIVITIES);
                                     ApplicationInfo applicationInfo = packageArchiveInfo.applicationInfo;
                                     applicationInfo.sourceDir = (String) localFile.get(item);
@@ -78,7 +81,7 @@ public class BaseApk extends CommonDelayableHook {
                                                 .replace("%n", applicationInfo.loadLabel(packageManager).toString())
                                                 .replace("%p", applicationInfo.packageName)
                                                 .replace("%v", packageArchiveInfo.versionName)
-                                                .replace("%c", String.valueOf(HostInformationProviderKt.getHostInformationProvider().getApplicationContext()));
+                                                .replace("%c", String.valueOf(HostInformationProviderKt.getHostInfo().getApplication()));
                                         fileName.set(item, result);
                                     }
                                 }
