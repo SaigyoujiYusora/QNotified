@@ -35,8 +35,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.tencent.mobileqq.app.QQAppInterface;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -48,6 +46,8 @@ import de.robv.android.xposed.XposedBridge;
 import me.singleneuron.hook.CopyCardMsg;
 import cc.ioctl.activity.ChatTailActivity;
 import cc.ioctl.dialog.RikkaCustomMsgTimeFormatDialog;
+import mqq.app.AppRuntime;
+import nil.nadph.qnotified.base.annotation.FunctionEntry;
 import nil.nadph.qnotified.hook.CommonDelayableHook;
 import nil.nadph.qnotified.util.Initiator;
 import nil.nadph.qnotified.step.DexDeobfStep;
@@ -61,7 +61,7 @@ import static nil.nadph.qnotified.util.Initiator.load;
 import static nil.nadph.qnotified.util.ReflexUtil.*;
 import static nil.nadph.qnotified.util.Utils.*;
 
-
+@FunctionEntry
 public class InputButtonHook extends CommonDelayableHook {
     public static final int R_ID_COPY_CODE = 0x00EE77CC;
     private static final InputButtonHook self = new InputButtonHook();
@@ -101,7 +101,7 @@ public class InputButtonHook extends CommonDelayableHook {
                         Context ctx = aioRootView.getContext();
                         int fun_btn = ctx.getResources().getIdentifier("fun_btn", "id", ctx.getPackageName());
                         View sendBtn = aioRootView.findViewById(fun_btn);
-                        final QQAppInterface qqApp = getFirstNSFByType(param.thisObject, QQAppInterface.class);
+                        final AppRuntime qqApp = getFirstNSFByType(param.thisObject, Initiator._QQAppInterface());
                         final Parcelable session = getFirstNSFByType(param.thisObject, _SessionInfo());
                         if (!sendBtn.getParent().getClass().getName().equals(InterceptLayout.class.getName())) {
                             InterceptLayout layout = InterceptLayout.setupRudely(sendBtn);

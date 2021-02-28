@@ -33,17 +33,15 @@ import nil.nadph.qnotified.ui.CustomDialog
 import nil.nadph.qnotified.util.Toasts
 import nil.nadph.qnotified.util.Utils
 
-abstract class MultiItemDelayableHook constructor(keyName: String, val listenerTitle: String) : CommonDelayableHook("__NOT_USED__") {
+abstract class MultiItemDelayableHook constructor(keyName: String) : CommonDelayableHook("__NOT_USED__") {
     private val itemsConfigKeys = keyName
     abstract val allItems: List<String>
     abstract val defaultItems: String
     internal var activeItems
         get() = ConfigManager.getDefaultConfig().getStringOrDefault(itemsConfigKeys, defaultItems).split("|").toMutableList()
         set(value) {
-            var ret = ""
-            for (item in value)
-                ret += "|$item"
-            putValue(itemsConfigKeys, if (ret.isEmpty()) ret else ret.substring(1))
+            val ret = value.joinToString("|")
+            putValue(itemsConfigKeys, ret)
         }
 
     open fun listener() = View.OnClickListener {
@@ -51,7 +49,7 @@ abstract class MultiItemDelayableHook constructor(keyName: String, val listenerT
             val cache = activeItems.toMutableList()
             val ctx = it.context
             AlertDialog.Builder(ctx, CustomDialog.themeIdForDialog())
-                .setTitle("选择要${listenerTitle}的条目")
+                .setTitle("选择要精简的条目")
                 .setMultiChoiceItems(allItems.toTypedArray(), getBoolAry()) { _: DialogInterface, i: Int, _: Boolean ->
                     val item = allItems[i]
                     if (!cache.contains(item)) cache.add(item)
@@ -69,7 +67,7 @@ abstract class MultiItemDelayableHook constructor(keyName: String, val listenerT
 
     override fun initOnce() = true
 
-    override fun isEnabled(): Boolean = activeItems.isNotEmpty()
+    override fun isEnabled(): Boolean = activeItems.isNotEmpty() && isValid
 
     internal open fun getBoolAry(): BooleanArray {
         val ret = BooleanArray(allItems.size)

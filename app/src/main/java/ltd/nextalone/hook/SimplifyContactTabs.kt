@@ -25,12 +25,13 @@ import ltd.nextalone.base.MultiItemDelayableHook
 import ltd.nextalone.util.*
 import me.singleneuron.qn_kernel.data.requireMinQQVersion
 import me.singleneuron.util.QQVersion
+import nil.nadph.qnotified.base.annotation.FunctionEntry
 import nil.nadph.qnotified.util.Utils
 
-
-object SimplifyContactTabs : MultiItemDelayableHook("na_simplify_contact_tabs_kt", "保留") {
+@FunctionEntry
+object SimplifyContactTabs : MultiItemDelayableHook("na_simplify_contact_tabs_multi") {
     override val allItems = "好友|分组|群聊|设备|通讯录|订阅号".split("|").toMutableList()
-    override val defaultItems = "好友|分组|群聊|设备|通讯录|订阅号"
+    override val defaultItems = ""
 
     override fun initOnce(): Boolean {
         return try {
@@ -43,13 +44,13 @@ object SimplifyContactTabs : MultiItemDelayableHook("na_simplify_contact_tabs_kt
                 val cls = "com.tencent.mobileqq.activity.contacts.base.tabs.TabInfo".clazz
                 tabList.forEach { obj ->
                     val str = obj.get("f") as String
-                    if (str == "好友" && activeItems.contains(str)) {
+                    if (str == "好友" && !activeItems.contains(str)) {
                         val id = obj.get("d") as Int
                         logAfter("obj:${obj.javaClass},id:$id,str:$str")
                         list.add(obj)
                         stringList.add(str)
                         intList.add(id)
-                    } else if (activeItems.contains(str)) {
+                    } else if (!activeItems.contains(str)) {
                         val id = obj.get("d") as Int
                         val instance = cls.instance(allItems.indexOf(str), id, str)
                         logAfter("obj:${obj.javaClass},id:$id,str:$str")
@@ -69,6 +70,4 @@ object SimplifyContactTabs : MultiItemDelayableHook("na_simplify_contact_tabs_kt
     }
 
     override fun isValid() = requireMinQQVersion(QQVersion.QQ_8_5_5)
-
-    override fun isEnabled() = isValid && activeItems.size != allItems.size
 }

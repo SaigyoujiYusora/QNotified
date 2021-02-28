@@ -28,11 +28,13 @@ import ltd.nextalone.util.method
 import me.singleneuron.qn_kernel.data.hostInfo
 import me.singleneuron.qn_kernel.data.requireMinQQVersion
 import me.singleneuron.util.QQVersion
+import nil.nadph.qnotified.base.annotation.FunctionEntry
 import nil.nadph.qnotified.util.Utils
 
-object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel", "保留") {
-    override val allItems = "图片|拍摄|语音通话|视频通话|一起派对|戳一戳|视频包厢|红包|位置|文件|一起听歌|分享屏幕|收藏|热图|一起玩|涂鸦|转账|名片|送礼物|腾讯文档|厘米秀|一起K歌|礼物|直播间|签到|匿名|群课堂|健康收集|一起看|投票|收钱|坦白说".split("|").toMutableList()
-    override val defaultItems = "图片|拍摄|语音通话|视频通话|一起派对|戳一戳|视频包厢|红包|位置|文件|一起听歌|分享屏幕|收藏|热图|一起玩|涂鸦|转账|名片|送礼物|腾讯文档|厘米秀|一起K歌|礼物|直播间|签到|匿名|群课堂|健康收集|一起看|投票|收钱|坦白说"
+@FunctionEntry
+object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi") {
+    override val allItems = "图片|拍摄|语音通话|视频通话|一起派对|戳一戳|视频包厢|红包|位置|文件|一起听歌|分享屏幕|收藏|热图|一起玩|涂鸦|转账|名片|送礼物|腾讯文档|厘米秀|一起K歌|礼物|直播间|签到|匿名|群课堂|健康收集|一起看|投票|收钱|坦白说|超级粉丝团".split("|").toMutableList()
+    override val defaultItems = ""
 
     override fun initOnce() = try {
         val callback: (XC_MethodHook.MethodHookParam) -> Unit = {
@@ -41,31 +43,50 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel", "保
                 val item = list.next()
                 if (item != null) {
                     val str = (item.javaClass.getDeclaredField("a").get(item) as String).toString()
-                    if (activeItems.all { string ->
-                            string !in str
+                    if (activeItems.any { string ->
+                            string.isNotEmpty() && string in str
                         }) {
                         list.remove()
                     }
                 }
             }
         }
-        if (hostInfo.versionCode >= QQVersion.QQ_8_5_5) {
-            "Lcom/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder;->a(Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/aio/coreui/pluspanel/PanelAdapter;Lcom/tencent/mobileqq/emoticonview/EmoticonPagerRadioGroup;)V".method.hookBefore(this, callback)
-            "Lcom/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder;->b(Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/aio/coreui/pluspanel/PanelAdapter;Lcom/tencent/mobileqq/emoticonview/EmoticonPagerRadioGroup;)V".method.hookBefore(this, callback)
-        } else if (hostInfo.versionCode == QQVersion.QQ_8_5_0) {
-            "Lcom/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder;->a(Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/aio/PanelAdapter;Lcom/tencent/mobileqq/emoticonview/EmoticonPagerRadioGroup;)V".method.hookBefore(this, callback)
-            "Lcom/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder;->b(Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/aio/PanelAdapter;Lcom/tencent/mobileqq/emoticonview/EmoticonPagerRadioGroup;)V".method.hookBefore(this, callback)
-        } else {
-            "Lcom/tencent/mobileqq/activity/aio/PlusPanel;->a(Ljava/util/ArrayList;)V".method.hookBefore(this, callback)
-            "Lcom/tencent/mobileqq/activity/aio/PlusPanel;->b(Ljava/util/ArrayList;)V".method.hookBefore(this, callback)
+        val callback2: (XC_MethodHook.MethodHookParam) -> Unit = {
+            val list = (it.args[0] as MutableList<*>).listIterator()
+            while (list.hasNext()) {
+                val item = list.next()
+                if (item != null) {
+                    val str = (item.javaClass.getDeclaredField("name").get(item) as String).toString()
+                    if (activeItems.any { string ->
+                            string.isNotEmpty() && string in str
+                        }) {
+                        list.remove()
+                    }
+                }
+            }
+        }
+        when {
+            hostInfo.versionCode >= QQVersion.QQ_8_5_5 -> {
+                "Lcom/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder;->a(Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/aio/coreui/pluspanel/PanelAdapter;Lcom/tencent/mobileqq/emoticonview/EmoticonPagerRadioGroup;)V".method.hookBefore(this, callback)
+                "Lcom/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder;->b(Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/aio/coreui/pluspanel/PanelAdapter;Lcom/tencent/mobileqq/emoticonview/EmoticonPagerRadioGroup;)V".method.hookBefore(this, callback)
+            }
+            hostInfo.versionCode == QQVersion.QQ_8_5_0 -> {
+                "Lcom/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder;->a(Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/aio/PanelAdapter;Lcom/tencent/mobileqq/emoticonview/EmoticonPagerRadioGroup;)V".method.hookBefore(this, callback)
+                "Lcom/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder;->b(Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/aio/PanelAdapter;Lcom/tencent/mobileqq/emoticonview/EmoticonPagerRadioGroup;)V".method.hookBefore(this, callback)
+            }
+            hostInfo.versionCode >= QQVersion.QQ_8_4_8 -> {
+                "Lcom/tencent/mobileqq/activity/aio/PlusPanel;->a(Ljava/util/ArrayList;)V".method.hookBefore(this, callback)
+                "Lcom/tencent/mobileqq/activity/aio/PlusPanel;->b(Ljava/util/ArrayList;)V".method.hookBefore(this, callback)
+            }
+            else -> {
+                "Lcom/tencent/mobileqq/activity/aio/PlusPanel;->a(Ljava/util/List;)V".method.hookBefore(this, callback2)
+            }
         }
         true
     } catch (t: Throwable) {
         Utils.log(t)
         false
     }
-
-    override fun isEnabled() = isValid && activeItems.size != allItems.size
 
     override fun isValid() = requireMinQQVersion(QQVersion.QQ_8_0_0)
 }

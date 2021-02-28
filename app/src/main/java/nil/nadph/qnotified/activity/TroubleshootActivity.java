@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 
 import cc.ioctl.activity.ExfriendListActivity;
+import cc.ioctl.hook.InspectMessage;
 import ltd.nextalone.hook.EnableQLog;
 import me.singleneuron.activity.BugReportActivity;
 import me.singleneuron.activity.DatabaseTestActivity;
@@ -59,6 +60,7 @@ import me.singleneuron.hook.DebugDump;
 import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import me.singleneuron.qn_kernel.tlb.ConfigTable;
 import me.singleneuron.util.KotlinUtilsKt;
+import nil.nadph.qnotified.BuildConfig;
 import nil.nadph.qnotified.ExfriendManager;
 import nil.nadph.qnotified.R;
 import nil.nadph.qnotified.config.ConfigManager;
@@ -116,6 +118,7 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
         ll.addView(subtitle(this, "以下内容基本上都没用，它们为了修复故障才留在这里。"));
         ll.addView(subtitle(this, "测试"));
         ll.addView(newListItemHookSwitchInit(this, "堆栈转储", "没事别开", DebugDump.INSTANCE));
+        ll.addView(newListItemHookSwitchInit(this, "检查消息",  null, InspectMessage.get()));
         ll.addView(newListItemHookSwitchInit(this, "开启QQ日志", "前缀NAdump", EnableQLog.INSTANCE));
         ll.addView(newListItemButton(this, "强制重新生成日志历史记录", null, null, new View.OnClickListener() {
             final String LAST_TRACE_HASHCODE_CONFIG = "lastTraceHashcode";
@@ -165,6 +168,20 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                 }
             }
         }));
+        if (Initiator.load("com.tencent.mobileqq.debug.DebugActivity") != null) {
+            ll.addView(newListItemButton(this, "打开 DebugActivity", null, null, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        Class<?> browser = Class.forName("com.tencent.mobileqq.debug.DebugActivity");
+                        Intent intent = new Intent(TroubleshootActivity.this, browser);
+                        startActivity(intent);
+                    } catch (Throwable e) {
+                        Toast.makeText(TroubleshootActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }));
+        }
         ll.addView(newListItemButton(this, "退出 Looper", "没事别按", null, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -234,16 +251,18 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                     nm.notify(ExfriendManager.ID_EX_NOTIFY, n);
                 } catch (Throwable e) {
                     CustomDialog.createFailsafe(TroubleshootActivity.this).setCancelable(true).setPositiveButton(getString(android.R.string.ok), null)
-                            .setTitle(getShort$Name(e)).setMessage(Log.getStackTraceString(e)).show();
+                        .setTitle(getShort$Name(e)).setMessage(Log.getStackTraceString(e)).show();
                 }
             }
         }));
-        ll.addView(newListItemButton(this,"测试数据库","",null,clickToProxyActAction(DatabaseTestActivity.class)));
-
+        ll.addView(newListItemButton(this, "测试数据库", null, null, clickToProxyActAction(DatabaseTestActivity.class)));
+        if (BuildConfig.DEBUG) {
+            ll.addView(newListItemButton(this, "新界面", null, null, clickToProxyActAction(MainActivity.class)));
+        }
 
         ll.addView(subtitle(this, ""));
 
-        ll.addView(subtitle(this, "反混淆信息"));
+        ll.addView(subtitle(this, "反混淆信息", ResUtils.skin_black.getDefaultColor()));
         for (int i = 1; i <= DexKit.DEOBF_NUM_C; i++) {
             try {
                 String tag = DexKit.a(i);
@@ -259,9 +278,9 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                     Class<?> c = DexKit.loadClassFromCache(i);
                     if (c != null) currName = c.getName();
                 }
-                ll.addView(subtitle(this, "  [" + i + "]" + shortName + "\n" + orig + "\n= " + currName));
+                ll.addView(subtitle(this, "  [" + i + "]" + shortName + "\n" + orig + "\n= " + currName, ResUtils.skin_black.getDefaultColor(), true));
             } catch (Throwable e) {
-                ll.addView(subtitle(this, "  [" + i + "]" + e.toString()));
+                ll.addView(subtitle(this, "  [" + i + "]" + e.toString(), ResUtils.skin_black.getDefaultColor(), true));
             }
         }
         for (int ii = 1; ii <= DexKit.DEOBF_NUM_N; ii++) {
@@ -280,9 +299,9 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                     Class<?> c = DexKit.loadClassFromCache(i);
                     if (c != null) currName = c.getName();
                 }
-                ll.addView(subtitle(this, "  [" + i + "]" + shortName + "\n" + orig + "\n= " + currName));
+                ll.addView(subtitle(this, "  [" + i + "]" + shortName + "\n" + orig + "\n= " + currName, ResUtils.skin_black.getDefaultColor(), true));
             } catch (Throwable e) {
-                ll.addView(subtitle(this, "  [" + i + "]" + e.toString()));
+                ll.addView(subtitle(this, "  [" + i + "]" + e.toString(), ResUtils.skin_black.getDefaultColor(), true));
             }
         }
 
@@ -292,9 +311,9 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
             try {
                 String shortName = entry.getKey();
                 String currName = entry.getValue() + "";
-                ll.addView(subtitle(this, "  [" + i + "]" + shortName + "\n" + currName));
+                ll.addView(subtitle(this, "  [" + i + "]" + shortName + "\n" + currName, ResUtils.skin_black.getDefaultColor(), true));
             } catch (Exception e) {
-                e.printStackTrace();
+                ll.addView(subtitle(this, "  [" + i + "]" + e.toString(), ResUtils.skin_black.getDefaultColor(), true));
             }
             i++;
         }
@@ -302,17 +321,17 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
         {
             int cost;
             cost = Parasitics.getResourceInjectionCost();
-            ll.addView(subtitle(this, "ResourceInjectionCost: " + (cost < 0 ? "FAILED" : cost + "ms")));
+            ll.addView(subtitle(this, "ResourceInjectionCost: " + (cost < 0 ? "FAILED" : cost + "ms"), ResUtils.skin_black.getDefaultColor(),true));
             cost = Parasitics.getActivityStubHookCost();
-            ll.addView(subtitle(this, "ActivityStubHookCost: " + (cost < 0 ? "FAILED" : cost + "ms")));
+            ll.addView(subtitle(this, "ActivityStubHookCost: " + (cost < 0 ? "FAILED" : cost + "ms"), ResUtils.skin_black.getDefaultColor(), true));
         }
 
         ll.addView(subtitle(this, "SystemClassLoader\n" + ClassLoader.getSystemClassLoader()
             + "\nContext.getClassLoader()\n" + getClassLoader()
             + "\nThread.getContextClassLoader()\n" + Thread.currentThread().getContextClassLoader()
-            + "\nInitiator.getHostClassLoader()\n" + Initiator.getHostClassLoader()));
+            + "\nInitiator.getHostClassLoader()\n" + Initiator.getHostClassLoader(), ResUtils.skin_black.getDefaultColor(), true));
         long ts = Utils.getBuildTimestamp();
-        ll.addView(subtitle(this, "Build Time: " + (ts > 0 ? new Date(ts).toString() : "unknown")));
+        ll.addView(subtitle(this, "Build Time: " + (ts > 0 ? new Date(ts).toString() : "unknown"), ResUtils.skin_black.getDefaultColor(), true));
         String info;
         try {
             Natives.load(this);
@@ -322,7 +341,7 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
             log(e3);
             info = e3.toString();
         }
-        ll.addView(subtitle(this, info));
+        ll.addView(subtitle(this, info, ResUtils.skin_black.getDefaultColor(), true));
         __ll.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
         setContentView(bounceScrollView);
         LinearLayout.LayoutParams _lp_fat = new LinearLayout.LayoutParams(MATCH_PARENT, 0);

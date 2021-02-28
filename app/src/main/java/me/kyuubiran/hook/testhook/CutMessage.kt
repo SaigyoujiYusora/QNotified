@@ -28,9 +28,10 @@ import de.robv.android.xposed.XposedBridge
 import me.kyuubiran.util.LOG_TYPE_FIND_METHOD
 import me.kyuubiran.util.getObjectOrNull
 import me.kyuubiran.util.logd
-import me.singleneuron.data.MsgRecordData
+import me.singleneuron.qn_kernel.data.MsgRecordData
 import me.singleneuron.qn_kernel.data.hostInfo
 import nil.nadph.qnotified.SyncUtils
+import nil.nadph.qnotified.base.annotation.FunctionEntry
 import nil.nadph.qnotified.config.ConfigManager
 import nil.nadph.qnotified.hook.BaseDelayableHook
 import nil.nadph.qnotified.step.Step
@@ -40,6 +41,7 @@ import nil.nadph.qnotified.util.Utils
 import java.lang.reflect.Method
 
 //截取消息
+@FunctionEntry
 object CutMessage : BaseDelayableHook() {
     private const val kr_test_cut_message: String = "kr_test_cut_message"
     var isInit = false
