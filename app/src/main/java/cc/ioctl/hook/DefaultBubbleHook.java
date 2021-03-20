@@ -21,31 +21,25 @@
  */
 package cc.ioctl.hook;
 
+import static nil.nadph.qnotified.util.Utils.log;
+
 import android.app.Application;
 import android.os.Looper;
-import android.widget.Toast;
-
 import java.io.File;
-
 import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.base.annotation.FunctionEntry;
 import nil.nadph.qnotified.hook.CommonDelayableHook;
+import nil.nadph.qnotified.util.Toasts;
 import nil.nadph.qnotified.util.Utils;
-
-import static nil.nadph.qnotified.util.Utils.TOAST_TYPE_ERROR;
-import static nil.nadph.qnotified.util.Utils.log;
 
 @FunctionEntry
 public class DefaultBubbleHook extends CommonDelayableHook {
-    private static final DefaultBubbleHook self = new DefaultBubbleHook();
+
+    public static final DefaultBubbleHook INSTANCE = new DefaultBubbleHook();
 
     private DefaultBubbleHook() {
         super("__NOT_USED__");
-    }
-
-    public static DefaultBubbleHook get() {
-        return self;
     }
 
     @Override
@@ -60,9 +54,26 @@ public class DefaultBubbleHook extends CommonDelayableHook {
     }
 
     @Override
+    public boolean isEnabled() {
+        try {
+            Application app = HostInformationProviderKt.getHostInfo().getApplication();
+            if (app != null && HostInformationProviderKt.getHostInfo().isTim()) {
+                return false;
+            }
+            File dir = new File(app.getFilesDir().getAbsolutePath() + "/bubble_info");
+            return !dir.exists() || !dir.canRead();
+        } catch (Exception e) {
+            log(e);
+            return false;
+        }
+    }
+
+    @Override
     public void setEnabled(boolean enabled) {
         try {
-            File dir = new File(HostInformationProviderKt.getHostInfo().getApplication().getFilesDir().getAbsolutePath() + "/bubble_info");
+            File dir = new File(
+                HostInformationProviderKt.getHostInfo().getApplication().getFilesDir()
+                    .getAbsolutePath() + "/bubble_info");
             boolean curr = !dir.exists() || !dir.canRead();
             if (dir.exists()) {
                 if (enabled && !curr) {
@@ -79,28 +90,16 @@ public class DefaultBubbleHook extends CommonDelayableHook {
         } catch (final Exception e) {
             Utils.log(e);
             if (Looper.myLooper() == Looper.getMainLooper()) {
-                Utils.showToast(HostInformationProviderKt.getHostInfo().getApplication(), TOAST_TYPE_ERROR, e + "", Toast.LENGTH_SHORT);
+                Toasts.error(HostInformationProviderKt.getHostInfo().getApplication(), e + "");
             } else {
                 SyncUtils.post(new Runnable() {
                     @Override
                     public void run() {
-                        Utils.showToast(HostInformationProviderKt.getHostInfo().getApplication(), TOAST_TYPE_ERROR, e + "", Toast.LENGTH_SHORT);
+                        Toasts.error(HostInformationProviderKt.getHostInfo().getApplication(),
+                            e + "");
                     }
                 });
             }
-        }
-    }
-
-    @Override
-    public boolean isEnabled() {
-        try {
-            Application app = HostInformationProviderKt.getHostInfo().getApplication();
-            if (app != null && HostInformationProviderKt.getHostInfo().isTim()) return false;
-            File dir = new File(app.getFilesDir().getAbsolutePath() + "/bubble_info");
-            return !dir.exists() || !dir.canRead();
-        } catch (Exception e) {
-            log(e);
-            return false;
         }
     }
 }

@@ -28,6 +28,7 @@ import android.widget.Toast
 import nil.nadph.qnotified.util.Initiator
 import nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null
 import nil.nadph.qnotified.util.ReflexUtil.iput_object
+import nil.nadph.qnotified.util.Toasts
 import nil.nadph.qnotified.util.Utils
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
@@ -38,9 +39,13 @@ fun Context.showToastBySystem(text: CharSequence, duration: Int = Toast.LENGTH_S
     else Utils.runOnUiThread { showToastBySystem(text, duration) }
 }
 
-fun Context.showToastByTencent(text: CharSequence, type: Int = Utils.TOAST_TYPE_INFO, duration: Int = Toast.LENGTH_SHORT) {
+fun Context.showToastByTencent(
+    text: CharSequence,
+    type: Int = Utils.TOAST_TYPE_INFO,
+    duration: Int = Toast.LENGTH_SHORT
+) {
     if (Looper.getMainLooper() == Looper.myLooper())
-        Utils.showToast(this, type, text, duration)
+        Toasts.showToast(this, type, text, duration)
     else Utils.runOnUiThread { showToastByTencent(text, duration) }
 }
 

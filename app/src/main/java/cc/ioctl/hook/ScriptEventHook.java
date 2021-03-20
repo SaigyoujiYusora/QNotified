@@ -21,23 +21,20 @@
  */
 package cc.ioctl.hook;
 
+import static nil.nadph.qnotified.util.Utils.log;
+
+import cc.ioctl.script.QNScriptManager;
 import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.base.annotation.FunctionEntry;
 import nil.nadph.qnotified.hook.CommonDelayableHook;
-import cc.ioctl.script.QNScriptManager;
-
-import static nil.nadph.qnotified.util.Utils.log;
 
 @FunctionEntry
 public class ScriptEventHook extends CommonDelayableHook {
-    private static final ScriptEventHook self = new ScriptEventHook();
+
+    public static final ScriptEventHook INSTANCE = new ScriptEventHook();
 
     private ScriptEventHook() {
         super("__NOT_USED__", SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF);
-    }
-
-    public static ScriptEventHook get() {
-        return self;
     }
 
     @Override
@@ -52,12 +49,12 @@ public class ScriptEventHook extends CommonDelayableHook {
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
-        //do nothing
+    public boolean isEnabled() {
+        return true;
     }
 
     @Override
-    public boolean isEnabled() {
-        return true;
+    public void setEnabled(boolean enabled) {
+        //do nothing
     }
 }

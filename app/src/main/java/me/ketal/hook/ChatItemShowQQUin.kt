@@ -23,6 +23,7 @@ package me.ketal.hook
 import android.view.View
 import ltd.nextalone.util.hookAfter
 import ltd.nextalone.util.method
+import me.ketal.util.BaseUtil.tryVerbosely
 import me.ketal.util.TIMVersion
 import me.singleneuron.qn_kernel.data.requireMinVersion
 import me.singleneuron.util.QQVersion
@@ -38,7 +39,7 @@ import java.util.*
 object ChatItemShowQQUin : CommonDelayableHook("ketal_ChatItem_ShowQQUin") {
     override fun isValid(): Boolean = requireMinVersion(QQVersion.QQ_8_0_0, TIMVersion.TIM_1_0_0)
 
-    override fun initOnce() = try {
+    override fun initOnce() = tryVerbosely(false) {
         "Lcom/tencent/mobileqq/activity/aio/BaseBubbleBuilder;->a(IILcom/tencent/mobileqq/data/ChatMessage;Landroid/view/View;Landroid/view/ViewGroup;Lcom/tencent/mobileqq/activity/aio/OnLongClickAndTouchListener;)Landroid/view/View;"
             .method.hookAfter(this) {
                 val msg = it.args[2]
@@ -51,14 +52,14 @@ object ChatItemShowQQUin : CommonDelayableHook("ketal_ChatItem_ShowQQUin") {
                 }
                 val time = ReflexUtil.iget_object_or_null(msg, "time", Long::class.java)
                 val qq = ReflexUtil.iget_object_or_null(msg, "senderuin", String::class.java)
-                val text = "QQ:$qq  Time:" + SimpleDateFormat("MM-dd HH:mm:ss", Locale.getDefault()).format(Date(time * 1000))
+                val text = "QQ:$qq  Time:" + SimpleDateFormat(
+                    "MM-dd HH:mm:ss",
+                    Locale.getDefault()
+                ).format(Date(time * 1000))
                 "Lcom/tencent/mobileqq/activity/aio/BaseChatItemLayout;->setTailMessage(ZLjava/lang/CharSequence;Landroid/view/View\$OnClickListener;)V"
                     .method
                     .invoke(it.result, true, text, listener)
             }
         true
-    } catch (e: Exception) {
-        Utils.log(e)
-        false
     }
 }

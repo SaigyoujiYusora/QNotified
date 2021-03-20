@@ -23,37 +23,26 @@
 package nil.nadph.qnotified.controller;
 
 import androidx.annotation.NonNull;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-
-import nil.nadph.qnotified.base.internal.IFunctionItemInterface;
 import nil.nadph.qnotified.hook.AbsDelayableHook;
 import nil.nadph.qnotified.util.UnsupportedFunctionUsage;
-import nil.nadph.qnotified.util.Utils;
 
 // TODO: 21-2-22 Refactor AbsDelayableHook with IFunctionItemInterface
 @UnsupportedFunctionUsage
 public class FunctionItemLoader {
 
+    public static final Map<String, String> sInitializationErrors = new HashMap<>();
     private static long sLoadBeginTime = 0L;
     private static long sLoadEndTime = 0L;
-
+    private static AbsDelayableHook[] sFunctionItems = null;
     private FunctionItemLoader() {
         throw new AssertionError("No instance for you!");
     }
 
-    private static AbsDelayableHook[] sFunctionItems = null;
-    public static final Map<String, String> sInitializationErrors = new HashMap<>();
-
     @NonNull
     public static AbsDelayableHook[] enumerateFunctionItems() {
+        /*
         if (sFunctionItems == null) {
             synchronized (FunctionItemLoader.class) {
                 sLoadBeginTime = System.currentTimeMillis();
@@ -119,13 +108,15 @@ public class FunctionItemLoader {
                 }
             }
         }
-        return sFunctionItems;
+         */
+        return nil.nadph.qnotified.gen.AnnotatedFunctionItemList.getAnnotatedFunctionItemClassList()
+            .toArray(new AbsDelayableHook[0]);
     }
-
+/*
     @NonNull
     private static String[] enumerateFunctionItemClassNames() {
         List<String> list = nil.nadph.qnotified.gen.AnnotatedFunctionItemList.getAnnotatedFunctionItemClassList();
         return list.toArray(new String[0]);
     }
-
+*/
 }

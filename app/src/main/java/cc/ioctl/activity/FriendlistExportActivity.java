@@ -21,23 +21,33 @@
  */
 package cc.ioctl.activity;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static nil.nadph.qnotified.ui.ViewBuilder.subtitle;
+import static nil.nadph.qnotified.util.Utils.csvenc;
+import static nil.nadph.qnotified.util.Utils.dip2px;
+import static nil.nadph.qnotified.util.Utils.en;
+
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
-
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 import androidx.core.view.ViewCompat;
-
 import com.tencent.mobileqq.widget.BounceScrollView;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
-
 import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.ExfriendManager;
 import nil.nadph.qnotified.R;
@@ -46,12 +56,8 @@ import nil.nadph.qnotified.config.FriendRecord;
 import nil.nadph.qnotified.ui.HighContrastBorder;
 import nil.nadph.qnotified.ui.ResUtils;
 import nil.nadph.qnotified.ui.ViewBuilder;
+import nil.nadph.qnotified.util.Toasts;
 import nil.nadph.qnotified.util.Utils;
-
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static nil.nadph.qnotified.ui.ViewBuilder.subtitle;
-import static nil.nadph.qnotified.util.Utils.*;
 
 @SuppressLint("Registered")
 public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
@@ -77,14 +83,17 @@ public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
         bounceScrollView.setId(R.id.rootBounceScrollView);
         ll.setId(R.id.rootMainLayout);
         bounceScrollView.addView(ll, new ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
-        LinearLayout.LayoutParams fixlp = new LinearLayout.LayoutParams(MATCH_PARENT, dip2px(FriendlistExportActivity.this, 48));
-        RelativeLayout.LayoutParams __lp_l = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        LinearLayout.LayoutParams fixlp = new LinearLayout.LayoutParams(MATCH_PARENT,
+            dip2px(FriendlistExportActivity.this, 48));
+        RelativeLayout.LayoutParams __lp_l = new RelativeLayout.LayoutParams(WRAP_CONTENT,
+            WRAP_CONTENT);
         int mar = (int) (dip2px(FriendlistExportActivity.this, 12) + 0.5f);
         int __3_ = (int) (dip2px(FriendlistExportActivity.this, 3) + 0.5f);
         __lp_l.setMargins(mar, 0, mar, 0);
         __lp_l.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         __lp_l.addRule(RelativeLayout.CENTER_VERTICAL);
-        RelativeLayout.LayoutParams __lp_r = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        RelativeLayout.LayoutParams __lp_r = new RelativeLayout.LayoutParams(WRAP_CONTENT,
+            WRAP_CONTENT);
         __lp_r.setMargins(mar, 0, mar, 0);
         __lp_r.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         __lp_r.addRule(RelativeLayout.CENTER_VERTICAL);
@@ -202,7 +211,8 @@ public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
         expath.setPadding(__3_, __3_, __3_, __3_);
         expath.setTextSize(Utils.dip2sp(FriendlistExportActivity.this, 18));
         expath.setTextColor(ResUtils.skin_black);
-        String refpath = new File(Environment.getExternalStorageDirectory(), new Date().toString().replace(" ", "") + ".txt").getAbsolutePath();
+        String refpath = new File(Environment.getExternalStorageDirectory(),
+            new Date().toString().replace(" ", "") + ".txt").getAbsolutePath();
         expath.setHint(refpath);
         ll.addView(expath, stdlp);
 
@@ -240,21 +250,23 @@ public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
     }
 
 
-    private void doExportFile(String suin, boolean fri, boolean exf, String output, int format, int crlf) {
+    private void doExportFile(String suin, boolean fri, boolean exf, String output, int format,
+        int crlf) {
         long luin;
         try {
             luin = Long.parseLong(suin);
         } catch (NumberFormatException ignored) {
-            Utils.showToast(FriendlistExportActivity.this, Utils.TOAST_TYPE_ERROR, "请输入有效QQ号", Toast.LENGTH_LONG);
+            Toasts.error(FriendlistExportActivity.this, "请输入有效QQ号", Toast.LENGTH_LONG);
             return;
         }
-        if (!new File(HostInformationProviderKt.getHostInfo().getApplication().getFilesDir().getAbsolutePath() + "/qnotified_" + luin + ".dat").exists()) {
-
-            Utils.showToast(FriendlistExportActivity.this, Utils.TOAST_TYPE_ERROR, "此QQ在本机没有记录", Toast.LENGTH_LONG);
+        if (!new File(
+            HostInformationProviderKt.getHostInfo().getApplication().getFilesDir().getAbsolutePath()
+                + "/qnotified_" + luin + ".dat").exists()) {
+            Toasts.error(FriendlistExportActivity.this, "此QQ在本机没有记录", Toast.LENGTH_LONG);
             return;
         }
         if (!exf && !fri) {
-            Utils.showToast(FriendlistExportActivity.this, Utils.TOAST_TYPE_ERROR, "请至少选择一个进行导出", Toast.LENGTH_LONG);
+            Toasts.error(FriendlistExportActivity.this, "请至少选择一个进行导出", Toast.LENGTH_LONG);
             return;
         }
         String rn;
@@ -273,7 +285,7 @@ public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
                         rn = "\n";
                         break;
                     default:
-                        Utils.showToast(FriendlistExportActivity.this, Utils.TOAST_TYPE_ERROR, "无效换行符", Toast.LENGTH_LONG);
+                        Toasts.error(FriendlistExportActivity.this, "无效换行符", Toast.LENGTH_LONG);
                         return;
                 }
                 if (fri) {
@@ -344,11 +356,11 @@ public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
                 sb.append(']');
                 break;
             default:
-                Utils.showToast(FriendlistExportActivity.this, Utils.TOAST_TYPE_ERROR, "格式转换错误", Toast.LENGTH_LONG);
+                Toasts.error(FriendlistExportActivity.this, "格式转换错误", Toast.LENGTH_LONG);
                 return;
         }
         if (sb.length() == 0) {
-            Utils.showToast(FriendlistExportActivity.this, Utils.TOAST_TYPE_ERROR, "格式转换错误", Toast.LENGTH_LONG);
+            Toasts.error(FriendlistExportActivity.this, "格式转换错误", Toast.LENGTH_LONG);
             return;
         }
         File f = new File(output);
@@ -359,10 +371,11 @@ public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
                 fout.write(sb.toString().getBytes());
                 fout.flush();
                 fout.close();
-                Utils.showToast(FriendlistExportActivity.this, Utils.TOAST_TYPE_SUCCESS, "操作完成", Toast.LENGTH_SHORT);
+                Toasts.success(FriendlistExportActivity.this, "操作完成");
                 return;
             } catch (IOException e) {
-                Toast.makeText(FriendlistExportActivity.this, "创建输出文件失败\n" + e.toString(), Toast.LENGTH_LONG).show();
+                Toast.makeText(FriendlistExportActivity.this, "创建输出文件失败\n" + e.toString(),
+                    Toast.LENGTH_LONG).show();
                 return;
             }
         }

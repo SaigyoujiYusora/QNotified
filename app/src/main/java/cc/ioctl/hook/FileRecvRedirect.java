@@ -21,10 +21,11 @@
  */
 package cc.ioctl.hook;
 
+import static nil.nadph.qnotified.util.Utils.log;
+
 import android.os.Environment;
-
+import androidx.annotation.Nullable;
 import java.lang.reflect.Field;
-
 import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import me.singleneuron.util.QQVersion;
 import nil.nadph.qnotified.SyncUtils;
@@ -36,14 +37,10 @@ import nil.nadph.qnotified.step.DexDeobfStep;
 import nil.nadph.qnotified.step.Step;
 import nil.nadph.qnotified.util.DexKit;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import static nil.nadph.qnotified.util.Utils.log;
-
 @FunctionEntry
 public class FileRecvRedirect extends BaseDelayableHook {
-    private static final FileRecvRedirect self = new FileRecvRedirect();
+
+    public static final FileRecvRedirect INSTANCE = new FileRecvRedirect();
     private boolean inited = false;
 
     private Field TARGET_FIELD = null;
@@ -51,15 +48,15 @@ public class FileRecvRedirect extends BaseDelayableHook {
     FileRecvRedirect() {
     }
 
-    public static FileRecvRedirect get() {
-        return self;
-    }
-
     @Override
     public boolean init() {
-        if (inited) return true;
+        if (inited) {
+            return true;
+        }
         try {
-            if (!isEnabled()) return false;
+            if (!isEnabled()) {
+                return false;
+            }
             String redirectPath = getRedirectPath();
             if (redirectPath != null) {
                 inited = doSetPath(redirectPath);
@@ -98,12 +95,15 @@ public class FileRecvRedirect extends BaseDelayableHook {
 
     public String getDefaultPath() {
         if (HostInformationProviderKt.getHostInfo().isTim()) {
-            return Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tencent/TIMfile_recv/";
+            return Environment.getExternalStorageDirectory().getAbsolutePath()
+                + "/Tencent/TIMfile_recv/";
         } else {
             if (HostInformationProviderKt.requireMinQQVersion(QQVersion.QQ_8_2_8)) {
-                return HostInformationProviderKt.getHostInfo().getApplication().getExternalFilesDir(null) + "/Tencent/QQfile_recv/";
+                return HostInformationProviderKt.getHostInfo().getApplication()
+                    .getExternalFilesDir(null) + "/Tencent/QQfile_recv/";
             } else {
-                return Environment.getExternalStorageDirectory().getAbsolutePath() + "/Tencent/QQfile_recv/";
+                return Environment.getExternalStorageDirectory().getAbsolutePath()
+                    + "/Tencent/QQfile_recv/";
             }
         }
     }
@@ -111,33 +111,6 @@ public class FileRecvRedirect extends BaseDelayableHook {
     @Nullable
     public String getRedirectPath() {
         return ConfigManager.getDefaultConfig().getString(ConfigItems.qn_file_recv_redirect_path);
-    }
-
-    /**
-     * Still follow the rule
-     * only apply if it is already inited.
-     *
-     * @param enabled if true set to config value, otherwise restore to default value
-     */
-    @Override
-    public void setEnabled(boolean enabled) {
-        try {
-            ConfigManager cfg = ConfigManager.getDefaultConfig();
-            cfg.putBoolean(ConfigItems.qn_file_recv_redirect_enable, enabled);
-            cfg.save();
-            if (inited) {
-                if (enabled) {
-                    String path = getRedirectPath();
-                    if (path != null) {
-                        inited = doSetPath(path);
-                    }
-                } else {
-                    doSetPath(getDefaultPath());
-                }
-            }
-        } catch (Exception e) {
-            log(e);
-        }
     }
 
     public void setRedirectPathAndEnable(String path) {
@@ -170,10 +143,37 @@ public class FileRecvRedirect extends BaseDelayableHook {
     @Override
     public boolean isEnabled() {
         try {
-            return ConfigManager.getDefaultConfig().getBooleanOrFalse(ConfigItems.qn_file_recv_redirect_enable);
+            return ConfigManager.getDefaultConfig()
+                .getBooleanOrFalse(ConfigItems.qn_file_recv_redirect_enable);
         } catch (Exception e) {
             log(e);
             return false;
+        }
+    }
+
+    /**
+     * Still follow the rule only apply if it is already inited.
+     *
+     * @param enabled if true set to config value, otherwise restore to default value
+     */
+    @Override
+    public void setEnabled(boolean enabled) {
+        try {
+            ConfigManager cfg = ConfigManager.getDefaultConfig();
+            cfg.putBoolean(ConfigItems.qn_file_recv_redirect_enable, enabled);
+            cfg.save();
+            if (inited) {
+                if (enabled) {
+                    String path = getRedirectPath();
+                    if (path != null) {
+                        inited = doSetPath(path);
+                    }
+                } else {
+                    doSetPath(getDefaultPath());
+                }
+            }
+        } catch (Exception e) {
+            log(e);
         }
     }
 }

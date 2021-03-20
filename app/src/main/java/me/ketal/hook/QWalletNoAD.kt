@@ -28,6 +28,7 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import ltd.nextalone.util.hookAfter
 import me.ketal.base.PluginDelayableHook
+import me.ketal.util.BaseUtil.tryVerbosely
 import me.ketal.util.HookUtil.getField
 import me.ketal.util.HookUtil.getMethod
 import me.singleneuron.qn_kernel.data.requireMinQQVersion
@@ -41,30 +42,32 @@ object QWalletNoAD : PluginDelayableHook("ketal_qwallet_noad") {
 
     override fun isValid(): Boolean = requireMinQQVersion(QQVersion.QQ_8_0_0)
 
-    override fun startHook(classLoader: ClassLoader) = try {
-        "Lcom/qwallet/activity/QWalletHomeActivity;->onCreate(Landroid/os/Bundle;)V"
-            .getMethod(classLoader)
+    override fun startHook(classLoader: ClassLoader) = tryVerbosely(false) {
+        arrayOf(
+            "Lcom/qwallet/activity/QWalletHomeActivity;->onCreate(Landroid/os/Bundle;)V",
+            "Lcom/qwallet/activity/QvipPayWalletActivity;->onCreate(Landroid/os/Bundle;)V"
+        ).getMethod(classLoader)
             ?.hookAfter(this) {
                 val ctx = it.thisObject as Activity
                 val id = ctx.resources.getIdentifier("root", "id", Utils.PACKAGE_NAME_QQ)
                 val rootView = ctx.findViewById<ViewGroup>(id)
                 rootView.removeViewAt(rootView.childCount - 1)
-                val headerView = "Lcom/qwallet/view/QWalletHeaderViewRootLayout;->a:Lcom/qwallet/view/QWalletHeaderView;"
-                    .getField(classLoader)
-                    ?.get(rootView) as ViewGroup
-                headerView.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+                val headerView =
+                    "Lcom/qwallet/view/QWalletHeaderViewRootLayout;->a:Lcom/qwallet/view/QWalletHeaderView;"
+                        .getField(classLoader)
+                        ?.get(rootView) as ViewGroup
+                headerView.viewTreeObserver.addOnGlobalLayoutListener(object :
+                    OnGlobalLayoutListener {
                     override fun onGlobalLayout() {
-                        val webView = "Lcom/qwallet/view/QWalletHeaderView;->a:Lcom/tencent/biz/ui/TouchWebView;"
-                            .getField(classLoader)
-                            ?.get(headerView) as View
+                        val webView =
+                            "Lcom/qwallet/view/QWalletHeaderView;->a:Lcom/tencent/biz/ui/TouchWebView;"
+                                .getField(classLoader)
+                                ?.get(headerView) as View
                         headerView.removeView(webView)
                         headerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
                     }
                 })
             }
         true
-    } catch (e: Exception) {
-        Utils.log(e)
-        false
     }
 }

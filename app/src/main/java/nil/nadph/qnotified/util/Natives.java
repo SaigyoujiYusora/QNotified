@@ -24,14 +24,15 @@ package nil.nadph.qnotified.util;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
-
+import com.tencent.mmkv.MMKV;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
-
 import nil.nadph.qnotified.BuildConfig;
 
 public class Natives {
+
     public static final int RTLD_LAZY = 0x00001;    /* Lazy function call binding.  */
     public static final int RTLD_NOW = 0x00002;    /* Immediate function call binding.  */
     public static final int RTLD_BINDING_MASK = 0x3;    /* Mask of binding time value.  */
@@ -108,8 +109,33 @@ public class Natives {
             return;
         } catch (UnsatisfiedLinkError ignored) {
         }
+        System.load(extractNativeLibrary(ctx, "natives").getAbsolutePath());
+        extractNativeLibrary(ctx, "mmkv");
+        getpagesize();
+        File mmkvDir = new File(ctx.getFilesDir(), "qn_mmkv");
+        if (!mmkvDir.exists()) {
+            mmkvDir.mkdirs();
+        }
+        MMKV.initialize(mmkvDir.getAbsolutePath(), s -> {
+            try {
+                System.load(extractNativeLibrary(ctx, s).getAbsolutePath());
+            } catch (IOException e) {
+                throw (UnsatisfiedLinkError) new UnsatisfiedLinkError("extract lib failed: " + s)
+                    .initCause(e);
+            }
+        });
+        MMKV.mmkvWithID("global_config", MMKV.MULTI_PROCESS_MODE);
+        MMKV.mmkvWithID("global_cache", MMKV.MULTI_PROCESS_MODE);
+    }
+
+    /**
+     * Extract or update native library into "qn_dyn_lib" dir
+     *
+     * @param libraryName library name without "lib" or ".so", eg. "natives", "mmkv"
+     */
+    static File extractNativeLibrary(Context ctx, String libraryName) throws IOException {
         String abi = Build.CPU_ABI;
-        String soName = "libnatives_" + abi + "_" + BuildConfig.VERSION_NAME + ".so";
+        String soName = "lib" + libraryName + ".so." + BuildConfig.VERSION_NAME + "." + abi;
         File dir = new File(ctx.getFilesDir(), "qn_dyn_lib");
         if (!dir.isDirectory()) {
             if (dir.isFile()) {
@@ -119,11 +145,15 @@ public class Natives {
         }
         File soFile = new File(dir, soName);
         if (!soFile.exists()) {
-            InputStream in = Natives.class.getClassLoader().getResourceAsStream("lib/" + abi + "/libnatives.so");
-            if (in == null) throw new UnsatisfiedLinkError("Unsupported ABI: " + abi);
+            InputStream in = Natives.class.getClassLoader()
+                .getResourceAsStream("lib/" + abi + "/lib" + libraryName + ".so");
+            if (in == null) {
+                throw new UnsatisfiedLinkError("Unsupported ABI: " + abi);
+            }
             //clean up old files
             for (String name : dir.list()) {
-                if (name.startsWith("libnatives_")) {
+                if (name.startsWith("lib" + libraryName + "_")
+                    || name.startsWith("lib" + libraryName + ".so")) {
                     new File(dir, name).delete();
                 }
             }
@@ -139,6 +169,6 @@ public class Natives {
             fout.flush();
             fout.close();
         }
-        System.load(soFile.getAbsolutePath());
+        return soFile;
     }
 }

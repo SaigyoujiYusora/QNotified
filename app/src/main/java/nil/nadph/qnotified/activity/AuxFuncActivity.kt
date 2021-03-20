@@ -27,10 +27,10 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
-import com.tencent.mobileqq.widget.BounceScrollView
 import cc.ioctl.hook.BlockFluxThief
 import cc.ioctl.hook.InterceptZipBomb
 import cc.ioctl.hook.PicMd5Hook
+import com.tencent.mobileqq.widget.BounceScrollView
 import nil.nadph.qnotified.ui.ResUtils
 import nil.nadph.qnotified.ui.ViewBuilder.newListItemHookSwitchInit
 
@@ -49,7 +49,7 @@ class AuxFuncActivity : IphoneTitleBarActivityCompat() {
 
         ll.addView(newListItemHookSwitchInit(this, "拦截异常zip", null, InterceptZipBomb.INSTANCE))
         ll.addView(newListItemHookSwitchInit(this, "拦截异常体积图片加载", null, BlockFluxThief.INSTANCE))
-        ll.addView(newListItemHookSwitchInit(this, "显示图片MD5", "长按图片消息点击MD5", PicMd5Hook.get()))
+        ll.addView(newListItemHookSwitchInit(this, "显示图片MD5", "长按图片消息点击MD5", PicMd5Hook.INSTANCE))
 
         setContentBackgroundDrawable(ResUtils.skin_background)
         title = "辅助功能"

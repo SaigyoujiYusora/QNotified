@@ -19,31 +19,31 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
  */
-package me.nextalone.hook
 
-import ltd.nextalone.util.isSimpleUi
-import ltd.nextalone.util.method
-import ltd.nextalone.util.replaceNull
-import me.singleneuron.qn_kernel.data.requireMinQQVersion
-import me.singleneuron.util.QQVersion
-import nil.nadph.qnotified.base.annotation.FunctionEntry
-import nil.nadph.qnotified.hook.CommonDelayableHook
-import nil.nadph.qnotified.util.Utils
+package ltd.nextalone.util
 
-@FunctionEntry
-object DisabledRedNick : CommonDelayableHook("na_disable_red_nick_kt") {
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.text.TextUtils
 
-    override fun initOnce(): Boolean {
-        return try {
-            if (!isSimpleUi) {
-                "Lcom/tencent/mobileqq/activity/aio/core/FriendChatPie;->aP()V".method.replaceNull(this)
-            }
-            true
-        } catch (t: Throwable) {
-            Utils.log(t)
-            false
+object SystemServiceUtils {
+    /**
+     * Copy text to system clipboard
+     *
+     * @param context [Context]
+     * @param text    text will be copied.
+     */
+    @JvmStatic
+    fun copyToClipboard(context: Context, text: CharSequence?) {
+        if (TextUtils.isEmpty(text)) {
+            return
         }
+        val item = ClipData.Item(text)
+        val clipData = ClipData("", arrayOf("text/plain"), item)
+        val clipboardManager =
+            context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+        clipboardManager ?: return
+        clipboardManager.setPrimaryClip(clipData)
     }
-
-    override fun isValid()=requireMinQQVersion(QQVersion.QQ_8_5_5)
 }

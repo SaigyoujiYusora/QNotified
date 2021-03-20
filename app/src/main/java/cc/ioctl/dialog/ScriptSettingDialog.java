@@ -26,16 +26,20 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.*;
-
-import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
-import nil.nadph.qnotified.R;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.Switch;
+import android.widget.TextView;
 import cc.ioctl.script.QNScript;
 import cc.ioctl.script.QNScriptManager;
+import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+import nil.nadph.qnotified.R;
 import nil.nadph.qnotified.ui.CustomDialog;
-import nil.nadph.qnotified.util.Utils;
+import nil.nadph.qnotified.util.Toasts;
 
-public class ScriptSettingDialog implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
+public class ScriptSettingDialog implements CompoundButton.OnCheckedChangeListener,
+    View.OnClickListener {
 
     private final Context ctx;
     private final AlertDialog dialog;
@@ -51,7 +55,7 @@ public class ScriptSettingDialog implements CompoundButton.OnCheckedChangeListen
     public ScriptSettingDialog(Context context, QNScript qs) {
         this.script = qs;
         dialog = (AlertDialog) CustomDialog.createFailsafe(context).setTitle(qs.getName())
-                .setCancelable(true).create();
+            .setCancelable(true).create();
         ctx = dialog.getContext();
         dialog.setCanceledOnTouchOutside(false);
         View v = LayoutInflater.from(ctx).inflate(R.layout.script_setting_dialog, null);
@@ -63,6 +67,14 @@ public class ScriptSettingDialog implements CompoundButton.OnCheckedChangeListen
         saveBtn = v.findViewById(R.id.script_save);
         delBtn = v.findViewById(R.id.script_delete);
         dialog.setView(v);
+    }
+
+    public static void createAndShowDialog(Context ctx, QNScript qs) {
+        new ScriptSettingDialog(ctx, qs).show();
+    }
+
+    public static void OnClickListener_createDialog(final Context ctx, QNScript qs) {
+        createAndShowDialog(ctx, qs);
     }
 
     public AlertDialog show() {
@@ -78,29 +90,20 @@ public class ScriptSettingDialog implements CompoundButton.OnCheckedChangeListen
         return dialog;
     }
 
-
     @SuppressLint("DefaultLocale")
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.script_save) {
-            Utils.showToast(ctx, Utils.TOAST_TYPE_ERROR, "抱歉，暂不支持保存代码", Toast.LENGTH_SHORT);
+            Toasts.error(ctx, "抱歉，暂不支持保存代码");
             return;
         }
         QNScriptManager.delScript(script);
-        Utils.showToast(ctx, Utils.TOAST_TYPE_ERROR, "删除完毕", Toast.LENGTH_SHORT);
+        Toasts.error(ctx, "删除完毕");
     }
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         script.setEnable(isChecked);
-        Utils.showToast(ctx, Utils.TOAST_TYPE_ERROR, "重启" + HostInformationProviderKt.getHostInfo().getHostName() + "生效", Toast.LENGTH_SHORT);
-    }
-
-    public static void createAndShowDialog(Context ctx, QNScript qs) {
-        new ScriptSettingDialog(ctx, qs).show();
-    }
-
-    public static void OnClickListener_createDialog(final Context ctx, QNScript qs) {
-        createAndShowDialog(ctx, qs);
+        Toasts.error(ctx, "重启" + HostInformationProviderKt.getHostInfo().getHostName() + "生效");
     }
 }

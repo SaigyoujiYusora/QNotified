@@ -47,22 +47,22 @@ data class MsgRecordData(val msgRecord: Any?) {
         const val MSG_TYPE_UNITE_GRAY_NORMAL = -5040          //灰字消息(暂时未知)
 
         val MSG_TYPE_MAP = mapOf(
-                MSG_TYPE_TEXT to "文本消息",
-                MSG_TYPE_TEXT_VIDEO to "小视频",
-                MSG_TYPE_TROOP_TIPS_ADD_MEMBER to "加群消息",
-                MSG_TYPE_TEXT_FRIEND_FEED to "好友签名卡片消息",
-                MSG_TYPE_MIX to "混合消息",
-                MSG_TYPE_REPLY_TEXT to "回复消息",
-                MSG_TYPE_MEDIA_PIC to "图片消息",
-                MSG_TYPE_MEDIA_PTT to "语音消息",
-                MSG_TYPE_MEDIA_FILE to "文件",
-                MSG_TYPE_MEDIA_MARKFACE to "表情消息[并非\"我的收藏\" 而是从QQ表情商店下载的表情]",
-                MSG_TYPE_MEDIA_VIDEO to "QQ语音/视频通话",
-                MSG_TYPE_STRUCT_MSG to "卡片消息[分享/签到/转发消息等]",
-                MSG_TYPE_ARK_APP to "小程序分享消息",
-                MSG_TYPE_POKE_MSG to "戳一戳",
-                MSG_TYPE_POKE_EMO_MSG to "另类戳一戳",
-                MSG_TYPE_UNITE_GRAY_NORMAL to "灰字消息"
+            MSG_TYPE_TEXT to "文本消息",
+            MSG_TYPE_TEXT_VIDEO to "小视频",
+            MSG_TYPE_TROOP_TIPS_ADD_MEMBER to "加群消息",
+            MSG_TYPE_TEXT_FRIEND_FEED to "好友签名卡片消息",
+            MSG_TYPE_MIX to "混合消息",
+            MSG_TYPE_REPLY_TEXT to "回复消息",
+            MSG_TYPE_MEDIA_PIC to "图片消息",
+            MSG_TYPE_MEDIA_PTT to "语音消息",
+            MSG_TYPE_MEDIA_FILE to "文件",
+            MSG_TYPE_MEDIA_MARKFACE to "表情消息[并非\"我的收藏\" 而是从QQ表情商店下载的表情]",
+            MSG_TYPE_MEDIA_VIDEO to "QQ语音/视频通话",
+            MSG_TYPE_STRUCT_MSG to "卡片消息[分享/签到/转发消息等]",
+            MSG_TYPE_ARK_APP to "小程序分享消息",
+            MSG_TYPE_POKE_MSG to "戳一戳",
+            MSG_TYPE_POKE_EMO_MSG to "另类戳一戳",
+            MSG_TYPE_UNITE_GRAY_NORMAL to "灰字消息"
         )
     }
 
@@ -106,6 +106,10 @@ data class MsgRecordData(val msgRecord: Any?) {
     val extraFlag: Int?
         get() = getObjectOrNull(msgRecord, "extraflag", Int::class.java) as Int?
 
+    //额外flag
+    val extStr: String?
+        get() = getObjectOrNull(msgRecord, "extStr", String::class.java) as String?
+
     //时间戳
     val time: Long?
         get() = getObjectOrNull(msgRecord, "time", Long::class.java) as Long?
@@ -124,7 +128,7 @@ data class MsgRecordData(val msgRecord: Any?) {
 
     //是否群组
     val isTroop: Int?
-        get() = getObjectOrNull(msgRecord, "istroop", Boolean::class.java) as Int?
+        get() = getObjectOrNull(msgRecord, "istroop", Int::class.javaPrimitiveType) as Int?
 
     //未知
     val msgSeq: Long?

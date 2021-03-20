@@ -21,29 +21,24 @@
  */
 package cc.ioctl.hook;
 
-import java.lang.reflect.Method;
+import static nil.nadph.qnotified.util.Initiator.load;
+import static nil.nadph.qnotified.util.Utils.log;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import java.lang.reflect.Method;
 import nil.nadph.qnotified.base.annotation.FunctionEntry;
 import nil.nadph.qnotified.hook.CommonDelayableHook;
 import nil.nadph.qnotified.step.DexDeobfStep;
 import nil.nadph.qnotified.util.DexKit;
 
-import static nil.nadph.qnotified.util.Initiator.load;
-import static nil.nadph.qnotified.util.Utils.log;
-
 @FunctionEntry
 public class FakeVipHook extends CommonDelayableHook {
 
-    private static final FakeVipHook self = new FakeVipHook();
+    public static final FakeVipHook INSTANCE = new FakeVipHook();
 
     private FakeVipHook() {
         super("__NOT_USED__", new DexDeobfStep(DexKit.C_VIP_UTILS));
-    }
-
-    public static FakeVipHook get() {
-        return self;
     }
 
     @Override
@@ -54,7 +49,8 @@ public class FakeVipHook extends CommonDelayableHook {
             for (Method m : clz.getDeclaredMethods()) {
                 if (m.getReturnType().equals(int.class)) {
                     Class<?>[] argt = m.getParameterTypes();
-                    if (argt.length == 2 && argt[0].equals(load("mqq/app/AppRuntime")) && argt[1].equals(String.class)) {
+                    if (argt.length == 2 && argt[0].equals(load("mqq/app/AppRuntime")) && argt[1]
+                        .equals(String.class)) {
                         getPrivilegeFlags = m;
                         break;
                     }
@@ -79,12 +75,12 @@ public class FakeVipHook extends CommonDelayableHook {
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
-        //do nothing
+    public boolean isEnabled() {
+        return true;
     }
 
     @Override
-    public boolean isEnabled() {
-        return true;
+    public void setEnabled(boolean enabled) {
+        //do nothing
     }
 }

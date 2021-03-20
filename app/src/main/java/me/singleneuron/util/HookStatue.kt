@@ -124,7 +124,7 @@ object HookStatue {
         return isExp
     }
 
-    class IsInstall constructor(val context: Context){
+    class IsInstall constructor(val context: Context) {
 
 
         var isEdxpManagerInstall = false
@@ -134,7 +134,10 @@ object HookStatue {
             val packageManager = context.packageManager
             val pid = PackageInstallDetect(packageManager)
             isXposedInstall = pid.isPackageInstall(xposed_installer_packageName)
-            isEdxpManagerInstall = pid.isPackageInstall(edxposed_installer_packageName) || pid.isPackageInstall(edxposed_manager_packageName)
+            isEdxpManagerInstall =
+                pid.isPackageInstall(edxposed_installer_packageName) || pid.isPackageInstall(
+                    edxposed_manager_packageName
+                )
         }
 
         companion object {
@@ -171,7 +174,7 @@ object HookStatue {
     @IntDef(TAICHI_NOT_INSTALL, TAICHI_NOT_ACTIVE, TAICHI_ACTIVE)
     annotation class Taichi_statue
 
-    class GetMagiskModule: BaseGetMagiskModule() {
+    class GetMagiskModule : BaseGetMagiskModule() {
 
         companion object {
             const val moduleLocate = "/data/adb/modules"
@@ -181,7 +184,7 @@ object HookStatue {
             Shell.su("su")
             val result: Shell.Result =
                 Shell.su("ls $moduleLocate").exec()
-            val resultString: String = result.getOut().toString()
+            val resultString: String = result.out.toString()
             //Log.d("getMagiskModule", resultString);
             if (resultString.contains("edxp")) edxpModule = true
             if (resultString.contains("taichi")) taichiModule = true

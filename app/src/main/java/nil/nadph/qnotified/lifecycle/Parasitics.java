@@ -21,6 +21,12 @@
  */
 package nil.nadph.qnotified.lifecycle;
 
+import static nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null;
+import static nil.nadph.qnotified.util.Utils.log;
+import static nil.nadph.qnotified.util.Utils.logd;
+import static nil.nadph.qnotified.util.Utils.loge;
+import static nil.nadph.qnotified.util.Utils.logi;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
@@ -31,17 +37,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
-import android.os.*;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
+import android.os.PersistableBundle;
+import android.os.TestLooperManager;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-
-import java.io.File;
-import java.lang.reflect.*;
-import java.util.List;
-
+import androidx.annotation.Nullable;
+import cc.ioctl.H;
 import dalvik.system.BaseDexClassLoader;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.List;
 import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.MainHook;
 import nil.nadph.qnotified.R;
@@ -49,14 +66,9 @@ import nil.nadph.qnotified.ui.___WindowIsTranslucent;
 import nil.nadph.qnotified.util.Initiator;
 import nil.nadph.qnotified.util.MainProcess;
 
-import androidx.annotation.Nullable;
-
-import static nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null;
-import static nil.nadph.qnotified.util.Utils.*;
-
 /**
- * Inject module Activities into host process and resources injection.
- * Deprecated, private, internal or other restricted APIs will be used.
+ * Inject module Activities into host process and resources injection. Deprecated, private, internal
+ * or other restricted APIs will be used.
  *
  * @author cinit
  */
@@ -119,13 +131,15 @@ public class Parasitics {
                     }
                 }
                 if (modulePath == null) {
-                    throw new RuntimeException("get module path failed, loader=" + MainHook.class.getClassLoader());
+                    throw new RuntimeException(
+                        "get module path failed, loader=" + MainHook.class.getClassLoader());
                 }
                 sModulePath = modulePath;
             }
             AssetManager assets = res.getAssets();
             @SuppressLint("DiscouragedPrivateApi")
-            Method addAssetPath = AssetManager.class.getDeclaredMethod("addAssetPath", String.class);
+            Method addAssetPath = AssetManager.class
+                .getDeclaredMethod("addAssetPath", String.class);
             addAssetPath.setAccessible(true);
             int cookie = (int) addAssetPath.invoke(assets, sModulePath);
             try {
@@ -135,7 +149,8 @@ public class Parasitics {
                 }
             } catch (Resources.NotFoundException e) {
                 loge("Fatal: injectModuleResources: test injection failure!");
-                loge("injectModuleResources: cookie=" + cookie + ", path=" + sModulePath + ", loader=" + MainHook.class.getClassLoader());
+                loge("injectModuleResources: cookie=" + cookie + ", path=" + sModulePath
+                    + ", loader=" + MainHook.class.getClassLoader());
                 long length = -1;
                 boolean read = false;
                 boolean exist = false;
@@ -149,7 +164,8 @@ public class Parasitics {
                 } catch (Throwable e2) {
                     log(e2);
                 }
-                loge("sModulePath: exists = " + exist + ", isDirectory = " + isDir + ", canRead = " + read + ", fileLength = " + length);
+                loge("sModulePath: exists = " + exist + ", isDirectory = " + isDir + ", canRead = "
+                    + read + ", fileLength = " + length);
             }
         } catch (Exception e) {
             log(e);
@@ -165,12 +181,14 @@ public class Parasitics {
         try {
             sActStubHookBeginTime = System.currentTimeMillis();
             Class<?> clazz_ActivityThread = Class.forName("android.app.ActivityThread");
-            Method currentActivityThread = clazz_ActivityThread.getDeclaredMethod("currentActivityThread");
+            Method currentActivityThread = clazz_ActivityThread
+                .getDeclaredMethod("currentActivityThread");
             currentActivityThread.setAccessible(true);
             Object sCurrentActivityThread = currentActivityThread.invoke(null);
             Field mInstrumentation = clazz_ActivityThread.getDeclaredField("mInstrumentation");
             mInstrumentation.setAccessible(true);
-            Instrumentation instrumentation = (Instrumentation) mInstrumentation.get(sCurrentActivityThread);
+            Instrumentation instrumentation = (Instrumentation) mInstrumentation
+                .get(sCurrentActivityThread);
             mInstrumentation.set(sCurrentActivityThread, new MyInstrumentation(instrumentation));
             //End of Instrumentation
             Field field_mH = clazz_ActivityThread.getDeclaredField("mH");
@@ -183,7 +201,7 @@ public class Parasitics {
                 field_mCallback.set(oriHandler, new MyH(current));
             }
             //End of Handler
-            Class activityManagerClass;
+            Class<?> activityManagerClass;
             Field gDefaultField;
             try {
                 activityManagerClass = Class.forName("android.app.ActivityManagerNative");
@@ -191,7 +209,8 @@ public class Parasitics {
             } catch (Exception err1) {
                 try {
                     activityManagerClass = Class.forName("android.app.ActivityManager");
-                    gDefaultField = activityManagerClass.getDeclaredField("IActivityManagerSingleton");
+                    gDefaultField = activityManagerClass
+                        .getDeclaredField("IActivityManagerSingleton");
                 } catch (Exception err2) {
                     logi("WTF: Unable to get IActivityManagerSingleton");
                     log(err1);
@@ -205,15 +224,17 @@ public class Parasitics {
             Field mInstanceField = singletonClass.getDeclaredField("mInstance");
             mInstanceField.setAccessible(true);
             Object mInstance = mInstanceField.get(gDefault);
-            Object proxy = Proxy.newProxyInstance(
+            Object amProxy = Proxy.newProxyInstance(
                 Initiator.getPluginClassLoader(),
                 new Class[]{Class.forName("android.app.IActivityManager")},
                 new IActivityManagerHandler(mInstance));
-            mInstanceField.set(gDefault, proxy);
+            mInstanceField.set(gDefault, amProxy);
             //End of IActivityManager
             try {
-                Class activityTaskManagerClass = Class.forName("android.app.ActivityTaskManager");
-                Field fIActivityTaskManagerSingleton = activityTaskManagerClass.getDeclaredField("IActivityTaskManagerSingleton");
+                Class<?> activityTaskManagerClass = Class
+                    .forName("android.app.ActivityTaskManager");
+                Field fIActivityTaskManagerSingleton = activityTaskManagerClass
+                    .getDeclaredField("IActivityTaskManagerSingleton");
                 fIActivityTaskManagerSingleton.setAccessible(true);
                 Object singleton = fIActivityTaskManagerSingleton.get(null);
                 singletonClass.getMethod("get").invoke(singleton);
@@ -226,6 +247,20 @@ public class Parasitics {
             } catch (Exception err3) {
             }
             //End of IActivityTaskManager
+            //Begin of PackageManager
+            Field sPackageManagerField = clazz_ActivityThread.getDeclaredField("sPackageManager");
+            sPackageManagerField.setAccessible(true);
+            Object packageManagerImpl = sPackageManagerField.get(sCurrentActivityThread);
+            Class<?> iPackageManagerInterface = Class.forName("android.content.pm.IPackageManager");
+            PackageManager pm = ctx.getPackageManager();
+            Field mPmField = pm.getClass().getDeclaredField("mPM");
+            mPmField.setAccessible(true);
+            Object pmProxy = Proxy.newProxyInstance(iPackageManagerInterface.getClassLoader(),
+                new Class[]{iPackageManagerInterface},
+                new PackageManagerInvocationHandler(packageManagerImpl));
+            sPackageManagerField.set(currentActivityThread, pmProxy);
+            mPmField.set(pm, pmProxy);
+            //End of PackageManager
             sActStubHookEndTime = System.currentTimeMillis();
             __stub_hooked = true;
         } catch (Exception e) {
@@ -234,6 +269,7 @@ public class Parasitics {
     }
 
     public static class IActivityManagerHandler implements InvocationHandler {
+
         private final Object mOrigin;
 
         public IActivityManagerHandler(Object origin) {
@@ -260,14 +296,16 @@ public class Parasitics {
                         boolean isTranslucent = false;
                         try {
                             Class<?> targetActivity = Class.forName(component.getClassName());
-                            if (targetActivity != null && (___WindowIsTranslucent.class.isAssignableFrom(targetActivity))) {
+                            if (targetActivity != null && (___WindowIsTranslucent.class
+                                .isAssignableFrom(targetActivity))) {
                                 isTranslucent = true;
                             }
                         } catch (ClassNotFoundException ignored) {
                         }
                         Intent wrapper = new Intent();
                         wrapper.setClassName(component.getPackageName(),
-                            isTranslucent ? ActProxyMgr.STUB_TRANSLUCENT_ACTIVITY : ActProxyMgr.STUB_DEFAULT_ACTIVITY);
+                            isTranslucent ? ActProxyMgr.STUB_TRANSLUCENT_ACTIVITY
+                                : ActProxyMgr.STUB_DEFAULT_ACTIVITY);
                         wrapper.putExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT, raw);
                         args[index] = wrapper;
                     }
@@ -282,6 +320,7 @@ public class Parasitics {
     }
 
     public static class MyH implements Handler.Callback {
+
         private final Handler.Callback mDefault;
 
         public MyH(Handler.Callback def) {
@@ -308,7 +347,8 @@ public class Parasitics {
                         bundle.setClassLoader(Initiator.getHostClassLoader());
                         //we do NOT have a custom Bundle, but the host may have
                         if (intent.hasExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT)) {
-                            Intent realIntent = intent.getParcelableExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT);
+                            Intent realIntent = intent
+                                .getParcelableExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT);
                             field_intent.set(record, realIntent);
                         }
                     }
@@ -320,7 +360,9 @@ public class Parasitics {
                 Object clientTransaction = msg.obj;
                 try {
                     if (clientTransaction != null) {
-                        Method getCallbacks = Class.forName("android.app.servertransaction.ClientTransaction").getDeclaredMethod("getCallbacks");
+                        Method getCallbacks = Class
+                            .forName("android.app.servertransaction.ClientTransaction")
+                            .getDeclaredMethod("getCallbacks");
                         getCallbacks.setAccessible(true);
                         List clientTransactionItems = (List) getCallbacks.invoke(clientTransaction);
                         if (clientTransactionItems != null && clientTransactionItems.size() > 0) {
@@ -341,7 +383,8 @@ public class Parasitics {
                                     if (bundle != null) {
                                         bundle.setClassLoader(Initiator.getHostClassLoader());
                                         if (wrapper.hasExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT)) {
-                                            Intent realIntent = wrapper.getParcelableExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT);
+                                            Intent realIntent = wrapper.getParcelableExtra(
+                                                ActProxyMgr.ACTIVITY_PROXY_INTENT);
                                             fmIntent.set(item, realIntent);
                                         }
                                     }
@@ -363,6 +406,7 @@ public class Parasitics {
     @SuppressWarnings("deprecation")
     @SuppressLint("NewApi")
     public static class MyInstrumentation extends Instrumentation {
+
         private final Instrumentation mBase;
 
         public MyInstrumentation(Instrumentation base) {
@@ -370,12 +414,14 @@ public class Parasitics {
         }
 
         @Override
-        public Activity newActivity(ClassLoader cl, String className, Intent intent) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+        public Activity newActivity(ClassLoader cl, String className, Intent intent)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
             try {
                 return mBase.newActivity(cl, className, intent);
             } catch (Exception e) {
                 if (ActProxyMgr.isModuleProxyActivity(className)) {
-                    return (Activity) Initiator.class.getClassLoader().loadClass(className).newInstance();
+                    return (Activity) Initiator.class.getClassLoader().loadClass(className)
+                        .newInstance();
                 }
                 throw e;
             }
@@ -508,7 +554,8 @@ public class Parasitics {
         }
 
         @Override
-        public ActivityMonitor addMonitor(IntentFilter filter, ActivityResult result, boolean block) {
+        public ActivityMonitor addMonitor(IntentFilter filter, ActivityResult result,
+            boolean block) {
             return mBase.addMonitor(filter, result, block);
         }
 
@@ -578,7 +625,8 @@ public class Parasitics {
         }
 
         @Override
-        public Application newApplication(ClassLoader cl, String className, Context context) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        public Application newApplication(ClassLoader cl, String className, Context context)
+            throws ClassNotFoundException, IllegalAccessException, InstantiationException {
             return mBase.newApplication(cl, className, context);
         }
 
@@ -588,8 +636,13 @@ public class Parasitics {
         }
 
         @Override
-        public Activity newActivity(Class<?> clazz, Context context, IBinder token, Application application, Intent intent, ActivityInfo info, CharSequence title, Activity parent, String id, Object lastNonConfigurationInstance) throws IllegalAccessException, InstantiationException {
-            return mBase.newActivity(clazz, context, token, application, intent, info, title, parent, id, lastNonConfigurationInstance);
+        public Activity newActivity(Class<?> clazz, Context context, IBinder token,
+            Application application, Intent intent, ActivityInfo info, CharSequence title,
+            Activity parent, String id, Object lastNonConfigurationInstance)
+            throws IllegalAccessException, InstantiationException {
+            return mBase
+                .newActivity(clazz, context, token, application, intent, info, title, parent, id,
+                    lastNonConfigurationInstance);
         }
 
         @Override
@@ -605,7 +658,8 @@ public class Parasitics {
         }
 
         @Override
-        public void callActivityOnCreate(Activity activity, Bundle icicle, PersistableBundle persistentState) {
+        public void callActivityOnCreate(Activity activity, Bundle icicle,
+            PersistableBundle persistentState) {
             if (icicle != null) {
                 String className = activity.getClass().getName();
                 if (ActProxyMgr.isModuleBundleClassLoaderRequired(className)) {
@@ -622,13 +676,15 @@ public class Parasitics {
         }
 
         @Override
-        public void callActivityOnRestoreInstanceState(Activity activity, Bundle savedInstanceState) {
+        public void callActivityOnRestoreInstanceState(Activity activity,
+            Bundle savedInstanceState) {
             mBase.callActivityOnRestoreInstanceState(activity, savedInstanceState);
         }
 
 
         @Override
-        public void callActivityOnRestoreInstanceState(Activity activity, Bundle savedInstanceState, PersistableBundle persistentState) {
+        public void callActivityOnRestoreInstanceState(Activity activity, Bundle savedInstanceState,
+            PersistableBundle persistentState) {
             mBase.callActivityOnRestoreInstanceState(activity, savedInstanceState, persistentState);
         }
 
@@ -638,7 +694,8 @@ public class Parasitics {
         }
 
         @Override
-        public void callActivityOnPostCreate(Activity activity, @Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+        public void callActivityOnPostCreate(Activity activity, @Nullable Bundle savedInstanceState,
+            @Nullable PersistableBundle persistentState) {
             mBase.callActivityOnPostCreate(activity, savedInstanceState, persistentState);
         }
 
@@ -673,7 +730,8 @@ public class Parasitics {
         }
 
         @Override
-        public void callActivityOnSaveInstanceState(Activity activity, Bundle outState, PersistableBundle outPersistentState) {
+        public void callActivityOnSaveInstanceState(Activity activity, Bundle outState,
+            PersistableBundle outPersistentState) {
             mBase.callActivityOnSaveInstanceState(activity, outState, outPersistentState);
         }
 
@@ -722,5 +780,43 @@ public class Parasitics {
             return mBase.acquireLooperManager(looper);
         }
 
+    }
+
+    public static class PackageManagerInvocationHandler implements InvocationHandler {
+
+        private final Object target;
+
+        public PackageManagerInvocationHandler(Object target) {
+            if (target == null) {
+                throw new NullPointerException("IPackageManager == null");
+            }
+            this.target = target;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            // prototype: ActivityInfo getActivityInfo(in ComponentName className, int flags, int userId)
+            try {
+                if ("getActivityInfo".equals(method.getName())) {
+                    ActivityInfo ai = (ActivityInfo) method.invoke(target, args);
+                    if (ai != null) {
+                        return ai;
+                    }
+                    ComponentName component = (ComponentName) args[0];
+                    int flags = (Integer) args[1];
+                    if (H.getPackageName().equals(component.getPackageName())
+                        && ActProxyMgr.isModuleProxyActivity(component.getClassName())) {
+                        return CounterfeitActivityInfoFactory
+                            .makeProxyActivityInfo(component.getClassName(), flags);
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return method.invoke(target, args);
+                }
+            } catch (InvocationTargetException ite) {
+                throw ite.getTargetException();
+            }
+        }
     }
 }

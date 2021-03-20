@@ -23,16 +23,14 @@
 package cn.lliiooll.processors;
 
 import com.google.auto.service.AutoService;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -43,7 +41,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-
 import nil.nadph.qnotified.base.annotation.FunctionEntry;
 
 @AutoService(Processor.class)
@@ -64,14 +61,18 @@ public class FunctionItemProcessor extends BaseProcessor {
         Set<? extends Element> annos = roundEnv.getElementsAnnotatedWith(FunctionEntry.class);
         if (!annos.isEmpty()) {
             System.out.println(">>>> FunctionEntry Processing <<<<");
-            MethodSpec.Builder beyond = MethodSpec.methodBuilder("getAnnotatedFunctionItemClassList")
+            ClassName absHook = ClassName.get("nil.nadph.qnotified.hook", "AbsDelayableHook");
+            ClassName list = ClassName.get("java.util", "List");
+            MethodSpec.Builder beyond = MethodSpec
+                .methodBuilder("getAnnotatedFunctionItemClassList")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .returns(ParameterizedTypeName.get(List.class, String.class))
-                .addStatement("$T result = new $T<>()", ParameterizedTypeName.get(List.class, String.class), ArrayList.class);
+                .returns(ParameterizedTypeName.get(list, absHook))
+                .addStatement("$T result = new $T<>()", ParameterizedTypeName.get(list, absHook),
+                    ArrayList.class);
 
             for (Element e : annos) {
 //                System.out.println("Processing >>> " + e.toString());
-                beyond.addStatement("result.add($S)", e.toString());
+                beyond.addStatement("result.add($L.INSTANCE)", e.toString());
             }
             beyond.addStatement("return result");
             TypeSpec util = TypeSpec.classBuilder("AnnotatedFunctionItemList")

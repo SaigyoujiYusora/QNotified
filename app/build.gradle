@@ -21,7 +21,7 @@ android {
         targetSdkVersion 29
         versionCode(getTimeStamp.call() as int)
         // versionName format: major.minor.accumulation.commit_id
-        versionName "0.8.13" + (getGitHeadRefsSuffix.call() as String)
+        versionName "0.8.15" + (getGitHeadRefsSuffix.call() as String)
         multiDexEnabled false
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
@@ -92,7 +92,7 @@ dependencies {
     compileOnly project(":compiler")
     annotationProcessor project(":compiler")
     compileOnly 'de.robv.android.xposed:api:82'
-    implementation 'com.flyco.tablayout:FlycoTabLayout_Lib:2.1.2'
+    implementation 'com.flyco.tablayout:FlycoTabLayout_Lib:2.2.0'
     implementation 'com.jaredrummler:colorpicker:1.1.0'
     implementation 'de.psdev.licensesdialog:licensesdialog:2.1.0'
     implementation 'io.noties.markwon:core:4.5.1'
@@ -107,6 +107,9 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'com.google.android.material:material:1.4.0-alpha01'
     implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.afollestad.material-dialogs:core:3.3.0'
+    implementation 'com.afollestad.material-dialogs:input:3.3.0'
+    implementation 'com.tencent:mmkv-static:1.2.7'
 }
 
 dependencies {
@@ -249,7 +252,7 @@ dexTailRelease.dependsOn(":dex-ptm:assemble")
 task replaceIcon(type: Copy) {
     delete 'src/main/res/drawable.png'
     def random = new Random()
-    def iconsFileDir = file("ChineseNewYearIcons/")
+    def iconsFileDir = file("icons/")
     def fileCount = iconsFileDir.listFiles().length
     def number = random.nextInt(fileCount)
     def iconFile = iconsFileDir.listFiles()[number]
@@ -260,6 +263,47 @@ task replaceIcon(type: Copy) {
         "icon.png"
     }
 }
+
+task checkTargetNativeLibsDebug {
+    doLast {
+        String[] targetAbi = ["arm64-v8a", "armeabi-v7a"]
+        String soName = "libnatives.so"
+        String libPath = "app/build/intermediates/cmake/debug/obj";
+        for (String abi : targetAbi) {
+            String tmp_path = libPath + "/" + abi + "/" + soName
+            if ("/" != File.separator) {
+                tmp_path = tmp_path.replace('/'.charAt(0), File.separatorChar);
+            }
+            File f = new File(rootProject.projectDir, tmp_path)
+            if (!f.exists()) {
+                throw new IllegalStateException("Native library missing for the target abi: " + abi
+                    +".\nPlease run gradle task ':app:externalNativeBuildDebug' manually to " +
+                        "force android gradle plugin to satisfy all required ABIs.")
+            }
+        }
+    }
+}
+checkTargetNativeLibsDebug.dependsOn ":app:externalNativeBuildDebug"
+task checkTargetNativeLibsRelease {
+    doLast {
+        String[] targetAbi = ["arm64-v8a", "armeabi-v7a"]
+        String soName = "libnatives.so"
+        String libPath = "app/build/intermediates/cmake/release/obj";
+        for (String abi : targetAbi) {
+            String tmp_path = libPath + "/" + abi + "/" + soName
+            if ("/" != File.separator) {
+                tmp_path = tmp_path.replace('/'.charAt(0), File.separatorChar);
+            }
+            File f = new File(rootProject.projectDir, tmp_path)
+            if (!f.exists()) {
+                throw new IllegalStateException("Native library missing for the target abi: " + abi
+                    +".\nPlease run gradle task ':app:externalNativeBuildRelease' manually to " +
+                        "force android gradle plugin to satisfy all required ABIs.")
+            }
+        }
+    }
+}
+checkTargetNativeLibsRelease.dependsOn ":app:externalNativeBuildRelease"
 
 preBuild.dependsOn replaceIcon
 
@@ -291,5 +335,11 @@ tasks.whenTaskAdded { t ->
         || t.name == 'mergeLibDexRelease' || t.name == 'mergeProjectDexRelease'
         || t.name == 'shrinkReleaseRes' || t.name.startsWith('minifyRelease')) {
         dexTailRelease.mustRunAfter(t)
+    }
+    if (t.name == 'packageDebug') {
+        t.dependsOn checkTargetNativeLibsDebug
+    }
+    if (t.name == 'packageRelease') {
+        t.dependsOn checkTargetNativeLibsRelease
     }
 }

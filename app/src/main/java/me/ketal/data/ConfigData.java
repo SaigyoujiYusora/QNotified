@@ -23,7 +23,6 @@
 package me.ketal.data;
 
 import android.os.Looper;
-
 import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
 import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.config.ConfigManager;
@@ -31,6 +30,7 @@ import nil.nadph.qnotified.util.Toasts;
 import nil.nadph.qnotified.util.Utils;
 
 public class ConfigData<T> {
+
     final String mKeyName;
     final ConfigManager mgr;
 
@@ -43,17 +43,11 @@ public class ConfigData<T> {
         mgr = manager;
     }
 
-    public void setValue(T value) {
+    public void remove() {
         try {
-            mgr.getAllConfig().put(mKeyName, value);
-            mgr.save();
+            mgr.remove(mKeyName);
         } catch (Exception e) {
             Utils.log(e);
-            if (Looper.myLooper() == Looper.getMainLooper()) {
-                Toasts.error(HostInformationProviderKt.getHostInfo().getApplication(), e + "");
-            } else {
-                SyncUtils.post(() -> Toasts.error(HostInformationProviderKt.getHostInfo().getApplication(), e + ""));
-            }
         }
     }
 
@@ -63,6 +57,21 @@ public class ConfigData<T> {
         } catch (Exception e) {
             Utils.log(e);
             return null;
+        }
+    }
+
+    public void setValue(T value) {
+        try {
+            mgr.getAllConfig().put(mKeyName, value);
+            mgr.save();
+        } catch (Exception e) {
+            Utils.log(e);
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+                Toasts.error(HostInformationProviderKt.getHostInfo().getApplication(), e + "");
+            } else {
+                SyncUtils.post(() -> Toasts
+                    .error(HostInformationProviderKt.getHostInfo().getApplication(), e + ""));
+            }
         }
     }
 
