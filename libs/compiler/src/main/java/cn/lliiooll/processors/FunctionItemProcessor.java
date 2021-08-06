@@ -22,7 +22,6 @@
 
 package cn.lliiooll.processors;
 
-import com.google.auto.service.AutoService;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -32,7 +31,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -43,7 +41,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import nil.nadph.qnotified.base.annotation.FunctionEntry;
 
-@AutoService(Processor.class)
 @SupportedAnnotationTypes("nil.nadph.qnotified.base.annotation.FunctionEntry")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class FunctionItemProcessor extends BaseProcessor {
@@ -72,7 +69,7 @@ public class FunctionItemProcessor extends BaseProcessor {
 
             for (Element e : annos) {
 //                System.out.println("Processing >>> " + e.toString());
-                beyond.addStatement("result.add($L.INSTANCE)", e.toString());
+                beyond.addStatement("result.add($T.INSTANCE)", e.asType());
             }
             beyond.addStatement("return result");
             TypeSpec util = TypeSpec.classBuilder("AnnotatedFunctionItemList")

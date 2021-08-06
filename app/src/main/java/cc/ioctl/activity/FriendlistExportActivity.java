@@ -21,43 +21,38 @@
  */
 package cc.ioctl.activity;
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static nil.nadph.qnotified.ui.ViewBuilder.subtitle;
-import static nil.nadph.qnotified.util.Utils.csvenc;
-import static nil.nadph.qnotified.util.Utils.dip2px;
-import static nil.nadph.qnotified.util.Utils.en;
-
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
-import android.widget.Toast;
+import android.widget.*;
+
 import androidx.core.view.ViewCompat;
+
 import com.tencent.mobileqq.widget.BounceScrollView;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
-import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+
+import me.singleneuron.qn_kernel.data.HostInfo;
 import nil.nadph.qnotified.ExfriendManager;
 import nil.nadph.qnotified.R;
 import nil.nadph.qnotified.activity.IphoneTitleBarActivityCompat;
 import nil.nadph.qnotified.config.FriendRecord;
-import nil.nadph.qnotified.ui.HighContrastBorder;
+import nil.nadph.qnotified.ui.drawable.HighContrastBorder;
 import nil.nadph.qnotified.ui.ResUtils;
 import nil.nadph.qnotified.ui.ViewBuilder;
 import nil.nadph.qnotified.util.Toasts;
 import nil.nadph.qnotified.util.Utils;
+
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static nil.nadph.qnotified.ui.ViewBuilder.subtitle;
+import static nil.nadph.qnotified.util.Utils.*;
 
 @SuppressLint("Registered")
 public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
@@ -260,7 +255,7 @@ public class FriendlistExportActivity extends IphoneTitleBarActivityCompat {
             return;
         }
         if (!new File(
-            HostInformationProviderKt.getHostInfo().getApplication().getFilesDir().getAbsolutePath()
+            HostInfo.getHostInfo().getApplication().getFilesDir().getAbsolutePath()
                 + "/qnotified_" + luin + ".dat").exists()) {
             Toasts.error(FriendlistExportActivity.this, "此QQ在本机没有记录", Toast.LENGTH_LONG);
             return;

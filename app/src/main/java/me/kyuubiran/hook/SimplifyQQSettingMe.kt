@@ -22,17 +22,24 @@
 package me.kyuubiran.hook
 
 import android.view.View
+import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.forEach
+import androidx.core.view.forEachIndexed
+import androidx.core.view.get
+import androidx.core.view.size
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
+import ltd.nextalone.util.get
 import me.kyuubiran.util.setViewZeroSize
+import me.singleneuron.qn_kernel.data.requireMinQQVersion
+import nil.nadph.qnotified.util.QQVersion
 import nil.nadph.qnotified.SyncUtils
 import nil.nadph.qnotified.base.annotation.FunctionEntry
 import nil.nadph.qnotified.step.Step
 import nil.nadph.qnotified.util.Initiator
 import nil.nadph.qnotified.util.LicenseStatus
-import nil.nadph.qnotified.util.ReflexUtil.iget_object_or_null
 import nil.nadph.qnotified.util.Utils
 import java.util.*
 
@@ -89,45 +96,56 @@ object SimplifyQQSettingMe : BaseMultiConfigDelayableHook() {
         return try {
             val clz = Initiator.load("com.tencent.mobileqq.activity.QQSettingMe")
             XposedBridge.hookAllConstructors(clz, object : XC_MethodHook() {
-                override fun afterHookedMethod(param: MethodHookParam?) {
+                override fun afterHookedMethod(param: MethodHookParam) {
                     if (LicenseStatus.sDisableCommonHooks) return
                     if (!isEnabled) return
-                    //中间部分(QQ会员 我的钱包等)
-                    val midcontentListLayout: LinearLayout = iget_object_or_null(
-                        param?.thisObject,
-                        "k",
-                        View::class.java
-                    ) as LinearLayout
-                    //底端部分 设置 夜间模式 达人 等
-                    val underSettingsLayout: LinearLayout = iget_object_or_null(
-                        param?.thisObject,
-                        "h",
-                        View::class.java
-                    ) as LinearLayout
-
-                    for (i in 1 until underSettingsLayout.childCount) {
-                        val child = underSettingsLayout.getChildAt(i) as LinearLayout
-                        val tv = child.getChildAt(1) as TextView
-                        val text = tv.text
-                        when {
-                            text.contains("间") && getBooleanConfig(HIDE_YE_JIAN) -> {
-                                child.setViewZeroSize()
+                    try {
+                        //中间部分(QQ会员 我的钱包等)
+                        val midcontentListLayout = if (requireMinQQVersion(QQVersion.QQ_8_6_5)) {
+                            val midcontentName = if (requireMinQQVersion(QQVersion.QQ_8_7_0)) "b" else "c"
+                            param.thisObject.get(midcontentName, LinearLayout::class.java)
+                        } else {
+                            val midcontentName = if (requireMinQQVersion(QQVersion.QQ_8_6_0)) "n" else "k"
+                            param.thisObject.get(midcontentName, View::class.java) as LinearLayout
+                        }
+                        //底端部分 设置 夜间模式 达人 等
+                        val underSettingsName = if (requireMinQQVersion(QQVersion.QQ_8_6_0)) "l" else "h"
+                        val underSettingsLayout = if (requireMinQQVersion(QQVersion.QQ_8_6_5)) {
+                            val parent  = midcontentListLayout?.parent?.parent as ViewGroup
+                            var ret: LinearLayout? = null
+                            parent.forEach {
+                                if (it is LinearLayout && it[0] is LinearLayout) {
+                                    ret = it
+                                }
                             }
-                            (text.contains("达") || text.contains("天")) && getBooleanConfig(
-                                HIDE_DA_REN
-                            ) -> {
-                                child.setViewZeroSize()
-                            }
-                            i == 3 && getBooleanConfig(HIDE_WEN_DU) -> {
-                                child.setViewZeroSize()
+                            ret
+                        } else {
+                            param.thisObject.get(underSettingsName, View::class.java) as LinearLayout
+                        }
+                        underSettingsLayout?.forEachIndexed { i, v ->
+                            val tv = (v as LinearLayout)[1] as TextView
+                            val text = tv.text
+                            when {
+                                text.contains("间") && getBooleanConfig(HIDE_YE_JIAN) -> {
+                                    v.setViewZeroSize()
+                                }
+                                (text.contains("达") || text.contains("天")) && getBooleanConfig(
+                                    HIDE_DA_REN
+                                ) -> {
+                                    v.setViewZeroSize()
+                                }
+                                i == 3 && getBooleanConfig(HIDE_WEN_DU) -> {
+                                    v.setViewZeroSize()
+                                }
                             }
                         }
-                    }
-
-                    if (midcontentListLayout.toString().contains("midcontent_list")) {
-                        for (i in 1 until midcontentListLayout.childCount) {
-                            val child = midcontentListLayout.getChildAt(i) as LinearLayout
-                            val tv = child.getChildAt(1) as TextView
+                        midcontentListLayout?.forEach {
+                            val child = it as LinearLayout
+                            val tv = if (child.size == 1) {
+                                (child[0] as LinearLayout)[1]
+                            } else {
+                                child[1]
+                            } as TextView
                             val text = tv.text.toString()
                             when {
                                 text.contains("播") && getBooleanConfig(HIDE_KAI_BO_LA_E) -> {
@@ -180,6 +198,8 @@ object SimplifyQQSettingMe : BaseMultiConfigDelayableHook() {
                                 }
                             }
                         }
+                    } catch (t: Throwable) {
+                        Utils.log(t)
                     }
                 }
             })

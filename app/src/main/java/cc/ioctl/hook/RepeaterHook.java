@@ -48,32 +48,55 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
+
+import org.ferredoxin.ferredoxin_ui.base.UiSwitchPreference;
+
+import java.lang.reflect.Method;
+
 import cc.ioctl.dialog.RepeaterIconSettingDialog;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
-import java.lang.reflect.Method;
-import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+import me.singleneuron.qn_kernel.annotation.UiItem;
+import me.singleneuron.qn_kernel.base.CommonDelayAbleHookBridge;
+import me.singleneuron.qn_kernel.data.HostInfo;
 import mqq.app.AppRuntime;
 import nil.nadph.qnotified.base.annotation.FunctionEntry;
 import nil.nadph.qnotified.bridge.ChatActivityFacade;
-import nil.nadph.qnotified.hook.CommonDelayableHook;
 import nil.nadph.qnotified.ui.CustomDialog;
-import nil.nadph.qnotified.ui.HighContrastBorder;
-import nil.nadph.qnotified.ui.LinearLayoutDelegate;
+import nil.nadph.qnotified.ui.drawable.HighContrastBorder;
+import nil.nadph.qnotified.ui.widget.LinearLayoutDelegate;
 import nil.nadph.qnotified.util.LicenseStatus;
 import nil.nadph.qnotified.util.ReflexUtil;
 import nil.nadph.qnotified.util.Toasts;
 import nil.nadph.qnotified.util.Utils;
 
 @FunctionEntry
-public class RepeaterHook extends CommonDelayableHook {
+@UiItem
+public class RepeaterHook extends CommonDelayAbleHookBridge {
+
+    private final UiSwitchPreference mUiSwitchPreference = this.new UiSwitchPreferenceItemFactory(" +1", "不是复读机");
+
+    @NonNull
+    @Override
+    public UiSwitchPreference getPreference() {
+        return mUiSwitchPreference;
+    }
+
+    @Nullable
+    @Override
+    public String[] getPreferenceLocate() {
+        return new String[]{"增强功能"};
+    }
 
     public static final RepeaterHook INSTANCE = new RepeaterHook();
 
     private RepeaterHook() {
-        super("bug_repeater");
+        super();
     }
 
     @Override
@@ -161,7 +184,7 @@ public class RepeaterHook extends CommonDelayableHook {
                             } catch (Throwable e) {
                                 log(e);
                                 Toasts
-                                    .error(HostInformationProviderKt.getHostInfo().getApplication(),
+                                    .error(HostInfo.getHostInfo().getApplication(),
                                         e.toString());
                             }
                         }
@@ -172,7 +195,7 @@ public class RepeaterHook extends CommonDelayableHook {
             });
             //end: pic
             //begin: text
-            if (HostInformationProviderKt.getHostInfo().isTim()) {
+            if (HostInfo.isTim()) {
                 // TODO: 2020/5/17 Add MsgForText +1 for TIM
                 XposedHelpers
                     .findAndHookMethod(_TextItemBuilder(), "a", ChatMessage, itemHolder, View.class,
@@ -251,7 +274,7 @@ public class RepeaterHook extends CommonDelayableHook {
                                                 .repeatMessage(app, session, param.args[0]);
                                         } catch (Throwable e) {
                                             log(e);
-                                            Toasts.error(HostInformationProviderKt.getHostInfo()
+                                            Toasts.error(HostInfo.getHostInfo()
                                                 .getApplication(), e.toString());
                                         }
                                     }
@@ -366,7 +389,7 @@ public class RepeaterHook extends CommonDelayableHook {
                                             ChatActivityFacade.repeatMessage(app, session, msg);
                                         } catch (Throwable e) {
                                             log(e);
-                                            Toasts.error(HostInformationProviderKt.getHostInfo()
+                                            Toasts.error(HostInfo.getHostInfo()
                                                 .getApplication(), e.toString());
                                         }
                                     }
@@ -493,7 +516,7 @@ public class RepeaterHook extends CommonDelayableHook {
                                             .repeatMessage(app, session, param.args[0]);
                                     } catch (Throwable e) {
                                         log(e);
-                                        Toasts.error(HostInformationProviderKt.getHostInfo()
+                                        Toasts.error(HostInfo.getHostInfo()
                                             .getApplication(), e.toString());
                                     }
                                 }

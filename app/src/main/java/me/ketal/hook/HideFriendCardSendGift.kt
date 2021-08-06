@@ -30,30 +30,53 @@ import androidx.core.widget.doAfterTextChanged
 import ltd.nextalone.util.hookAfter
 import ltd.nextalone.util.method
 import me.ketal.util.BaseUtil.tryVerbosely
+import me.singleneuron.qn_kernel.annotation.UiItem
+import me.singleneuron.qn_kernel.base.CommonDelayAbleHookBridge
 import me.singleneuron.qn_kernel.data.requireMinQQVersion
-import me.singleneuron.util.QQVersion
+import me.singleneuron.qn_kernel.ui.base.净化功能
 import nil.nadph.qnotified.base.annotation.FunctionEntry
-import nil.nadph.qnotified.hook.CommonDelayableHook
+import nil.nadph.qnotified.util.QQVersion
+import nil.nadph.qnotified.util.ReflexUtil
 
 @FunctionEntry
-object HideFriendCardSendGift : CommonDelayableHook("ketal_HideFriendProfileCardSendGift") {
+@UiItem
+object HideFriendCardSendGift : CommonDelayAbleHookBridge() {
+
+    override val preference = uiSwitchPreference {
+        title = "隐藏空间好友热播和广告"
+    }
+
+    override val preferenceLocate = 净化功能
 
     override fun isValid() = requireMinQQVersion(QQVersion.QQ_8_0_0)
 
     override fun initOnce() = tryVerbosely(false) {
+        if (requireMinQQVersion(QQVersion.QQ_8_6_0)) {
+            "Lcom/tencent/mobileqq/profilecard/base/container/ProfileBottomContainer;->initViews()V"
+                .method.hookAfter(this) {
+                    val rootView =
+                        ReflexUtil.getFirstNSFByType(it.thisObject, LinearLayout::class.java)
+                    hideView(rootView)
+                }
+            return true
+        }
         "Lcom/tencent/mobileqq/activity/FriendProfileCardActivity;->a(Landroid/widget/LinearLayout;)V"
             .method.hookAfter(this) {
                 val rootView = it.args[0] as LinearLayout
-                val view = rootView[2]
-                val child = (view as LinearLayout)[0]
-                if (child is TextView) {
-                    child.doAfterTextChanged {
-                        if (!isEnabled) return@doAfterTextChanged
-                        if (it.toString() == "送礼物")
-                            (child.parent as LinearLayout).isVisible = false
-                    }
-                }
+                hideView(rootView)
             }
         true
+    }
+
+    private fun hideView(rootView: LinearLayout) {
+        val view = rootView[2]
+        val child = (view as LinearLayout)[0]
+        if (child is TextView) {
+            child.doAfterTextChanged {
+                if (!isEnabled) return@doAfterTextChanged
+                if (it.toString() == "送礼物")
+                    (child.parent as LinearLayout).isVisible = false
+            }
+        }
     }
 }

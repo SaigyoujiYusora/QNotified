@@ -21,16 +21,10 @@
  */
 package nil.nadph.qnotified.util;
 
-import static nil.nadph.qnotified.util.Initiator._BaseChatPie;
-import static nil.nadph.qnotified.util.Initiator._QQAppInterface;
-import static nil.nadph.qnotified.util.ReflexUtil.invoke_virtual;
-import static nil.nadph.qnotified.util.Utils.log;
-import static nil.nadph.qnotified.util.Utils.logi;
-
 import android.view.View;
+
 import androidx.annotation.Nullable;
-import dalvik.system.DexClassLoader;
-import dalvik.system.PathClassLoader;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -43,8 +37,16 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.regex.Pattern;
-import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+
+import dalvik.system.DexClassLoader;
+import dalvik.system.PathClassLoader;
+import me.singleneuron.qn_kernel.data.HostInfo;
 import nil.nadph.qnotified.config.ConfigManager;
+
+import static nil.nadph.qnotified.util.Initiator.*;
+import static nil.nadph.qnotified.util.ReflexUtil.invoke_virtual;
+import static nil.nadph.qnotified.util.Utils.log;
+import static nil.nadph.qnotified.util.Utils.logi;
 
 /**
  * I hadn't obfuscated the source code. I just don't want to name it, leaving it a()
@@ -63,7 +65,7 @@ public class DexKit {
     public static final int C_FAV_EMO_CONST = 9;
     public static final int C_MSG_REC_FAC = 10;
     public static final int C_CONTACT_UTILS = 11;
-    public static final int C_VIP_UTILS = 12;
+    //public static final int C_VIP_UTILS = 12;
     public static final int C_ARK_APP_ITEM_BUBBLE_BUILDER = 13;
     public static final int C_PNG_FRAME_UTIL = 14;
     public static final int C_PIC_EMOTICON_INFO = 15;
@@ -101,8 +103,15 @@ public class DexKit {
     public static final int N_LeftSwipeReply_Helper__reply = 20006;
     public static final int N_AtPanel__showDialogAtView = 20007;
     public static final int N_AtPanel__refreshUI = 20008;
+    public static final int N_FriendChatPie_updateUITitle = 20009;
+    public static final int N_ProfileCardUtil_getCard = 20010;
+    public static final int N_VasProfileTemplateController_onCardUpdate = 20011;
+    public static final int N_QQSettingMe_updateProfileBubble = 20012;
+    public static final int N_VIP_UTILS_getPrivilegeFlags = 20013;
+    public static final int N_TroopChatPie_showNewTroopMemberCount = 20014;
+    public static final int N_Conversation_onCreate = 20015;
 
-    public static final int DEOBF_NUM_N = 8;
+    public static final int DEOBF_NUM_N = 15;
 
 
     @Nullable
@@ -199,7 +208,7 @@ public class DexKit {
         try {
             ConfigManager cache = ConfigManager.getCache();
             int lastVersion = cache.getIntOrDefault("cache_" + a(i) + "_code", 0);
-            if (HostInformationProviderKt.getHostInfo().getVersionCode32() != lastVersion) {
+            if (HostInfo.getHostInfo().getVersionCode32() != lastVersion) {
                 return null;
             }
             String name = cache.getString("cache_" + a(i) + "_method");
@@ -221,7 +230,7 @@ public class DexKit {
         }
         int ver = -1;
         try {
-            ver = HostInformationProviderKt.getHostInfo().getVersionCode32();
+            ver = HostInfo.getHostInfo().getVersionCode32();
         } catch (Throwable ignored) {
         }
         try {
@@ -249,8 +258,7 @@ public class DexKit {
                 return null;
             }
             cache.putString("cache_" + a(i) + "_method", ret.toString());
-            cache.getAllConfig().put("cache_" + a(i) + "_code",
-                HostInformationProviderKt.getHostInfo().getVersionCode32());
+            cache.putInt("cache_" + a(i) + "_code", HostInfo.getHostInfo().getVersionCode32());
             cache.save();
         } catch (Exception e) {
             log(e);
@@ -281,8 +289,6 @@ public class DexKit {
                 return "msg_rec_fac";
             case C_CONTACT_UTILS:
                 return "contact_utils";
-            case C_VIP_UTILS:
-                return "vip_utils";
             case C_ARK_APP_ITEM_BUBBLE_BUILDER:
                 return "ark_app_item_bubble_builder";
             case C_PNG_FRAME_UTIL:
@@ -347,6 +353,20 @@ public class DexKit {
                 return "atpanel__showDialogAtView";
             case N_AtPanel__refreshUI:
                 return "atpanel__refreshUI";
+            case N_FriendChatPie_updateUITitle:
+                return "friendchatpie_updateUITitle";
+            case N_ProfileCardUtil_getCard:
+                return "profileCardUtil_getCard";
+            case N_VasProfileTemplateController_onCardUpdate:
+                return "vasProfileTemplateController_onCardUpdate";
+            case N_QQSettingMe_updateProfileBubble:
+                return "qqsettingme_updateProfileBubble";
+            case N_VIP_UTILS_getPrivilegeFlags:
+                return "vip_utils_updateProfileBubble";
+            case N_TroopChatPie_showNewTroopMemberCount:
+                return "troopChatPie_showNewTroopMemberCount";
+            case N_Conversation_onCreate:
+                return "conversation_onCreate";
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -384,7 +404,7 @@ public class DexKit {
             case C_CONTACT_UTILS:
                 ret = "com/tencent/mobileqq/utils/ContactUtils";
                 break;
-            case C_VIP_UTILS:
+            case N_VIP_UTILS_getPrivilegeFlags:
                 ret = "com/tencent/mobileqq/utils/VipUtils";
                 break;
             case C_ARK_APP_ITEM_BUBBLE_BUILDER:
@@ -475,6 +495,24 @@ public class DexKit {
             case N_AtPanel__showDialogAtView:
                 ret = "com/tencent/mobileqq/troop/quickat/ui/AtPanel";
                 break;
+            case N_FriendChatPie_updateUITitle:
+                ret = "com/tencent/mobileqq/activity/aio/core/FriendChatPie";
+                break;
+            case N_ProfileCardUtil_getCard:
+                ret = "com.tencent.mobileqq.util.ProfileCardUtil";
+                break;
+            case N_VasProfileTemplateController_onCardUpdate:
+                ret = "com.tencent.mobileqq.profilecard.vas.VasProfileTemplateController";
+                break;
+            case N_QQSettingMe_updateProfileBubble:
+                ret = "com.tencent.mobileqq.activity.QQSettingMe";
+                break;
+            case N_TroopChatPie_showNewTroopMemberCount:
+                ret = "com.tencent.mobileqq.activity.aio.core.TroopChatPie";
+                break;
+            case N_Conversation_onCreate:
+                ret = "com/tencent/mobileqq/activity/home/Conversation";
+                break;
             default:
                 ret = null;
         }
@@ -531,8 +569,6 @@ public class DexKit {
                         0x65, 0x73, 0x73, 0x61, 0x67, 0x65}};
             case C_CONTACT_UTILS:
                 return new byte[][]{new byte[]{0x07, 0x20, 0x2D, 0x20, 0x57, 0x69, 0x46, 0x69}};
-            case C_VIP_UTILS:
-                return new byte[][]{new byte[]{0x05, 0x6A, 0x68, 0x61, 0x6E, 0x5F}};
             case C_ARK_APP_ITEM_BUBBLE_BUILDER:
                 return new byte[][]{
                     new byte[]{0x0F, 0x64, 0x65, 0x62, 0x75, 0x67, 0x41, 0x72, 0x6B, 0x4D, 0x65,
@@ -598,7 +634,9 @@ public class DexKit {
             case N_BASE_CHAT_PIE__INIT:
                 return new byte[][]{
                     new byte[]{0x0F, 0x69, 0x6E, 0x70, 0x75, 0x74, 0x20, 0x73, 0x65, 0x74, 0x20,
-                        0x65, 0x72, 0x72, 0x6F, 0x72}};
+                        0x65, 0x72, 0x72, 0x6F, 0x72},
+                    new byte[]{0x13, 0x2C, 0x20, 0x6D, 0x44, 0x65, 0x66, 0x61, 0x75, 0x74, 0x6C,
+                        0x42, 0x74, 0x6E, 0x4C, 0x65, 0x66, 0x74, 0x3A, 0x20}};
             case N_BASE_CHAT_PIE__handleNightMask:
                 return new byte[][]{
                     new byte[]{0x2D, 0x23, 0x68, 0x61, 0x6E, 0x64, 0x6C, 0x65, 0x4E, 0x69, 0x67,
@@ -667,6 +705,45 @@ public class DexKit {
                 return new byte[][]{
                     new byte[]{0x0e, 0x41, 0x49, 0x4F, 0x50, 0x69, 0x63, 0x74, 0x75, 0x72, 0x65,
                         0x56, 0x69, 0x65, 0x77}};
+            case N_FriendChatPie_updateUITitle:
+                return new byte[][]{
+                    new byte[]{0x41, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x43, 0x68, 0x61, 0x74,
+                        0x50, 0x69, 0x65, 0x20, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x55, 0x49,
+                        0x5f, 0x74, 0x69}};
+            case N_ProfileCardUtil_getCard:
+                return new byte[][]{
+                    new byte[]{0x17, 0x69, 0x6E, 0x69, 0x74, 0x43, 0x61, 0x72, 0x64, 0x20, 0x62,
+                        0x53, 0x75, 0x70, 0x65, 0x72, 0x56, 0x69, 0x70, 0x4F, 0x70, 0x65, 0x6E,
+                        0x3D}};
+            case N_VasProfileTemplateController_onCardUpdate:
+                return new byte[][]{
+                    new byte[]{0x12, 0x6F, 0x6E, 0x43, 0x61, 0x72, 0x64, 0x55, 0x70, 0x64, 0x61,
+                        0x74, 0x65, 0x20, 0x66, 0x61, 0x69, 0x6C, 0x2E},
+                    new byte[]{0x13, 0x6F, 0x6E, 0x43, 0x61, 0x72, 0x64, 0x55, 0x70, 0x64, 0x61,
+                        0x74, 0x65, 0x3A, 0x20, 0x62, 0x67, 0x49, 0x64, 0x3D}};
+            case N_QQSettingMe_updateProfileBubble:
+                return new byte[][]{
+                    new byte[]{0x1B, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x72, 0x6f, 0x66,
+                        0x69,
+                        0x6c, 0x65, 0x42, 0x75, 0x62, 0x62, 0x6c, 0x65, 0x4d, 0x73, 0x67, 0x56,
+                        0x69, 0x65, 0x77
+                    }
+                };
+            case N_VIP_UTILS_getPrivilegeFlags:
+                return new byte[][]{
+                    new byte[]{0x21, 0x67, 0x65, 0x74, 0x50, 0x72, 0x69, 0x76, 0x69, 0x6C, 0x65,
+                        0x67, 0x65, 0x46, 0x6C, 0x61, 0x67, 0x73, 0x20, 0x46, 0x72, 0x69, 0x65,
+                        0x6E, 0x64, 0x73, 0x20, 0x69, 0x73, 0x20, 0x6E, 0x75, 0x6C, 0x6C}};
+            case N_TroopChatPie_showNewTroopMemberCount:
+                return new byte[][]{
+                    new byte[]{0x24, 0x73, 0x68, 0x6F, 0x77, 0x4E, 0x65, 0x77, 0x54, 0x72, 0x6F,
+                        0x6F, 0x70, 0x4D, 0x65, 0x6D, 0x62, 0x65, 0x72, 0x43, 0x6F, 0x75, 0x6E,
+                        0x74, 0x20, 0x69, 0x6E, 0x66, 0x6F, 0x20, 0x69, 0x73, 0x20, 0x6E, 0x75,
+                        0x6C, 0x6C}};
+            case N_Conversation_onCreate:
+                return new byte[][]{
+                    new byte[]{0x0F, 0x52, 0x65, 0x63, 0x65, 0x6E, 0x74, 0x5F, 0x4F, 0x6E, 0x43,
+                        0x72, 0x65, 0x61, 0x74, 0x65}};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -693,8 +770,6 @@ public class DexKit {
                 return new int[]{4};
             case C_CONTACT_UTILS:
                 return new int[]{4};
-            case C_VIP_UTILS:
-                return new int[]{4, 2, 3};
             case C_ARK_APP_ITEM_BUBBLE_BUILDER:
                 return new int[]{2, 11, 6};
             case C_PNG_FRAME_UTIL:
@@ -755,6 +830,20 @@ public class DexKit {
                 return new int[]{5, 2};
             case C_AIOPictureView:
                 return new int[]{10, 4};
+            case N_FriendChatPie_updateUITitle:
+                return new int[]{4, 6, 2};
+            case N_ProfileCardUtil_getCard:
+                return new int[]{9, 10, 11, 5, 4, 2};
+            case N_VasProfileTemplateController_onCardUpdate:
+                return new int[]{7, 6};
+            case N_QQSettingMe_updateProfileBubble:
+                return new int[]{4, 6, 8, 7};
+            case N_VIP_UTILS_getPrivilegeFlags:
+                return new int[]{4, 2, 3};
+            case N_TroopChatPie_showNewTroopMemberCount:
+                return new int[]{4, 8, 11, 6};
+            case N_Conversation_onCreate:
+                return new int[]{5, 7, 8, 6};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -767,7 +856,6 @@ public class DexKit {
             case C_AIO_UTILS:
             case C_CONTACT_UTILS:
             case C_MSG_REC_FAC:
-            case C_VIP_UTILS:
             case C_SIMPLE_UI_UTIL:
             case C_TROOP_GIFT_UTIL:
             case C_TEST_STRUCT_MSG:
@@ -961,6 +1049,8 @@ public class DexKit {
                 }
                 break;
             case N_LeftSwipeReply_Helper__reply:
+            case N_FriendChatPie_updateUITitle:
+            case N_QQSettingMe_updateProfileBubble:
                 //NOTICE: this must only has one result
 
                 return (DexMethodDescriptor) __methods.toArray()[0];
@@ -970,6 +1060,43 @@ public class DexKit {
                     if (name
                         .contains("com.tencent.mobileqq.activity.aio.helper.AIOMultiActionHelper")
                         || name.contains(_BaseChatPie().getName())) {
+                        return m;
+                    }
+                }
+                break;
+            case N_ProfileCardUtil_getCard:
+                for (DexMethodDescriptor m : __methods) {
+                    Method method;
+                    try {
+                        method = m.getMethodInstance(Initiator.getHostClassLoader());
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    if ("Card".equals(method.getReturnType().getSimpleName())) {
+                        return m;
+                    }
+                }
+                break;
+            case N_VasProfileTemplateController_onCardUpdate:
+                for (DexMethodDescriptor m : __methods) {
+                    Method method;
+                    try {
+                        method = m.getMethodInstance(Initiator.getHostClassLoader());
+                        Utils.logd("m=" + method);
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    if ("onCardUpdate".equals(method.getName())) {
+                        return m;
+                    }
+                    if (method.getClass().isAssignableFrom(Initiator
+                        .load(
+                            "com.tencent.mobileqq.profilecard.vas.VasProfileTemplateController"))) {
+                        return m;
+                    }
+                    if (method.getClass().isAssignableFrom(
+                        Initiator
+                            .load("com.tencent.mobileqq.activity.FriendProfileCardActivity"))) {
                         return m;
                     }
                 }
@@ -1055,6 +1182,48 @@ public class DexKit {
                         continue;
                     }
                     return m;
+                }
+                break;
+            case N_VIP_UTILS_getPrivilegeFlags:
+                for (DexMethodDescriptor m : __methods) {
+                    Method method;
+                    try {
+                        method = m.getMethodInstance(Initiator.getHostClassLoader());
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    if (method.getReturnType().equals(int.class)) {
+                        if (method.getName().equals("getPrivilegeFlags"))
+                            return m;
+                        Class<?>[] argt = method.getParameterTypes();
+                        if (argt.length == 2 && argt[0].equals(load("mqq/app/AppRuntime")) && argt[1]
+                            .equals(String.class)) {
+                            return m;
+                        }
+                    }
+                }
+                break;
+            case N_TroopChatPie_showNewTroopMemberCount:
+                for (DexMethodDescriptor m : __methods) {
+                    Method method;
+                    try {
+                        method = m.getMethodInstance(Initiator.getHostClassLoader());
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    if (method.getClass().isAssignableFrom(_TroopChatPie())) {
+                        Class<?>[] argt = method.getParameterTypes();
+                        if (argt.length == 0) {
+                            return m;
+                        }
+                    }
+                }
+                break;
+            case N_Conversation_onCreate:
+                for (DexMethodDescriptor m : __methods) {
+                    if (m.declaringClass.endsWith("Conversation")) {
+                        return m;
+                    }
                 }
                 break;
         }

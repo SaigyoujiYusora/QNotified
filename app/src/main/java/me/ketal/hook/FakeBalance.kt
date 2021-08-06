@@ -40,10 +40,7 @@ import me.ketal.ui.view.ConfigView
 import me.ketal.util.BaseUtil.tryVerbosely
 import me.ketal.util.HookUtil.findClass
 import me.ketal.util.HookUtil.getMethod
-import me.ketal.util.TIMVersion
 import me.singleneuron.qn_kernel.data.hostInfo
-import me.singleneuron.qn_kernel.data.requireMinVersion
-import me.singleneuron.util.QQVersion
 import nil.nadph.qnotified.R
 import nil.nadph.qnotified.base.annotation.FunctionEntry
 import nil.nadph.qnotified.ui.CommonContextWrapper
@@ -60,8 +57,6 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
             moneyKey.value = value
         }
 
-    override fun isValid(): Boolean = requireMinVersion(QQVersion.QQ_8_0_0, TIMVersion.TIM_1_0_0)
-
     fun listener() = View.OnClickListener {
         showDialog(it.context, null)
     }
@@ -70,7 +65,6 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
         tryVerbosely(false) {
             val context = CommonContextWrapper(ctx, if (ResUtils.isInNightMode()) R.style.Theme_MaiTungTMDesignNight else R.style.Theme_MaiTungTMDesign)
             val vg = ConfigView(context)
-            vg.setText("启用自定义钱包余额")
             val dialog = MaterialDialog(context).show {
                 title(text = "自定义钱包余额")
                 input(hint = "请输入自定义金额...", prefill = money) { dialog, text ->
@@ -86,8 +80,8 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
                 positiveButton(text = "保存")
                 negativeButton(text = "取消")
             }
+            vg.setText("启用自定义钱包余额")
             vg.view = dialog.getCustomView()
-            vg.isVisible = isEnabled
             vg.isChecked = isEnabled
             dialog.view.contentLayout.customView = null
             dialog.customView(view = vg)
@@ -106,6 +100,7 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
                 val headerClass = "com.qwallet.view.QWalletHeaderView".findClass(classLoader)
                 val headerView = ReflexUtil.getFirstByType(rootView, headerClass)
                 val numAnimClass = "com.tencent.mobileqq.activity.qwallet.widget.NumAnim".clazz
+                    ?: "com.tencent.mobileqq.qwallet.widget.NumAnim".clazz
                 for (f in headerClass.declaredFields) {
                     if (f.type == numAnimClass) {
                         f.isAccessible = true

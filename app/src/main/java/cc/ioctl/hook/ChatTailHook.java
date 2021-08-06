@@ -21,18 +21,11 @@
  */
 package cc.ioctl.hook;
 
-import static nil.nadph.qnotified.util.Initiator._SessionInfo;
-import static nil.nadph.qnotified.util.Utils.log;
-import static nil.nadph.qnotified.util.Utils.logi;
-
 import android.content.Context;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Parcelable;
-import cc.ioctl.activity.ChatTailActivity;
-import cc.ioctl.dialog.RikkaCustomMsgTimeFormatDialog;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -41,8 +34,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import cc.ioctl.activity.ChatTailActivity;
+import cc.ioctl.dialog.RikkaCustomMsgTimeFormatDialog;
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import me.kyuubiran.util.UtilsKt;
-import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+import me.singleneuron.qn_kernel.data.HostInfo;
 import nil.nadph.qnotified.ExfriendManager;
 import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.base.annotation.FunctionEntry;
@@ -53,6 +51,9 @@ import nil.nadph.qnotified.util.DexKit;
 import nil.nadph.qnotified.util.LicenseStatus;
 import nil.nadph.qnotified.util.Toasts;
 import nil.nadph.qnotified.util.Utils;
+
+import static nil.nadph.qnotified.util.Utils.log;
+import static nil.nadph.qnotified.util.Utils.logi;
 
 @FunctionEntry
 public class ChatTailHook extends CommonDelayableHook {
@@ -115,7 +116,7 @@ public class ChatTailHook extends CommonDelayableHook {
                 if (argt.length != 6) {
                     continue;
                 }
-                if (argt[1].equals(Context.class) && argt[2].equals(_SessionInfo())
+                if (argt[1].equals(Context.class)
                     && argt[3].equals(String.class) && argt[4].equals(ArrayList.class)) {
                     m = mi;
                     m.setAccessible(true);
@@ -130,6 +131,7 @@ public class ChatTailHook extends CommonDelayableHook {
                         if (LicenseStatus.sDisableCommonHooks) {
                             return;
                         }
+                        if (LicenseStatus.isBlacklisted()) return;
                         String msg = (String) param.args[3];
                         String text = msg;
                         final Parcelable session = (Parcelable) param.args[2];
@@ -228,8 +230,10 @@ public class ChatTailHook extends CommonDelayableHook {
     @Override
     public boolean isEnabled() {
         try {
-            return ExfriendManager.getCurrent().getBooleanOrDefault(qn_chat_tail_enable, false);
-        } catch (IllegalArgumentException e) {
+            ConfigManager cfg = ConfigManager.forCurrentAccount();
+            if (cfg != null) {
+                return cfg.getBoolean(qn_chat_tail_enable, false);
+            }
             return false;
         } catch (Exception e) {
             log(e);
@@ -246,10 +250,10 @@ public class ChatTailHook extends CommonDelayableHook {
         } catch (final Exception e) {
             Utils.log(e);
             if (Looper.myLooper() == Looper.getMainLooper()) {
-                Toasts.error(HostInformationProviderKt.getHostInfo().getApplication(), e + "");
+                Toasts.error(HostInfo.getHostInfo().getApplication(), e + "");
             } else {
                 SyncUtils.post(() -> Toasts
-                    .error(HostInformationProviderKt.getHostInfo().getApplication(), e + ""));
+                    .error(HostInfo.getHostInfo().getApplication(), e + ""));
             }
         }
     }

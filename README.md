@@ -1,4 +1,6 @@
-![QNotified logo](docs/title.png)
+# QNotified
+
+![QNotified logo](https://raw.githubusercontent.com/ferredoxin/QNotified/master/docs/title.png)
 
 ---
 
@@ -8,17 +10,15 @@
 
 QNotified 是一个旨在使QQ变得更好用的开源Xposed模块
 
-## QNotified
-
 **[持续集成版本下载](https://install.appcenter.ms/orgs/qnotifieddev/apps/qnotified/distribution_groups/alpha)**
 
-### 使用方法
+## 使用方法
 
 激活本模块后，在QQ/TIM自带设置中点击QNotified即可开关对应功能。
 
 ## 一切开发旨在学习，请勿用于非法用途
 
-- 本项目保证永久开源，欢迎提交PR，但是请不要提交明显用于非法用途的功能。
+- 本项目保证永久开源，欢迎提交PR，但是请不要提交用于非法用途的功能。
 - 如果某功能被大量运用于非法用途或严重侵害插件使用者权益，那么该功能将会被移除。
 - 本模块完全免费开源, 近期发现模块倒卖现象严重,请勿上当
 - 鉴于项目的特殊性，开发团队可能在任何时间**停止更新**或**删除项目**
@@ -44,7 +44,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ```
 
-- [EULA](./app/src/main/assets/eula.md)
+- [EULA](https://github.com/ferredoxin/QNotified/blob/master/app/src/main/assets/eula.md)
 
 ```
 版权所有©2021 gao_cai_sheng <qwq233@qwq2333.top, qwq2333.top>
@@ -119,12 +119,38 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 - 抢红包
 - 群发图片或其他类型消息
 
-## 开始
+## 发行渠道说明
 
-- [CONTRIBUTING](CONTRIBUTING.md)
+<details>
+
+QNotified将为分`Beta`、`Alpha`、`Canary`三个版本：`Beta`版本为重大功能变更或长期积累更新，发布频率由开发组决定，包含上次`Beta`版至今的所有功能更新及Bug修复，但可能不包括尚未稳定或正在开发中的功能，原则上更新频率将大于两周一次；`Alpha`版本为每周积累更新，在每周周末由开发组发布，包含发布时的全部更新，可能包含不稳定功能或异常问题；`Canary`版本为每commit自动更新，可能不包含外围文档或CI流程更新，不会编写任何更新文档或说明，具体更新内容可在[Github](https://github.com/ferredoxin/QNotified/commits/master )自行查看，本更新由开源的流程（包括Azure和开发组自研Bot）自动编译发布，可能包含严重的功能及行为异常。
+
+开发组不限制用户选择自己需要的版本，同时也不为任何版本产生的任何后果承担任何责任（详情请见[QNotified EULA](https://github.com/ferredoxin/QNotified/blob/master/app/src/main/assets/eula.md)），但希望各位用户各取所需，根据自己的能力范围选择适合自己的版本。
+
+QNotified的版本号组成为`x.y.z.w`，正常情况下`x`位将一直保持为0，`Beta`版本更新会将`y`位+`1`并使z位归零，`Alpha`版本更新会将`z`位+`1`，所有版本更新的`w`位都会是触发此次更新的Commit的hash的前7位。
+
+1. [@QNotified 频道](https://t.me/QNotified) 将只发布`Beta`版和`Alpha`版更新。
+
+2. [@QNotified_CI](https://t.me/QNotified_CI) 频道将只发布`Canary`版更新。
+
+3. [Github Release](https://github.com/ferredoxin/QNotified/releases/) 将只发布`Beta`版更新。
+
+4. [App Center - Alpha](https://install.appcenter.ms/orgs/qnotifieddev/apps/qnotified/distribution_groups/alpha) 发布`CI`版本更新；[App Center - Weekly](https://install.appcenter.ms/orgs/qnotifieddev/apps/qnotified/distribution_groups/weekly) 发布`Alpha`版本更新。两个轨道均开放给所有人自由下载。
+
+5. [Google Play](https://play.google.com/store/apps/details?id=nil.nadph.qnotified) 将发布`Beta`版和`Alpha`版更新。其中`Beta`版更新将在Google Play上以正式版轨道发布，`Alpha`版更新将在Google Play上以开放性测试轨道发布。任何可以登录Google Play的人都可自由加入或退出Google Play上QNotified的开放测试。
+
+6. [Xposed仓库](https://repo.xposed.info/module/nil.nadph.qnotified) 将发布`Beta`版和`Alpha`版更新。其中`Beta`版更新将被标注为Stable，`Alpha`版更新将被标注为Beta。
+
+7. [LSPosed仓库](https://github.com/Xposed-Modules-Repo/nil.nadph.qnotified/release) 将发布所有版本更新，其中`CI`版本更新将被标注为Pre-release。
+
+</details>
+
+## 开始贡献
+
+- [CONTRIBUTING](https://github.com/ferredoxin/QNotified/blob/master/CONTRIBUTING.md)
 
 ## 赞助
 
 - 由于项目的特殊性，我们不接受任何形式的捐赠，但是我们希望有更多的人能够参与本项目的开发
 
-## [QNotified最终用户许可协议](./app/src/main/assets/eula.txt)
+## [QNotified最终用户许可协议](https://github.com/ferredoxin/QNotified/blob/master/app/src/main/assets/eula.txt)

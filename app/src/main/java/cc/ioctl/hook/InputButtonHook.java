@@ -49,13 +49,14 @@ import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import ltd.nextalone.util.SystemServiceUtils;
+import me.ketal.hook.Emoji2Sticker;
 import me.singleneuron.hook.CopyCardMsg;
 import mqq.app.AppRuntime;
 import nil.nadph.qnotified.base.annotation.FunctionEntry;
 import nil.nadph.qnotified.hook.CommonDelayableHook;
 import nil.nadph.qnotified.step.DexDeobfStep;
-import nil.nadph.qnotified.ui.InterceptLayout;
 import nil.nadph.qnotified.ui.TouchEventToLongClickAdapter;
+import nil.nadph.qnotified.ui.widget.InterceptLayout;
 import nil.nadph.qnotified.util.CliOper;
 import nil.nadph.qnotified.util.CustomMenu;
 import nil.nadph.qnotified.util.DexKit;
@@ -136,6 +137,9 @@ public class InputButtonHook extends CommonDelayableHook {
                                             if (LicenseStatus.sDisableCommonHooks) {
                                                 return false;
                                             }
+                                            if (LicenseStatus.isBlacklisted()) {
+                                                return false;
+                                            }
                                             if (!CardMsgHook.INSTANCE.isEnabled()) {
                                                 return false;
                                             }
@@ -165,12 +169,16 @@ public class InputButtonHook extends CommonDelayableHook {
                                     if (LicenseStatus.sDisableCommonHooks) {
                                         return false;
                                     }
+                                    if (LicenseStatus.isBlacklisted()) {
+                                        return false;
+                                    }
                                     Context ctx = v.getContext();
                                     EditText input = aioRootView.findViewById(ctx.getResources()
                                         .getIdentifier("input", "id", ctx.getPackageName()));
                                     String text = input.getText().toString();
-                                    if (((TextView) v).length() == 0 || !CardMsgHook.INSTANCE
-                                        .isEnabled()) {
+                                    if (((TextView) v).length() == 0
+                                        //|| !CardMsgHook.INSTANCE.isEnabled()
+                                    ) {
                                         return false;
                                     } else if (text.contains("<?xml") || text.contains("{\"")) {
                                         new Thread(() -> {
@@ -218,6 +226,24 @@ public class InputButtonHook extends CommonDelayableHook {
                                             }
                                         }).start();
                                     } else {
+                                        Emoji2Sticker emoji2Sticker = Emoji2Sticker.INSTANCE;
+                                        if (emoji2Sticker.superIsEnable()) {
+                                            Object stickerParse = emoji2Sticker.parseMsgForAniSticker(
+                                                text, session);
+                                            boolean singleAniSticker = (boolean) iget_object_or_null(
+                                                stickerParse, "singleAniSticker");
+                                            boolean sessionAvailable = (boolean) iget_object_or_null(
+                                                stickerParse, "sessionAvailable");
+                                            boolean configAniSticker = (boolean) iget_object_or_null(
+                                                stickerParse, "configAniSticker");
+                                            if (singleAniSticker && sessionAvailable
+                                                && configAniSticker) {
+                                                emoji2Sticker.sendParseAticker(stickerParse,
+                                                    session);
+                                                input.getText().clear();
+                                                return true;
+                                            }
+                                        }
                                         if (!ChatTailHook.INSTANCE.isEnabled()) {
                                             return false;
                                         }
@@ -329,6 +355,9 @@ public class InputButtonHook extends CommonDelayableHook {
             if (!CopyCardMsg.INSTANCE.isEnabled()) {
                 return;
             }
+            if (LicenseStatus.isBlacklisted()) {
+                return;
+            }
             Object arr = param.getResult();
             Class<?> clQQCustomMenuItem = arr.getClass().getComponentType();
             Object item_copy = CustomMenu.createItem(clQQCustomMenuItem, R_ID_COPY_CODE, "复制代码");
@@ -350,6 +379,9 @@ public class InputButtonHook extends CommonDelayableHook {
         @Override
         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
             if (!CopyCardMsg.INSTANCE.isEnabled()) {
+                return;
+            }
+            if (LicenseStatus.isBlacklisted()) {
                 return;
             }
             int id = (int) param.args[0];

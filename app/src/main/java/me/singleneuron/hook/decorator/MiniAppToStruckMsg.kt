@@ -24,18 +24,20 @@ package me.singleneuron.hook.decorator
 
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers
-import me.singleneuron.base.decorator.BaseItemBuilderFactoryHookDecorator
 import me.singleneuron.data.MiniAppArkData
 import me.singleneuron.data.StructMsgData
+import me.singleneuron.qn_kernel.annotation.UiItem
 import me.singleneuron.qn_kernel.data.hostInfo
-import me.singleneuron.util.QQVersion
+import me.singleneuron.qn_kernel.decorator.BaseItemBuilderFactoryHookDecorator
+import me.singleneuron.qn_kernel.ui.base.辅助功能
 import nil.nadph.qnotified.util.Initiator
+import nil.nadph.qnotified.util.QQVersion
 import nil.nadph.qnotified.util.ReflexUtil
 import nil.nadph.qnotified.util.Utils
 import org.json.JSONObject
 
-object MiniAppToStruckMsg :
-    BaseItemBuilderFactoryHookDecorator(MiniAppToStruckMsg::class.java.simpleName) {
+@UiItem
+object MiniAppToStruckMsg : BaseItemBuilderFactoryHookDecorator(MiniAppToStruckMsg::class.java.simpleName) {
 
     override fun doDecorate(
         result: Int,
@@ -64,5 +66,11 @@ object MiniAppToStruckMsg :
             return false
         }
     }
+
+    override val preference = uiSwitchPreference {
+        title = "小程序转链接分享（接收）"
+    }
+
+    override val preferenceLocate: Array<String> = 辅助功能
 
 }

@@ -25,15 +25,28 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import de.robv.android.xposed.XC_MethodHook
 import ltd.nextalone.data.TroopInfo
-import ltd.nextalone.util.clazz
 import me.ketal.dispacher.OnBubbleBuilder
 import me.ketal.util.findViewByType
+import me.singleneuron.qn_kernel.annotation.UiItem
+import me.singleneuron.qn_kernel.base.CommonDelayAbleHookBridge
 import me.singleneuron.qn_kernel.data.MsgRecordData
-import nil.nadph.qnotified.hook.CommonDelayableHook
+import me.singleneuron.qn_kernel.ui.base.净化功能
+import nil.nadph.qnotified.util.Initiator._TroopMemberLevelView
 
-object HideTroopLevel : CommonDelayableHook("na_hide_troop_level_kt"), OnBubbleBuilder {
+@UiItem
+object HideTroopLevel : CommonDelayAbleHookBridge(), OnBubbleBuilder {
 
-    override fun initOnce() = true
+    override val preference = uiSwitchPreference {
+        title = "隐藏群聊群成员头衔"
+    }
+
+    override val preferenceLocate = 净化功能
+
+    private val levelClass = _TroopMemberLevelView()
+
+    override fun isValid() = levelClass != null
+
+    override fun initOnce() = isValid
 
     override fun onGetView(
         rootView: ViewGroup,
@@ -41,11 +54,11 @@ object HideTroopLevel : CommonDelayableHook("na_hide_troop_level_kt"), OnBubbleB
         param: XC_MethodHook.MethodHookParam
     ) {
         if (!isEnabled || 1 != msg.isTroop) return
+        if (levelClass == null) return
         val sendUin = msg.senderUin
         val troopInfo = TroopInfo(msg.friendUin)
         val ownerUin = troopInfo.troopOwnerUin
         val admin = troopInfo.troopAdmin
-        val levelClass = "com.tencent.mobileqq.troop.troopMemberLevel.TroopMemberNewLevelView".clazz
         val levelView = rootView.findViewByType(levelClass)
         val isAdmin = admin?.contains(sendUin) == true || ownerUin == sendUin
         levelView?.isVisible = isAdmin

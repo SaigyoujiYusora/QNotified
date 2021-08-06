@@ -29,10 +29,8 @@ import de.robv.android.xposed.XposedHelpers
 import ltd.nextalone.base.MultiItemDelayableHook
 import me.singleneuron.qn_kernel.data.MsgRecordData
 import me.singleneuron.qn_kernel.data.requireMinQQVersion
-import me.singleneuron.util.QQVersion
-import nil.nadph.qnotified.base.annotation.FunctionEntry
+import nil.nadph.qnotified.util.QQVersion
 
-@FunctionEntry
 object AntiMessage : MultiItemDelayableHook("qn_anti_message_items"), MessageReceiver {
     override var allItems = ""
     override val defaultItems = ""

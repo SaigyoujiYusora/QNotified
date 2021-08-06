@@ -23,35 +23,37 @@ package ltd.nextalone.util
 
 import nil.nadph.qnotified.hook.BaseDelayableHook
 import nil.nadph.qnotified.util.Utils
+import java.lang.reflect.Method
 
-internal fun logd(msg: String) {
-    Utils.logd("NA: $msg")
+internal fun logd(vararg msg: Any?) {
+    Utils.logd("NA: ${msg.joinToString(", ")}")
 }
 
 internal fun logThrowable(msg: Throwable) {
     logd("Throwable: ${msg.stackTraceToString()}")
 }
 
-internal fun <T : BaseDelayableHook> T.logDetail(info: String, vararg msg: Any) {
+internal fun <T : BaseDelayableHook> T.logDetail(info: String?, vararg msg: Any?) {
     logd("${this.javaClass.simpleName}: $info, ${msg.joinToString(", ")}")
 }
 
-internal fun <T : BaseDelayableHook> T.logClass(msg: String = "") {
+internal fun <T : BaseDelayableHook> T.logClass(msg: String? = "") {
     logd("$this: Class, $msg")
 }
 
-internal fun <T : BaseDelayableHook> T.logMethod(msg: String = "") {
-    logd("$this: Method, $msg")
+internal fun <T : BaseDelayableHook> T.logMethod(method: Method?) {
+    logDetail("$this: Method", "name", method?.name, "return", method?.returnType, "param", *method?.parameterTypes
+        ?: arrayOf("null"))
 }
 
 internal fun <T : BaseDelayableHook> T.logStart() {
     logd("$this: Start")
 }
 
-internal fun <T : BaseDelayableHook> T.logBefore(msg: String = "") {
+internal fun <T : BaseDelayableHook> T.logBefore(msg: String? = "") {
     logd("$this: Before, $msg")
 }
 
-internal fun <T : BaseDelayableHook> T.logAfter(msg: String = "") {
+internal fun <T : BaseDelayableHook> T.logAfter(msg: String? = "") {
     logd("$this: After, $msg")
 }

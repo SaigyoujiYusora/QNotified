@@ -34,6 +34,7 @@ import static nil.nadph.qnotified.util.Utils.dip2px;
 import static nil.nadph.qnotified.util.Utils.getLongAccountUin;
 import static nil.nadph.qnotified.util.Utils.getShort$Name;
 import static nil.nadph.qnotified.util.Utils.log;
+import static nil.nadph.qnotified.util.Utils.logi;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
@@ -57,22 +58,22 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 import cc.ioctl.activity.ExfriendListActivity;
 import cc.ioctl.activity.MmkvTestActivity;
+import cc.ioctl.activity.SecurityTestActivity;
 import cc.ioctl.hook.InspectMessage;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.tencent.mobileqq.widget.BounceScrollView;
+import java.io.File;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import ltd.nextalone.hook.EnableQLog;
 import me.singleneuron.activity.BugReportActivity;
-import me.singleneuron.activity.DatabaseTestActivity;
 import me.singleneuron.data.CardMsgCheckResult;
 import me.singleneuron.hook.DebugDump;
-import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+import me.singleneuron.qn_kernel.data.HostInfo;
 import me.singleneuron.qn_kernel.tlb.ConfigTable;
 import me.singleneuron.util.KotlinUtilsKt;
-import nil.nadph.qnotified.BuildConfig;
 import nil.nadph.qnotified.ExfriendManager;
 import nil.nadph.qnotified.R;
 import nil.nadph.qnotified.config.ConfigManager;
@@ -85,6 +86,7 @@ import nil.nadph.qnotified.ui.ResUtils;
 import nil.nadph.qnotified.util.DexKit;
 import nil.nadph.qnotified.util.DexMethodDescriptor;
 import nil.nadph.qnotified.util.Initiator;
+import nil.nadph.qnotified.util.LicenseStatus;
 import nil.nadph.qnotified.util.Natives;
 import nil.nadph.qnotified.util.Toasts;
 import nil.nadph.qnotified.util.Utils;
@@ -142,7 +144,7 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
         ll.addView(subtitle(this, ""));
         ll.addView(subtitle(this, "以下内容基本上都没用，它们为了修复故障才留在这里。"));
         ll.addView(subtitle(this, "测试"));
-        ll.addView(newListItemHookSwitchInit(this, "堆栈转储", "没事别开", DebugDump.INSTANCE));
+        ll.addView(newListItemHookSwitchInit(this, DebugDump.INSTANCE));
         ll.addView(newListItemHookSwitchInit(this, "检查消息", null, InspectMessage.INSTANCE));
         ll.addView(newListItemHookSwitchInit(this, "开启QQ日志", "前缀NAdump", EnableQLog.INSTANCE));
         ll.addView(newListItemButton(this, "强制重新生成日志历史记录", null, null, new View.OnClickListener() {
@@ -158,7 +160,7 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                     configManager.save();
                 } catch (Exception e) {
                     Utils.runOnUiThread(() -> Toast
-                        .makeText(HostInformationProviderKt.getHostInfo().getApplication(),
+                        .makeText(HostInfo.getHostInfo().getApplication(),
                             e.toString(), Toast.LENGTH_LONG).show());
                     Utils.log(e);
                 }
@@ -289,7 +291,7 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                         ActProxyMgr.STUB_DEFAULT_ACTIVITY);
                     wrapper.putExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT, inner);
                     PendingIntent pi = PendingIntent.getActivity(getApplication(), 0, wrapper, 0);
-                    NotificationManager nm = (NotificationManager) HostInformationProviderKt
+                    NotificationManager nm = (NotificationManager) HostInfo
                         .getHostInfo().getApplication()
                         .getSystemService(Context.NOTIFICATION_SERVICE);
                     Notification n = ExfriendManager.getCurrent()
@@ -303,14 +305,10 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                 }
             }
         }));
-        ll.addView(newListItemButton(this, "测试数据库", null, null,
-            clickToProxyActAction(DatabaseTestActivity.class)));
         ll.addView(newListItemButton(this, "测试 MMKV", null, null,
             clickToProxyActAction(MmkvTestActivity.class)));
-        if (BuildConfig.DEBUG) {
-            ll.addView(newListItemButton(this, "新界面", null, null,
-                clickToProxyActAction(MainActivity.class)));
-        }
+        ll.addView(newListItemButton(this, "SecurityTestActivity", null, null,
+            clickToProxyActAction(SecurityTestActivity.class)));
 
         ll.addView(subtitle(this, ""));
 
@@ -427,13 +425,53 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
     }
 
     public View.OnClickListener clickToRefreshUserStatus() {
-        return view -> {
-            long uin = Utils.getLongAccountUin();
-            if (uin < 10000) {
-                return;
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                long uin = Utils.getLongAccountUin();
+                if (uin < 10000) {
+                    return;
+                }
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        StringBuilder sb;
+                        String msg;
+                        Throwable t = null;
+                        try {
+                            LicenseStatus.setUserCurrentStatus();
+                            sb = new StringBuilder();
+                            sb.append(uin).append(": ");
+                            if (LicenseStatus.isWhitelisted()) {
+                                sb.append("Whitelisted User");
+                            }
+                            if (LicenseStatus.isBlacklisted()) {
+                                sb.append("Blacklisted User");
+                            }
+                            if ((!LicenseStatus.isBlacklisted())
+                                && (!LicenseStatus.isWhitelisted())) {
+                                sb.append("Everything is ok");
+                            }
+
+                            msg = sb.toString();
+                        } catch (Exception e) {
+                            msg = e.toString();
+                            t = e;
+                        }
+                        Throwable finalT = t;
+                        String finalMsg = msg;
+                        view.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                CustomDialog.createFailsafe(view.getContext())
+                                    .setTitle(finalT == null ? "状态" : "失败")
+                                    .setCancelable(true).setMessage(finalMsg)
+                                    .setPositiveButton("确认", null).show();
+                            }
+                        });
+                    }
+                }).start();
             }
-            CustomDialog.createFailsafe(view.getContext()).setTitle("状态")
-                .setCancelable(true).setMessage("破解版没有黑白名单哦").setPositiveButton("确认", null).show();
         };
     }
 
@@ -472,12 +510,16 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     try {
+                        Long qq = Utils.getLongAccountUin();
+                        new File(
+                            HostInfo.getHostInfo().getApplication().getFilesDir()
+                                .getAbsolutePath() + "/qnotified_" + qq + ".dat").delete();
                         ExfriendManager exm = ExfriendManager.getCurrent();
-                        exm.getConfig().getFile().delete();
                         exm.getConfig().reinit();
                         exm.reinit();
                         Toasts.success(TroubleshootActivity.this, "操作成功");
                     } catch (Throwable e) {
+                        Utils.log(e);
                     }
                 }
             });
@@ -497,9 +539,12 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     try {
+                        new File(
+                            HostInfo.getHostInfo().getApplication().getFilesDir()
+                                .getAbsolutePath() + "/qnotified_cache.dat").delete();
                         ConfigManager cfg = ConfigManager.getCache();
-                        cfg.getAllConfig().clear();
-                        cfg.getFile().delete();
+                        cfg.clear();
+                        //cfg.getFile().delete();
                         System.exit(0);
                     } catch (Throwable e) {
                         log(e);
@@ -509,7 +554,7 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
             dialog.setNegativeButton("取消", new DummyCallback());
             dialog.setCancelable(true);
             dialog.setMessage(
-                "确认清除缓存,并重新计算适配数据?\n点击确认后请等待3秒后手动重启" + HostInformationProviderKt.getHostInfo()
+                "确认清除缓存,并重新计算适配数据?\n点击确认后请等待3秒后手动重启" + HostInfo.getHostInfo()
                     .getHostName() + ".");
             dialog.setTitle("确认操作");
             dialog.show();
@@ -523,9 +568,12 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                 CustomDialog dialog = CustomDialog.create(TroubleshootActivity.this);
                 dialog.setPositiveButton("确认", (dialog1, which) -> {
                     try {
+                        new File(
+                            HostInfo.getHostInfo().getApplication().getFilesDir()
+                                .getAbsolutePath() + "/qnotified_config.dat").delete();
                         ConfigManager cfg = ConfigManager.getDefaultConfig();
-                        cfg.getAllConfig().clear();
-                        cfg.getFile().delete();
+                        cfg.clear();
+                        //cfg.getFile().delete();
                         System.exit(0);
                     } catch (Throwable e) {
                         log(e);
@@ -534,7 +582,7 @@ public class TroubleshootActivity extends IphoneTitleBarActivityCompat {
                 dialog.setNegativeButton("取消", new Utils.DummyCallback());
                 dialog.setCancelable(true);
                 dialog.setMessage("此操作将删除该模块的所有配置信息,包括屏蔽通知的群列表,但不包括历史好友列表.点击确认后请等待3秒后手动重启"
-                    + HostInformationProviderKt.getHostInfo().getHostName() + ".\n此操作不可恢复");
+                    + HostInfo.getHostInfo().getHostName() + ".\n此操作不可恢复");
                 dialog.setTitle("确认操作");
                 dialog.show();
             }

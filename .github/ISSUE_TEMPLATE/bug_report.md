@@ -7,8 +7,6 @@ assignees: ''
 
 ---
 
-- [ ] 是否阅读[提问的智慧](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)
-
 **QQ(TIM)版本/QQ(TIM) Version**
 
 * 
@@ -25,6 +23,8 @@ assignees: ''
 
 *  具体描述(如复现BUG所需要的前提和必要操作等)
 
+
+
 **此处贴你获取到的日志信息/Log here**
 
 <details><summary>展开查看</summary><pre><code>
@@ -33,3 +33,8 @@ assignees: ''
 
 </code></pre></details>
 
+
+
+<!--- 勿删此行--->
+
+<!--- ejfweaxptgrsgxed--->

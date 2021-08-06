@@ -23,7 +23,8 @@
 package me.ketal.data;
 
 import android.os.Looper;
-import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+
+import me.singleneuron.qn_kernel.data.HostInfo;
 import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.config.ConfigManager;
 import nil.nadph.qnotified.util.Toasts;
@@ -62,15 +63,15 @@ public class ConfigData<T> {
 
     public void setValue(T value) {
         try {
-            mgr.getAllConfig().put(mKeyName, value);
+            mgr.putObject(mKeyName, value);
             mgr.save();
         } catch (Exception e) {
             Utils.log(e);
             if (Looper.myLooper() == Looper.getMainLooper()) {
-                Toasts.error(HostInformationProviderKt.getHostInfo().getApplication(), e + "");
+                Toasts.error(HostInfo.getHostInfo().getApplication(), e + "");
             } else {
                 SyncUtils.post(() -> Toasts
-                    .error(HostInformationProviderKt.getHostInfo().getApplication(), e + ""));
+                    .error(HostInfo.getHostInfo().getApplication(), e + ""));
             }
         }
     }

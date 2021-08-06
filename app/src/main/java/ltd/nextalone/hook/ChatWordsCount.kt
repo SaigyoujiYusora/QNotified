@@ -24,24 +24,44 @@ package ltd.nextalone.hook
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import ltd.nextalone.util.*
 import me.kyuubiran.util.getExFriendCfg
+import me.kyuubiran.util.showToastByTencent
 import me.singleneuron.qn_kernel.data.requireMinQQVersion
-import me.singleneuron.util.QQVersion
+import me.singleneuron.qn_kernel.tlb.ConfigTable.getConfig
+import me.singleneuron.qn_kernel.ui.base.增强功能
 import nil.nadph.qnotified.base.annotation.FunctionEntry
 import nil.nadph.qnotified.hook.CommonDelayableHook
 import nil.nadph.qnotified.ui.CustomDialog
 import nil.nadph.qnotified.ui.ViewBuilder
+import nil.nadph.qnotified.util.Initiator
+import nil.nadph.qnotified.util.QQVersion
 import nil.nadph.qnotified.util.Toasts
 import nil.nadph.qnotified.util.Utils
+import org.ferredoxin.ferredoxin_ui.base.UiDescription
+import org.ferredoxin.ferredoxin_ui.base.UiItem
+import org.ferredoxin.ferredoxin_ui.base.uiClickableItem
 import java.util.*
 
 @FunctionEntry
-object ChatWordsCount : CommonDelayableHook("na_chat_words_count_kt") {
+@me.singleneuron.qn_kernel.annotation.UiItem
+object ChatWordsCount : CommonDelayableHook("na_chat_words_count_kt"), UiItem {
+
+    override val preference: UiDescription = uiClickableItem {
+        title = "聊天字数统计"
+        onClickListener = {
+            showChatWordsCountDialog(it)
+            true
+        }
+    }.second
+
+    override val preferenceLocate = 增强功能
+
     private const val msgCfg = "na_chat_words_count_kt_msg"
     private const val wordsCfg = "na_chat_words_count_kt_words"
     private const val emoCfg = "na_chat_words_count_kt_emo"
@@ -49,17 +69,17 @@ object ChatWordsCount : CommonDelayableHook("na_chat_words_count_kt") {
     private const val colorCfg = "na_chat_words_count_kt_color"
     private const val strCfg = "na_chat_words_count_kt_str"
     override fun initOnce() = tryOrFalse {
-        "com.tencent.mobileqq.activity.QQSettingMe".clazz.hookBeforeAllConstructors {
+        "com.tencent.mobileqq.activity.QQSettingMe".clazz?.hookBeforeAllConstructors {
             "Lcom/tencent/mobileqq/activity/QQSettingMe;->a()V".method.hookAfter(this) {
                 val isToday = Date().today == getExFriendCfg().getStringOrDefault(timeCfg, "")
                 val relativeLayout = (it.thisObject.get(
                     "a",
                     ViewGroup::class.java
-                ) as ViewGroup).findHostView<RelativeLayout>("ivc")
+                ) as ViewGroup).findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))
                 val textView =
                     (relativeLayout?.parent as FrameLayout).findViewById<TextView>(nil.nadph.qnotified.R.id.chat_words_count)
                 var str =
-                    getExFriendCfg().getStringOrDefault(strCfg, "今日已发送 %1 条消息，共 %2 字，表情包 %3 个")
+                    getExFriendCfg().getStringOrDefault(strCfg, "今日已发送 %1 条消息，共 %2 字，表情包 %3 个")!!
                 val msg = if (isToday) getExFriendCfg().getIntOrDefault(msgCfg, 0) else 0
                 val words = if (isToday) getExFriendCfg().getIntOrDefault(wordsCfg, 0) else 0
                 val emo = if (isToday) getExFriendCfg().getIntOrDefault(emoCfg, 0) else 0
@@ -68,16 +88,16 @@ object ChatWordsCount : CommonDelayableHook("na_chat_words_count_kt") {
                 textView.text = str
             }
         }
-        "com.tencent.mobileqq.activity.QQSettingMe".clazz.hookAfterAllConstructors {
+        "com.tencent.mobileqq.activity.QQSettingMe".clazz?.hookAfterAllConstructors {
             val isToday = Date().today == getExFriendCfg().getStringOrDefault(timeCfg, "")
             val activity: Activity = it.args[0] as Activity
             val relativeLayout = (it.thisObject.get(
                 "a",
                 ViewGroup::class.java
-            ) as ViewGroup).findHostView<RelativeLayout>("ivc")
+            ) as ViewGroup).findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))
             relativeLayout!!.visibility = View.GONE
             val textView = TextView(activity)
-            var str = getExFriendCfg().getStringOrDefault(strCfg, "今日已发送 %1 条消息，共 %2 字，表情包 %3 个")
+            var str = getExFriendCfg().getStringOrDefault(strCfg, "今日已发送 %1 条消息，共 %2 字，表情包 %3 个")!!
             val msg = if (isToday) getExFriendCfg().getIntOrDefault(msgCfg, 0) else 0
             val words = if (isToday) getExFriendCfg().getIntOrDefault(wordsCfg, 0) else 0
             val emo = if (isToday) getExFriendCfg().getIntOrDefault(emoCfg, 0) else 0
@@ -149,26 +169,48 @@ object ChatWordsCount : CommonDelayableHook("na_chat_words_count_kt") {
                         )
                     }
                 }
+                textView.setOnLongClickListener {
+                    CustomDialog.createFailsafe(activity).setTitle("聊天字数统计设置").setMessage("是否要重置统计记录").setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
+                        putExFriend(timeCfg, Date().today)
+                        putExFriend(msgCfg, 0)
+                        putExFriend(wordsCfg, 0)
+                        putExFriend(emoCfg, 0)
+                        activity.showToastByTencent("已清空聊天字数统计")
+                    }.setNegativeButton(android.R.string.cancel, null).show()
+                    true
+                }
             }
             (relativeLayout.parent as FrameLayout).addView(textView)
         }
-        "Lcom/tencent/mobileqq/activity/ChatActivityFacade;->a(Lcom/tencent/mobileqq/app/QQAppInterface;Landroid/content/Context;Lcom/tencent/mobileqq/activity/aio/SessionInfo;Ljava/lang/String;Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/ChatActivityFacade\$SendMsgParams;)[J".method.hookAfter(
-            this
-        ) {
+        Initiator._ChatActivityFacade().method(
+            "a",
+            6,
+            LongArray::class.java
+        )?.hookAfter(this)
+        {
             val isToday = Date().today == getExFriendCfg().getStringOrDefault(timeCfg, "")
             if (isToday) {
-                putExFriend(msgCfg, getExFriendCfg().getIntOrDefault(msgCfg, 1) + 1)
+                putExFriend(msgCfg, getExFriendCfg().getIntOrDefault(msgCfg, 0) + 1)
                 putExFriend(
                     wordsCfg,
-                    getExFriendCfg().getIntOrDefault(wordsCfg, 1) + (it.args[3] as String).length
+                    getExFriendCfg().getIntOrDefault(wordsCfg, 0) + (it.args[3] as String).length
                 )
             } else {
                 putExFriend(timeCfg, Date().today)
                 putExFriend(msgCfg, 0)
                 putExFriend(wordsCfg, 0)
+                putExFriend(emoCfg, 0)
             }
         }
-        "Lcom/tencent/mobileqq/activity/ChatActivityFacade;->a(Lcom/tencent/mobileqq/app/QQAppInterface;Landroid/content/Context;Lcom/tencent/mobileqq/activity/aio/SessionInfo;Ljava/lang/String;ZZZLjava/lang/String;Lcom/tencent/mobileqq/emoticon/EmojiStickerManager\$StickerInfo;Ljava/lang/String;Landroid/os/Bundle;)V".method.hookAfter(
+        val sendEmoMethod =
+            if ("com.tencent.mobileqq.emoticonview.sender.CustomEmotionSenderUtil".clazz != null)
+                "com.tencent.mobileqq.emoticonview.sender.CustomEmotionSenderUtil".clazz?.method("sendCustomEmotion", 11, Void.TYPE)
+            else Initiator._ChatActivityFacade().method(
+                "a", 11, Void.TYPE
+            ) {
+                it.parameterTypes.contains(Initiator._StickerInfo())
+            }
+        sendEmoMethod?.hookAfter(
             this
         ) {
             val isToday = Date().today == getExFriendCfg().getStringOrDefault(timeCfg, "")
@@ -176,6 +218,8 @@ object ChatWordsCount : CommonDelayableHook("na_chat_words_count_kt") {
                 putExFriend(emoCfg, getExFriendCfg().getIntOrDefault(emoCfg, 0) + 1)
             } else {
                 putExFriend(timeCfg, Date().today)
+                putExFriend(msgCfg, 0)
+                putExFriend(wordsCfg, 0)
                 putExFriend(emoCfg, 0)
             }
         }

@@ -23,34 +23,59 @@ package cc.ioctl.hook;
 
 import static nil.nadph.qnotified.bridge.GreyTipBuilder.MSG_TYPE_TROOP_GAP_GRAY_TIPS;
 import static nil.nadph.qnotified.util.ReflexUtil.findMethodByTypes_1;
+import static nil.nadph.qnotified.util.ReflexUtil.invoke_virtual;
 import static nil.nadph.qnotified.util.ReflexUtil.invoke_virtual_declared_ordinal_modifier;
 import static nil.nadph.qnotified.util.Utils.log;
 
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import org.ferredoxin.ferredoxin_ui.base.UiSwitchPreference;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
+import me.singleneuron.qn_kernel.annotation.UiItem;
+import me.singleneuron.qn_kernel.base.CommonDelayAbleHookBridge;
+import me.singleneuron.qn_kernel.data.HostInfo;
 import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.base.annotation.FunctionEntry;
 import nil.nadph.qnotified.bridge.ContactUtils;
 import nil.nadph.qnotified.bridge.GreyTipBuilder;
-import nil.nadph.qnotified.hook.CommonDelayableHook;
 import nil.nadph.qnotified.step.DexDeobfStep;
 import nil.nadph.qnotified.util.DexKit;
 import nil.nadph.qnotified.util.Initiator;
 import nil.nadph.qnotified.util.LicenseStatus;
+import nil.nadph.qnotified.util.QQVersion;
 import nil.nadph.qnotified.util.Utils;
 
 @FunctionEntry
-public class GagInfoDisclosure extends CommonDelayableHook {
+@UiItem
+public class GagInfoDisclosure extends CommonDelayAbleHookBridge {
+
+    private final UiSwitchPreference mUiSwitchPreference = this.new UiSwitchPreferenceItemFactory("显示设置禁言的管理", "即使你只是普通群成员");
+
+    @NonNull
+    @Override
+    public UiSwitchPreference getPreference() {
+        return mUiSwitchPreference;
+    }
+
+    @Nullable
+    @Override
+    public String[] getPreferenceLocate() {
+        return new String[]{"净化功能"};
+    }
 
     public static final GagInfoDisclosure INSTANCE = new GagInfoDisclosure();
 
     GagInfoDisclosure() {
         // TODO: 2020/6/12 Figure out whether MSF is really needed
-        super("qn_disclose_gag_info", SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF,
+        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF,
             new DexDeobfStep(DexKit.C_MSG_REC_FAC));
     }
 
@@ -122,9 +147,15 @@ public class GagInfoDisclosure extends CommonDelayableHook {
                     Object msg = builder.build(troopUin, 1, opUin, time, msgseq);
                     List<Object> list = new ArrayList<>();
                     list.add(msg);
-                    invoke_virtual_declared_ordinal_modifier(Utils.getQQMessageFacade(), 0, 4,
-                        false, Modifier.PUBLIC, 0,
-                        list, Utils.getAccount(), List.class, String.class, void.class);
+                    //todo fix 860+
+                    if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
+                        invoke_virtual(Utils.getQQMessageFacade(), "a", list, Utils.getAccount(),
+                            List.class, String.class, void.class);
+                    } else {
+                        invoke_virtual_declared_ordinal_modifier(Utils.getQQMessageFacade(), 0, 4,
+                            false, Modifier.PUBLIC, 0,
+                            list, Utils.getAccount(), List.class, String.class, void.class);
+                    }
                     param.setResult(null);
                 }
             });
@@ -166,9 +197,15 @@ public class GagInfoDisclosure extends CommonDelayableHook {
                     Object msg = builder.build(troopUin, 1, opUin, time, msgseq);
                     List<Object> list = new ArrayList<>();
                     list.add(msg);
-                    invoke_virtual_declared_ordinal_modifier(Utils.getQQMessageFacade(), 0, 4,
-                        false, Modifier.PUBLIC, 0,
-                        list, Utils.getAccount(), List.class, String.class, void.class);
+                    //todo fix 860+
+                    if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
+                        invoke_virtual(Utils.getQQMessageFacade(), "a", list, Utils.getAccount(),
+                            List.class, String.class, void.class);
+                    } else {
+                        invoke_virtual_declared_ordinal_modifier(Utils.getQQMessageFacade(), 0, 4,
+                            false, Modifier.PUBLIC, 0,
+                            list, Utils.getAccount(), List.class, String.class, void.class);
+                    }
                     param.setResult(null);
                 }
             });

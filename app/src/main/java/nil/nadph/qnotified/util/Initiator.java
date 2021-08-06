@@ -21,11 +21,13 @@
  */
 package nil.nadph.qnotified.util;
 
+import android.os.Parcelable;
+
+import me.singleneuron.qn_kernel.data.HostInfo;
+import mqq.app.AppRuntime;
+
 import static nil.nadph.qnotified.util.Utils.PACKAGE_NAME_QQ;
 import static nil.nadph.qnotified.util.Utils.loge;
-
-import android.os.Parcelable;
-import mqq.app.AppRuntime;
 
 @SuppressWarnings("rawtypes")
 public class Initiator {
@@ -84,6 +86,33 @@ public class Initiator {
                     tmp = load("cooperation.vip.qqbanner.QbossADImmersionBannerManager$2");
                 }
                 mQbossADImmersionBannerManager = tmp.getDeclaredField("this$0").getType();
+                return mQbossADImmersionBannerManager;
+            } catch (Exception ignored) {
+            }
+        }
+        mQbossADImmersionBannerManager = load(
+            "cooperation.vip.qqbanner.manager.VasADImmersionBannerManager");
+        if (mQbossADImmersionBannerManager == null) {
+            try {
+                tmp = load("cooperation.vip.qqbanner.manager.VasADImmersionBannerManager$1");
+                if (tmp == null) {
+                    tmp = load("cooperation.vip.qqbanner.manager.VasADImmersionBannerManager$2");
+                }
+                mQbossADImmersionBannerManager = tmp.getDeclaredField("this$0").getType();
+                return mQbossADImmersionBannerManager;
+            } catch (Exception ignored) {
+            }
+        }
+        mQbossADImmersionBannerManager = load(
+            "cooperation.vip.qqbanner.manager.VasADImmersionBannerManager");
+        if (mQbossADImmersionBannerManager == null) {
+            try {
+                tmp = load("cooperation.vip.qqbanner.manager.VasADImmersionBannerManager$1");
+                if (tmp == null) {
+                    tmp = load("cooperation.vip.qqbanner.manager.VasADImmersionBannerManager$2");
+                }
+                mQbossADImmersionBannerManager = tmp.getDeclaredField("this$0").getType();
+                return mQbossADImmersionBannerManager;
             } catch (Exception ignored) {
             }
         }
@@ -135,17 +164,21 @@ public class Initiator {
 
     public static Class _GdtMvViewController() {
         Class tmp;
-        Class mGdtMvViewController = load("com.tencent.gdtad.api.motivevideo.GdtMvViewController");
+        String clzName = "com.tencent.gdtad.api.motivevideo.GdtMvViewController";
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
+            clzName = "com.tencent.gdtad.basics.motivevideo.GdtMvViewController";
+        }
+        Class mGdtMvViewController = load(clzName);
         if (mGdtMvViewController == null) {
             try {
-                tmp = load("com.tencent.gdtad.api.motivevideo.GdtMvViewController$6");
+                tmp = load(clzName + "$6");
                 mGdtMvViewController = tmp.getDeclaredField("this$0").getType();
             } catch (Exception ignored) {
             }
         }
         if (mGdtMvViewController == null) {
             try {
-                tmp = load("com.tencent.gdtad.api.motivevideo.GdtMvViewController$8");
+                tmp = load(clzName + "$8");
                 mGdtMvViewController = tmp.getDeclaredField("this$0").getType();
             } catch (Exception ignored) {
             }
@@ -446,6 +479,10 @@ public class Initiator {
         return director;
     }
 
+    public static Class _BaseQQMessageFacade() {
+        return load("com/tencent/imcore/message/BaseQQMessageFacade");
+    }
+
     public static Class _QQMessageFacade() {
         Class<?> cFacade = load("com/tencent/mobileqq/app/message/QQMessageFacade");
         if (cFacade != null) {
@@ -593,5 +630,65 @@ public class Initiator {
         }
         loge("Initiator/E class C2CMessageProcessor not found");
         return null;
+    }
+
+    public static Class _AllInOne() {
+        Class<?> clazz = load("com/tencent/mobileqq/activity/ProfileActivity$AllInOne");
+        if (clazz == null) {
+            clazz = load("com.tencent.mobileqq.profilecard.data.AllInOne");
+        }
+        return clazz;
+    }
+
+    public static Class _FriendProfileCardActivity() {
+        Class<?> clazz = load("com/tencent/mobileqq/activity/FriendProfileCardActivity");
+        if (clazz == null) {
+            clazz = load("com.tencent.mobileqq.profilecard.activity.FriendProfileCardActivity");
+        }
+        return clazz;
+    }
+
+    public static Class _ThemeUtil() {
+        Class<?> clazz = load("com/tencent/mobileqq/theme/ThemeUtil");
+        if (clazz == null) {
+            clazz = load("com.tencent.mobileqq.vas.theme.api.ThemeUtil");
+        }
+        return clazz;
+    }
+
+    public static Class _TroopMemberLevelView() {
+        Class<?> clazz = load("com.tencent.mobileqq.troop.troopMemberLevel.TroopMemberNewLevelView");
+        if (clazz == null) {
+            clazz = load("com.tencent.mobileqq.troop.widget.troopmemberlevel.TroopMemberNewLevelView");
+        }
+        return clazz;
+    }
+
+    public static Class _TroopChatPie() {
+        Class<?> clazz = load("com.tencent.mobileqq.activity.aio.core.TroopChatPie");
+        if (clazz == null) {
+            clazz = load("com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie");
+        }
+        return clazz;
+    }
+
+    public static Class _ChatActivityFacade() {
+        return load("com/tencent/mobileqq/activity/ChatActivityFacade");
+    }
+
+    public static Class _BaseSessionInfo() {
+        Class<?> clazz = load("com/tencent/mobileqq/activity/aio/BaseSessionInfo");
+        if (clazz == null) {
+            clazz = load("com/tencent/mobileqq/activity/aio/SessionInfo");
+        }
+        return clazz;
+    }
+
+    public static Class _StickerInfo() {
+        Class<?> clazz = load("com.tencent.mobileqq.emoticon.StickerInfo");
+        if (clazz == null) {
+            clazz = load("com.tencent.mobileqq.emoticon.EmojiStickerManager.StickerInfo");
+        }
+        return clazz;
     }
 }

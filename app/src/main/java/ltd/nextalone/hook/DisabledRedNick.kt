@@ -25,16 +25,18 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import ltd.nextalone.util.*
 import me.singleneuron.qn_kernel.data.requireMinQQVersion
-import me.singleneuron.util.QQVersion
+import nil.nadph.qnotified.util.QQVersion
 import nil.nadph.qnotified.base.annotation.FunctionEntry
 import nil.nadph.qnotified.hook.CommonDelayableHook
+import nil.nadph.qnotified.step.DexDeobfStep
+import nil.nadph.qnotified.util.DexKit
 
 @FunctionEntry
-object DisabledRedNick : CommonDelayableHook("na_disable_red_nick_kt") {
+object DisabledRedNick : CommonDelayableHook("na_disable_red_nick_kt", DexDeobfStep(DexKit.N_FriendChatPie_updateUITitle)) {
 
     override fun initOnce() = tryOrFalse {
         if (!isSimpleUi) {
-            "Lcom/tencent/mobileqq/activity/aio/core/FriendChatPie;->aP()V".method.hookBefore(this) {
+            DexKit.doFindMethod(DexKit.N_FriendChatPie_updateUITitle)?.hookBefore(this) {
                 val navAIO = it.thisObject.get(
                     "a",
                     "com.tencent.mobileqq.widget.navbar.NavBarAIO".clazz

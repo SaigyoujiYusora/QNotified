@@ -9,6 +9,7 @@
 -keep class cn.lliiooll.** { *; }
 -keep class ltd.nextalone.** { *; }
 -keep class cc.ioctl.** { *; }
+-keep class com.tencent.mmkv.** { *; }
 
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
@@ -44,6 +45,7 @@
 }
 
 -dontobfuscate
+-dontoptimize
 
 -dontwarn javax.**
 -dontwarn java.awt.**

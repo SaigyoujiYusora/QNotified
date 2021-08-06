@@ -23,9 +23,10 @@ package me.kyuubiran.hook
 
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
+import me.singleneuron.qn_kernel.annotation.UiItem
+import me.singleneuron.qn_kernel.base.CommonDelayAbleHookBridge
 import me.singleneuron.qn_kernel.tlb.ConfigTable
 import nil.nadph.qnotified.base.annotation.FunctionEntry
-import nil.nadph.qnotified.hook.CommonDelayableHook
 import nil.nadph.qnotified.util.Initiator._BaseChatPie
 import nil.nadph.qnotified.util.LicenseStatus
 import nil.nadph.qnotified.util.Utils
@@ -33,7 +34,8 @@ import java.lang.reflect.Method
 
 //聊天界面顶栏群名字/好友昵称自动打码
 @FunctionEntry
-object AutoMosaicName : CommonDelayableHook("kr_automatic_mosaic_name") {
+@UiItem
+object AutoMosaicName : CommonDelayAbleHookBridge() {
 
     override fun initOnce(): Boolean {
         return try {
@@ -58,4 +60,10 @@ object AutoMosaicName : CommonDelayableHook("kr_automatic_mosaic_name") {
             false
         }
     }
+
+    override val preference = uiSwitchPreference {
+        title = "昵称/群名片打码"
+    }
+    override val preferenceLocate: Array<String> = arrayOf("其他功能", "娱乐功能")
+
 }

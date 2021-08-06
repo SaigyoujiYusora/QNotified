@@ -28,15 +28,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+
 import com.tencent.widget.XListView;
+
+import java.util.List;
+
 import de.psdev.licensesdialog.LicensesDialog;
 import de.psdev.licensesdialog.licenses.ApacheSoftwareLicense20;
+import de.psdev.licensesdialog.licenses.BSD3ClauseLicense;
 import de.psdev.licensesdialog.licenses.GnuLesserGeneralPublicLicense3;
 import de.psdev.licensesdialog.licenses.MITLicense;
 import de.psdev.licensesdialog.model.Notice;
 import de.psdev.licensesdialog.model.Notices;
 import io.noties.markwon.Markwon;
-import java.util.List;
 import nil.nadph.qnotified.R;
 import nil.nadph.qnotified.ui.ResUtils;
 
@@ -47,9 +51,6 @@ public class LicenseActivity extends IphoneTitleBarActivityCompat implements Vie
         super.doOnCreate(bundle);
 
         final Notices notices = new Notices();
-        Notice flycoTabLayout = new Notice("FlycoTabLayout",
-            "https://github.com/H07000223/FlycoTabLayout", "Copyright (c) 2015 H07000223",
-            new MITLicense());
         Notice markwon = new Notice("Markwon", "https://github.com/noties/Markwon",
             "Copyright 2017 Dimitry Ivanov (mail@dimitryivanov.ru)", new ApacheSoftwareLicense20());
         Notice colorPicker = new Notice("ColorPicker",
@@ -66,7 +67,17 @@ public class LicenseActivity extends IphoneTitleBarActivityCompat implements Vie
         notices.addNotice(
             new Notice("QQSpeciallyCare", "https://github.com/singleNeuron/QQSpeciallyCare",
                 "singleNeuron", new ApacheSoftwareLicense20()));
-        notices.addNotice(flycoTabLayout);
+        notices.addNotice(new Notice("MMKV", "https://github.com/Tencent/MMKV",
+            "Copyright (C) 2018 THL A29 Limited, a Tencent company. All rights reserved.",
+            new BSD3ClauseLicense()));
+        notices.addNotice(
+            new Notice("QQHelper", "https://github.com/Qiwu2542284182/QQHelper", "祈无",
+                new ApacheSoftwareLicense20())
+        );
+        notices.addNotice(
+            new Notice("Ferredoxin UI", "https://github.com/ferredoxin/FerredoxinUI", "ferredoxin",
+                null)
+        );
         notices.addNotice(markwon);
         notices.addNotice(colorPicker);
         notices.addNotice(LicensesDialog.LICENSES_DIALOG_NOTICE);

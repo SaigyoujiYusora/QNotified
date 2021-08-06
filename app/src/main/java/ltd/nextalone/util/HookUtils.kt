@@ -40,7 +40,7 @@ import java.lang.reflect.Member
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
-internal val String.clazz: Class<*>
+internal val String.clazz: Class<*>?
     get() = Initiator.load(this)
 
 internal val String.method: Method
@@ -57,13 +57,24 @@ internal fun Class<*>.method(name: String): Method? = this.declaredMethods.run {
     return null
 }
 
-internal fun Class<*>.method(name: String, vararg args: Class<*>): Method? =
+internal fun Class<*>.method(name: String, vararg args: Class<*>?): Method? =
     hasMethod(this, name, *args)
 
 internal fun Class<*>.method(
+    condition: (method: Method) -> Boolean = { true }
+): Method? = this.declaredMethods.run {
+    this.forEach {
+        if (condition(it)) {
+            return it
+        }
+    }
+    return null
+}
+
+internal fun Class<*>.method(
     size: Int,
-    returnType: Class<*>,
-    condition: (method: Member) -> Boolean = { true }
+    returnType: Class<*>?,
+    condition: (method: Method) -> Boolean = { true }
 ): Method? = this.declaredMethods.run {
     this.forEach {
         if (it.returnType == returnType && it.parameterTypes.size == size && condition(it)) {
@@ -76,8 +87,8 @@ internal fun Class<*>.method(
 internal fun Class<*>.method(
     name: String,
     size: Int,
-    returnType: Class<*>,
-    condition: (method: Member) -> Boolean = { true }
+    returnType: Class<*>?,
+    condition: (method: Method) -> Boolean = { true }
 ): Method? = this.declaredMethods.run {
     this.forEach {
         if (it.name == name && it.returnType == returnType && it.parameterTypes.size == size && condition(
@@ -125,7 +136,7 @@ internal fun Class<*>?.instance(vararg arg: Any?): Any = XposedHelpers.newInstan
 internal fun Class<*>?.instance(type: Array<Class<*>>, vararg arg: Any?): Any =
     XposedHelpers.newInstance(this, type, *arg)
 
-internal fun Any?.invoke(name: String, vararg args: Class<*>): Any? =
+internal fun Any?.invoke(name: String, vararg args: Any): Any? =
     ReflexUtil.invoke_virtual(this, name, *args)
 
 internal fun Member.hook(callback: NAMethodHook) = try {
@@ -311,7 +322,7 @@ internal inline fun Class<*>.hookAfterAllConstructors(crossinline hooker: (XC_Me
 
 internal fun putValue(keyName: String, obj: Any, mgr: ConfigManager) {
     try {
-        mgr.allConfig[keyName] = obj
+        mgr.putObject(keyName, obj)
         mgr.save()
     } catch (e: Exception) {
         Utils.log(e)

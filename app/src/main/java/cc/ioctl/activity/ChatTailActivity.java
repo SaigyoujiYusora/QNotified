@@ -21,19 +21,6 @@
  */
 package cc.ioctl.activity;
 
-import static android.text.InputType.TYPE_CLASS_TEXT;
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static nil.nadph.qnotified.ui.ViewBuilder.R_ID_VALUE;
-import static nil.nadph.qnotified.ui.ViewBuilder.newLinearLayoutParams;
-import static nil.nadph.qnotified.ui.ViewBuilder.newListItemButton;
-import static nil.nadph.qnotified.ui.ViewBuilder.newListItemSwitchFriendConfigNext;
-import static nil.nadph.qnotified.ui.ViewBuilder.subtitle;
-import static nil.nadph.qnotified.util.Utils.dip2px;
-import static nil.nadph.qnotified.util.Utils.dip2sp;
-import static nil.nadph.qnotified.util.Utils.log;
-import static nil.nadph.qnotified.util.Utils.logi;
-
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -44,21 +31,20 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
+
 import androidx.core.view.ViewCompat;
+
+import com.tencent.mobileqq.widget.BounceScrollView;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import cc.ioctl.dialog.RikkaCustomMsgTimeFormatDialog;
 import cc.ioctl.hook.ChatTailHook;
 import cc.ioctl.hook.FakeBatteryHook;
-import com.tencent.mobileqq.widget.BounceScrollView;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import me.kyuubiran.util.UtilsKt;
-import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+import me.singleneuron.qn_kernel.data.HostInfo;
 import nil.nadph.qnotified.ExfriendManager;
 import nil.nadph.qnotified.R;
 import nil.nadph.qnotified.activity.FriendSelectActivity;
@@ -66,10 +52,17 @@ import nil.nadph.qnotified.activity.IphoneTitleBarActivityCompat;
 import nil.nadph.qnotified.activity.TroopSelectActivity;
 import nil.nadph.qnotified.config.ConfigItems;
 import nil.nadph.qnotified.config.ConfigManager;
-import nil.nadph.qnotified.ui.HighContrastBorder;
+import nil.nadph.qnotified.ui.widget.FunctionButton;
+import nil.nadph.qnotified.ui.drawable.HighContrastBorder;
 import nil.nadph.qnotified.ui.ResUtils;
 import nil.nadph.qnotified.util.Toasts;
 import nil.nadph.qnotified.util.Utils;
+
+import static android.text.InputType.TYPE_CLASS_TEXT;
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static nil.nadph.qnotified.ui.ViewBuilder.*;
+import static nil.nadph.qnotified.util.Utils.*;
 
 @SuppressLint("Registered")
 public class ChatTailActivity extends IphoneTitleBarActivityCompat implements View.OnClickListener {
@@ -132,7 +125,7 @@ public class ChatTailActivity extends IphoneTitleBarActivityCompat implements Vi
         ll.addView(subtitle(ChatTailActivity.this, "在这里设置然后每次聊天自动添加"));
         ChatTailHook ct = ChatTailHook.INSTANCE;
         boolean enabled = ct.isEnabled();
-        RelativeLayout _s;
+        ViewGroup _s;
         LinearLayout _t;
         ll.addView(_t = subtitle(ChatTailActivity.this, ""));
         tvStatus = (TextView) _t.getChildAt(0);
@@ -141,15 +134,15 @@ public class ChatTailActivity extends IphoneTitleBarActivityCompat implements Vi
         ll.addView(_s = newListItemButton(this, "选择生效的群", "未选择的群将不展示小尾巴", "N/A",
             v -> TroopSelectActivity.startToSelectTroopsAndSaveToExfMgr(ChatTailActivity.this,
                 ConfigItems.qn_chat_tail_troops, "选择小尾巴生效群")));
-        __tv_chat_tail_groups = _s.findViewById(R_ID_VALUE);
+        __tv_chat_tail_groups = ((FunctionButton) _s).getValue();
         ll.addView(_s = newListItemButton(this, "选择生效的好友", "未选择的好友将不展示小尾巴", "N/A",
             v -> FriendSelectActivity.startToSelectFriendsAndSaveToExfMgr(ChatTailActivity.this,
                 ConfigItems.qn_chat_tail_friends, "选择小尾巴生效好友")));
-        __tv_chat_tail_friends = _s.findViewById(R_ID_VALUE);
+        __tv_chat_tail_friends = ((FunctionButton) _s).getValue();
         ll.addView(_s = newListItemButton(this, "设置日期格式", "请在QN内置花Q的\"聊天页自定义时间格式\"中设置",
             RikkaCustomMsgTimeFormatDialog.getTimeFormat(),
             view -> Toasts.info(ChatTailActivity.this, "请在QN内置花Q的\"聊天页自定义时间格式\"中设置")));
-        __tv_chat_tail_time_format = _s.findViewById(R_ID_VALUE);
+        __tv_chat_tail_time_format = ((FunctionButton) _s).getValue();
         ll.addView(subtitle(ChatTailActivity.this, "设置小尾巴"));
         ll.addView(subtitle(ChatTailActivity.this, "可用变量(点击自动输入): "));
         LinearLayout _a, _b, _c, _d, _e, _f, _g, _h;
@@ -176,14 +169,14 @@ public class ChatTailActivity extends IphoneTitleBarActivityCompat implements Vi
         ll.addView(pct,
             newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp));
         ll.addView(newListItemSwitchFriendConfigNext(this, "正则开关",
-            "通过正则表达式的消息不会携带小尾巴(无需重启" + HostInformationProviderKt.getHostInfo().getHostName() + ")",
+            "通过正则表达式的消息不会携带小尾巴(无需重启" + HostInfo.getHostInfo().getHostName() + ")",
             ConfigItems.qn_chat_tail_regex, false));
         ll.addView(createEditText(R_ID_REGEX_VALUE, _5dp, ChatTailHook.getTailRegex(),
             "需要有正则表达式相关知识(部分匹配)"),
             newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT,
                 2 * _5dp, _5dp, 2 * _5dp, _5dp));
         ll.addView(newListItemSwitchFriendConfigNext(this, "全局开关",
-            "开启将无视生效范围(无需重启" + HostInformationProviderKt.getHostInfo().getHostName() + ")",
+            "开启将无视生效范围(无需重启" + HostInfo.getHostInfo().getHostName() + ")",
             ConfigItems.qn_chat_tail_global, false));
         Button apply = new Button(ChatTailActivity.this);
         apply.setId(R_ID_APPLY);

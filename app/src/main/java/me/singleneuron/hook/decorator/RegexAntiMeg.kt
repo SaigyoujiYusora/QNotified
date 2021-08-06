@@ -30,13 +30,19 @@ import cn.lliiooll.msg.MessageReceiver
 import de.robv.android.xposed.XposedHelpers
 import me.kyuubiran.util.getExFriendCfg
 import me.singleneuron.qn_kernel.data.MsgRecordData
+import me.singleneuron.qn_kernel.ui.base.辅助功能
+import nil.nadph.qnotified.SyncUtils
+import nil.nadph.qnotified.ui.CommonContextWrapper
 import nil.nadph.qnotified.ui.CustomDialog
 import nil.nadph.qnotified.ui.ViewBuilder
 import nil.nadph.qnotified.util.Initiator
 import nil.nadph.qnotified.util.ReflexUtil
 import nil.nadph.qnotified.util.Utils
+import org.ferredoxin.ferredoxin_ui.base.UiItem
+import org.ferredoxin.ferredoxin_ui.base.uiEditTextPreference
 
-object RegexAntiMeg : MessageReceiver, View.OnClickListener {
+@me.singleneuron.qn_kernel.annotation.UiItem
+object RegexAntiMeg : MessageReceiver, View.OnClickListener, UiItem {
 
     private var regexCache: Regex? = null
     private var regexStringCache: String = ""
@@ -45,7 +51,7 @@ object RegexAntiMeg : MessageReceiver, View.OnClickListener {
         try {
             if (data == null) return false
             val regexString =
-                getExFriendCfg().getStringOrDefault(RegexAntiMeg::class.simpleName, "")
+                getExFriendCfg().getStringOrDefault(RegexAntiMeg::class.simpleName!!, "")
             if (regexString.isNullOrBlank()) return false
             return when {
                 Initiator.load("com.tencent.mobileqq.data.MessageForStructing")
@@ -113,4 +119,21 @@ object RegexAntiMeg : MessageReceiver, View.OnClickListener {
             .create()
             .show()
     }
+
+    override val preference = uiEditTextPreference {
+        title = "万象屏蔽卡片消息"
+        summary = "使用强大的正则表达式自由屏蔽卡片消息"
+        SyncUtils.post {
+            value.observeForever {
+                getExFriendCfg().putString(RegexAntiMeg::class.java.simpleName, it)
+            }
+        }
+        inputLayout = {
+            helperText = "留空以禁用"
+        }
+        contextWrapper = CommonContextWrapper::createMaterialDesignContext
+    }
+
+    override val preferenceLocate: Array<String> = 辅助功能
+
 }

@@ -21,10 +21,8 @@
  */
 package me.singleneuron.hook
 
-import me.singleneuron.base.adapter.BaseDelayableHookAdapter
+import nil.nadph.qnotified.hook.CommonDelayableHook
 
-object CopyCardMsg : BaseDelayableHookAdapter("copyCardMsg") {
-    override fun doInit(): Boolean {
-        return true
-    }
+object CopyCardMsg : CommonDelayableHook("copyCardMsg") {
+    override fun initOnce(): Boolean = true
 }

@@ -22,22 +22,39 @@
 package me.singleneuron.hook
 
 import android.content.Intent
+import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers
 import me.singleneuron.activity.ChooseFileAgentActivity
-import me.singleneuron.base.adapter.BaseDelayableConditionalHookAdapter
+import me.singleneuron.qn_kernel.annotation.UiItem
+import me.singleneuron.qn_kernel.base.CommonDelayAbleHookBridge
 import me.singleneuron.qn_kernel.data.hostInfo
 import me.singleneuron.qn_kernel.data.requireMinQQVersion
-import me.singleneuron.util.QQVersion
+import me.singleneuron.qn_kernel.ui.base.辅助功能
 import nil.nadph.qnotified.base.annotation.FunctionEntry
 import nil.nadph.qnotified.step.DexDeobfStep
 import nil.nadph.qnotified.step.Step
 import nil.nadph.qnotified.util.DexKit
 import nil.nadph.qnotified.util.Initiator
+import nil.nadph.qnotified.util.QQVersion
 
 @FunctionEntry
-object ForceSystemFile : BaseDelayableConditionalHookAdapter("forceSystemFile") {
+@UiItem
+object ForceSystemFile : CommonDelayAbleHookBridge() {
 
-    override fun doInit(): Boolean {
+    override fun getPreconditions(): Array<Step> {
+        return arrayOf(DexDeobfStep(DexKit.C_SmartDeviceProxyMgr))
+    }
+
+    override fun initOnce(): Boolean {
+        val hook = object : XC_MethodHook() {
+            override fun beforeHookedMethod(param: MethodHookParam?) {
+                val context = hostInfo.application
+                val intent = Intent(context, ChooseFileAgentActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+                param!!.result = null
+            }
+        }
         if (requireMinQQVersion(QQVersion.QQ_8_4_8)) {
             val plusPanelClass = Class.forName("com.tencent.mobileqq.pluspanel.appinfo.FileAppInfo")
             //特征字符串:"SmartDeviceProxyMgr create"
@@ -48,13 +65,7 @@ object ForceSystemFile : BaseDelayableConditionalHookAdapter("forceSystemFile") 
                 "a",
                 Initiator._BaseChatPie(),
                 sessionInfoClass,
-                object : XposedMethodHookAdapter() {
-                    override fun beforeMethod(param: MethodHookParam?) {
-                        val context = hostInfo.application
-                        context.startActivity(Intent(context, ChooseFileAgentActivity::class.java))
-                        param!!.result = null
-                    }
-                })
+                hook)
         } else {
             val plusPanelClass = Class.forName("com.tencent.mobileqq.activity.aio.PlusPanel")
             val smartDeviceProxyMgrClass = DexKit.doFindClass(DexKit.C_SmartDeviceProxyMgr)
@@ -63,21 +74,16 @@ object ForceSystemFile : BaseDelayableConditionalHookAdapter("forceSystemFile") 
                 plusPanelClass,
                 "a",
                 smartDeviceProxyMgrClass,
-                object : XposedMethodHookAdapter() {
-                    override fun beforeMethod(param: MethodHookParam?) {
-                        val context = hostInfo.application
-                        context.startActivity(Intent(context, ChooseFileAgentActivity::class.java))
-                        param!!.result = null
-                    }
-                })
+                hook)
         }
         return true
     }
 
-    override fun getPreconditions(): Array<Step> {
-        return arrayOf(DexDeobfStep(DexKit.C_SmartDeviceProxyMgr))
+    override val preference = uiSwitchPreference {
+        title = "强制使用系统文件"
+        summary = "支持8.3.6及更高"
     }
 
-    override val condition: Boolean
-        get() = true
+    override val preferenceLocate: Array<String> = 辅助功能
+
 }

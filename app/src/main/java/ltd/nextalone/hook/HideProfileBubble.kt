@@ -23,32 +23,31 @@ package ltd.nextalone.hook
 
 import ltd.nextalone.util.replace
 import ltd.nextalone.util.tryOrFalse
-import me.kyuubiran.util.isStatic
+import nil.nadph.qnotified.util.PlayQQVersion.PlayQQ_8_2_9
 import me.singleneuron.base.adapter.BaseDelayableHighPerformanceConditionalHookAdapter
 import me.singleneuron.data.PageFaultHighPerformanceFunctionCache
+import me.singleneuron.qn_kernel.data.requireMinPlayQQVersion
 import me.singleneuron.qn_kernel.data.requireMinQQVersion
-import me.singleneuron.qn_kernel.tlb.ConfigTable
-import me.singleneuron.util.QQVersion
+import nil.nadph.qnotified.util.QQVersion
 import nil.nadph.qnotified.base.annotation.FunctionEntry
-import nil.nadph.qnotified.util.Initiator
-import java.lang.reflect.Method
+import nil.nadph.qnotified.step.DexDeobfStep
+import nil.nadph.qnotified.step.Step
+import nil.nadph.qnotified.util.DexKit
 
 @FunctionEntry
 object HideProfileBubble : BaseDelayableHighPerformanceConditionalHookAdapter("hideProfileBubble") {
 
     override val recordTime: Boolean = false
 
+    override fun getPreconditions(): Array<Step> {
+        return arrayOf(DexDeobfStep(DexKit.N_QQSettingMe_updateProfileBubble))
+    }
+
     override fun doInit() = tryOrFalse {
-        val clz = Initiator.load("com.tencent.mobileqq.activity.QQSettingMe")
-        for (m: Method in clz.declaredMethods) {
-            val argt = m.parameterTypes
-            if (m.name == ConfigTable.getConfig(HideProfileBubble::class.simpleName) && !m.isStatic && argt.isEmpty()) {
-                m.replace(this, null)
-            }
-        }
+        DexKit.doFindMethod(DexKit.N_QQSettingMe_updateProfileBubble)?.replace(this, null)
     }
 
     override val conditionCache: PageFaultHighPerformanceFunctionCache<Boolean> =
-        PageFaultHighPerformanceFunctionCache { requireMinQQVersion(QQVersion.QQ_8_3_6) }
+        PageFaultHighPerformanceFunctionCache { requireMinQQVersion(QQVersion.QQ_8_3_6) or requireMinPlayQQVersion(PlayQQ_8_2_9) }
 
 }

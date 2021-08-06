@@ -85,7 +85,7 @@ object AutoRenewFireDialog {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                replyTime = s.toString()
+                replyTime = s.toString().replace("：",":")
                 if (replyTime.isNotEmpty() && !stringTimeValidator(replyTime)) {
                     timeEditText.error = "时间格式错误"
                 }
@@ -221,7 +221,7 @@ object AutoRenewFireDialog {
 
     fun save() {
         val cfg = getExFriendCfg()
-        currentEnable?.let { cfg.setBooleanConfig(AutoRenewFireMgr.ENABLE, it) }
+        currentEnable?.let { cfg.putBoolean(AutoRenewFireMgr.ENABLE, it) }
         cfg.putString(AutoRenewFireMgr.MESSAGE, replyMsg)
         cfg.putString(
             AutoRenewFireMgr.TIMEPRESET,

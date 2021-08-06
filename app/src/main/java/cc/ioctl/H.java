@@ -22,8 +22,11 @@
 package cc.ioctl;
 
 import android.app.Application;
+
 import androidx.annotation.NonNull;
-import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+
+import me.singleneuron.qn_kernel.data.HostInfo;
+import nil.nadph.qnotified.util.Utils;
 
 /**
  * Helper class for getting host information. Keep it as simple as possible.
@@ -36,38 +39,46 @@ public class H {
 
     @NonNull
     public static Application getApplication() {
-        return HostInformationProviderKt.getHostInfo().getApplication();
+        return HostInfo.getHostInfo().getApplication();
     }
 
     @NonNull
     public static String getPackageName() {
-        return HostInformationProviderKt.getHostInfo().getPackageName();
+        return HostInfo.getHostInfo().getPackageName();
     }
 
     @NonNull
     public static String getAppName() {
-        return HostInformationProviderKt.getHostInfo().getHostName();
+        return HostInfo.getHostInfo().getHostName();
     }
 
     @NonNull
     public static String getVersionName() {
-        return HostInformationProviderKt.getHostInfo().getVersionName();
+        return HostInfo.getHostInfo().getVersionName();
     }
 
     public static int getVersionCode() {
-        return HostInformationProviderKt.getHostInfo().getVersionCode32();
+        return HostInfo.getHostInfo().getVersionCode32();
     }
 
     public static long getLongVersionCode() {
-        return HostInformationProviderKt.getHostInfo().getVersionCode();
+        return HostInfo.getHostInfo().getVersionCode();
     }
 
     public static boolean isTIM() {
-        return HostInformationProviderKt.getHostInfo().isTim();
+        return HostInfo.isTim();
+    }
+
+    public static boolean isQQLite() {
+        return Utils.PACKAGE_NAME_QQ_LITE.equals(getPackageName());
+    }
+
+    public static boolean isPlayQQ() {
+        return !HostInfo.isPlayQQ();
     }
 
     public static boolean isQQ() {
         //Improve this method when supporting more clients.
-        return !HostInformationProviderKt.getHostInfo().isTim();
+        return !HostInfo.isTim();
     }
 }

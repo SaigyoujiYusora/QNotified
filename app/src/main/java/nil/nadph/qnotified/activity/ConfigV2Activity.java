@@ -21,10 +21,13 @@
  */
 package nil.nadph.qnotified.activity;
 
+import static me.ketal.ui.activity.QFileShareToIpadActivity.ENABLE_SEND_TO_IPAD;
+import static me.ketal.ui.activity.QFileShareToIpadActivity.ENABLE_SEND_TO_IPAD_STATUS;
+import static me.ketal.ui.activity.QFileShareToIpadActivity.SEND_TO_IPAD_CMD;
+
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,6 +48,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Date;
+
+import me.ketal.ui.activity.QFileShareToIpadActivity;
+import me.ketal.util.ComponentUtilKt;
 import me.singleneuron.util.HookStatue;
 import nil.nadph.qnotified.BuildConfig;
 import nil.nadph.qnotified.R;
@@ -69,6 +75,13 @@ public class ConfigV2Activity extends AppCompatActivity {
         if (R.string.res_inject_success >>> 24 == 0x7f) {
             throw new RuntimeException("package id must NOT be 0x7f");
         }
+        String cmd = getIntent().getStringExtra(SEND_TO_IPAD_CMD);
+        if (ENABLE_SEND_TO_IPAD.equals(cmd)) {
+            boolean enabled = getIntent().getBooleanExtra(ENABLE_SEND_TO_IPAD_STATUS, false);
+            ComponentName componentName = new ComponentName(this, QFileShareToIpadActivity.class);
+            ComponentUtilKt.setEnable(componentName, this, enabled);
+            finish();
+        }
         String str = "";
         try {
             str += "SystemClassLoader:" + ClassLoader.getSystemClassLoader() +
@@ -79,21 +92,6 @@ public class ConfigV2Activity extends AppCompatActivity {
         }
         dbgInfo += str;
         HookStatue.Statue statue = HookStatue.INSTANCE.getStatue(this, false);
-        boolean isDynLoad = false;
-        InputStream in = ConfigV2Activity.class.getClassLoader()
-            .getResourceAsStream("assets/xposed_init");
-        byte[] buf = new byte[64];
-        String start;
-        try {
-            int len = in.read(buf);
-            in.close();
-            start = new String(buf, 0, len).replace("\n", "").replace("\r", "").replace(" ", "");
-        } catch (IOException e) {
-            start = e.toString();
-        }
-        if ("nil.nadph.qnotified.startup.HookLoader".equals(start)) {
-            isDynLoad = true;
-        }
         try {
             long delta = System.currentTimeMillis();
             Natives.load(this);
@@ -207,6 +205,47 @@ public class ConfigV2Activity extends AppCompatActivity {
                     .setCancelable(true).setPositiveButton(android.R.string.ok, null).show();
                 break;
             }
+            case R.id.mainV2_troubleshoot: {
+                new AlertDialog.Builder(this)
+                    .setTitle("你想要进入哪个App的故障排除")
+                    .setItems(new String[] {"QQ", "TIM", "QQ极速版"}, (dialog, which) -> {
+                        String pkg = null;
+                        switch (which) {
+                            case 0: {
+                                pkg = HookEntry.PACKAGE_NAME_QQ;
+                                break;
+                            }
+                            case 1: {
+                                pkg = HookEntry.PACKAGE_NAME_TIM;
+                                break;
+                            }
+                            case 2: {
+                                pkg = HookEntry.PACKAGE_NAME_QQ_LITE;
+                                break;
+                            }
+                            default: {
+                            }
+                        }
+                        if (pkg != null) {
+                            Intent intent = new Intent();
+                            intent
+                                .setComponent(new ComponentName(pkg, "com.tencent.mobileqq.activity.JumpActivity"));
+                            intent.setAction(Intent.ACTION_VIEW);
+                            intent.putExtra(JumpActivityEntryHook.JUMP_ACTION_CMD,
+                                JumpActivityEntryHook.JUMP_ACTION_START_ACTIVITY);
+                            intent.putExtra(JumpActivityEntryHook.JUMP_ACTION_TARGET, "nil.nadph.qnotified.activity.TroubleshootActivity");
+                            try {
+                                startActivity(intent);
+                            } catch (ActivityNotFoundException e) {
+                                new AlertDialog.Builder(this).setTitle("出错啦")
+                                    .setMessage("拉起模块设置失败, 请确认 " + pkg + " 已安装并启用(没有被关冰箱或被冻结停用)\n" + e.toString())
+                                    .setCancelable(true).setPositiveButton(android.R.string.ok, null).show();
+                            }
+                        }
+                    })
+                    .setPositiveButton(android.R.string.ok, null).show();
+                break;
+            }
             default: {
             }
         }
@@ -228,23 +267,13 @@ public class ConfigV2Activity extends AppCompatActivity {
     }
 
     boolean isLauncherIconEnabled() {
-        try {
-            PackageManager packageManager = getPackageManager();
-            int state = packageManager.getComponentEnabledSetting(
-                new ComponentName(this, ALIAS_ACTIVITY_NAME));
-            return state == PackageManager.COMPONENT_ENABLED_STATE_ENABLED ||
-                state == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
-        } catch (Exception e) {
-            return false;
-        }
+        ComponentName componentName = new ComponentName(this, ALIAS_ACTIVITY_NAME);
+        return ComponentUtilKt.getEnable(componentName, this);
     }
 
     @UiThread
     void setLauncherIconEnabled(boolean enabled) {
-        getPackageManager().setComponentEnabledSetting(
-            new ComponentName(this, ALIAS_ACTIVITY_NAME),
-            enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED :
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-            PackageManager.DONT_KILL_APP);
+        ComponentName componentName = new ComponentName(this, ALIAS_ACTIVITY_NAME);
+        ComponentUtilKt.setEnable(componentName, this, enabled);
     }
 }

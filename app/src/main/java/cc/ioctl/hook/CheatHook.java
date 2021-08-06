@@ -21,29 +21,51 @@
  */
 package cc.ioctl.hook;
 
+import static nil.nadph.qnotified.util.Initiator._BaseSessionInfo;
 import static nil.nadph.qnotified.util.Initiator._SessionInfo;
 import static nil.nadph.qnotified.util.Initiator.load;
 import static nil.nadph.qnotified.util.Utils.log;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import org.ferredoxin.ferredoxin_ui.base.UiSwitchPreference;
+
+import java.util.Random;
+
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
-import java.util.Random;
-import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
-import me.singleneuron.util.QQVersion;
+import me.singleneuron.qn_kernel.annotation.UiItem;
+import me.singleneuron.qn_kernel.base.CommonDelayAbleHookBridge;
+import me.singleneuron.qn_kernel.data.HostInfo;
 import nil.nadph.qnotified.base.annotation.FunctionEntry;
-import nil.nadph.qnotified.hook.CommonDelayableHook;
 import nil.nadph.qnotified.step.DexDeobfStep;
 import nil.nadph.qnotified.ui.CustomDialog;
 import nil.nadph.qnotified.util.DexKit;
 import nil.nadph.qnotified.util.LicenseStatus;
-import nil.nadph.qnotified.util.Toasts;
+import nil.nadph.qnotified.util.QQVersion;
 
 @FunctionEntry
-public class CheatHook extends CommonDelayableHook {
+@UiItem
+public class CheatHook extends CommonDelayAbleHookBridge {
+
+    private final UiSwitchPreference mUiSwitchPreference = this.new UiSwitchPreferenceItemFactory("自定义猜拳骰子");
+
+    @NonNull
+    @Override
+    public UiSwitchPreference getPreference() {
+        return mUiSwitchPreference;
+    }
+
+    @Nullable
+    @Override
+    public String[] getPreferenceLocate() {
+        return new String[]{"自定义功能"};
+    }
 
     public static final CheatHook INSTANCE = new CheatHook();
     private final String[] diceItem = {"1", "2", "3", "4", "5", "6"};
@@ -53,7 +75,7 @@ public class CheatHook extends CommonDelayableHook {
     private int morraNum = -1;
 
     private CheatHook() {
-        super("qh_random_cheat", new DexDeobfStep(DexKit.C_PNG_FRAME_UTIL),
+        super(new DexDeobfStep(DexKit.C_PNG_FRAME_UTIL),
             new DexDeobfStep(DexKit.C_PIC_EMOTICON_INFO));
     }
 
@@ -76,94 +98,63 @@ public class CheatHook extends CommonDelayableHook {
                                 log(e);
                             }
                             int num = (int) param.args[0];
-                            if (num == 6) {
-                                if (diceNum == -1) {
-                                    Toasts.error(
-                                        HostInformationProviderKt.getHostInfo().getApplication(),
-                                        "diceNum/E unexpected -1");
-                                } else {
-                                    param.setResult(diceNum);
-                                }
-                            } else if (num == 3) {
-                                if (morraNum == -1) {
-                                    Toasts.error(
-                                        HostInformationProviderKt.getHostInfo().getApplication(),
-                                        "morraNum/E unexpected -1");
-                                } else {
-                                    param.setResult(morraNum);
-                                }
+                            if (num == 6 && diceNum != -1) {
+                                param.setResult(diceNum);
+                            } else if (num == 3 && morraNum != -1) {
+                                param.setResult(morraNum);
                             }
                         }
                     });
 
+            XC_MethodHook hook = new XC_MethodHook(43) {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    if (LicenseStatus.sDisableCommonHooks) {
+                        return;
+                    }
+                    try {
+                        if (!isEnabled()) {
+                            return;
+                        }
+                    } catch (Throwable e) {
+                        log(e);
+                    }
+                    Context context = (Context) param.args[1];
+                    Object emoticon = param.args[3];
+                    String name = (String) XposedHelpers.getObjectField(emoticon,
+                        "name");
+                    if ("随机骰子".equals(name) || "骰子".equals(name)) {
+                        param.setResult(null);
+                        showDiceDialog(context, param);
+                    } else if ("猜拳".equals(name)) {
+                        param.setResult(null);
+                        showMorraDialog(context, param);
+                    }
+                }
+            };
             String Method = "a";
 
-            if (HostInformationProviderKt.requireMinQQVersion(QQVersion.QQ_8_4_8)) {
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_4_8)) {
                 Method = "sendMagicEmoticon";
             }
-            if (HostInformationProviderKt.requireMinQQVersion(QQVersion.QQ_8_5_0)) {
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
+                XposedHelpers.findAndHookMethod(Class.forName("com.tencent.mobileqq.emoticonview" +
+                        ".sender.PicEmoticonInfoSender"),
+                    Method, load("com.tencent.common.app.business.BaseQQAppInterface"),
+                    Context.class, _BaseSessionInfo(),
+                    load("com.tencent.mobileqq.data.Emoticon"),
+                    load("com.tencent.mobileqq.emoticon.StickerInfo"), hook);
+            } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_5_0)) {
                 XposedHelpers.findAndHookMethod(Class.forName("com.tencent.mobileqq.emoticonview" +
                         ".sender.PicEmoticonInfoSender"),
                     Method, load("com.tencent.mobileqq.app.QQAppInterface"),
                     Context.class, _SessionInfo(), load("com.tencent.mobileqq.data.Emoticon"),
-                    load("com.tencent.mobileqq.emoticon.EmojiStickerManager$StickerInfo"),
-                    new XC_MethodHook(43) {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            if (LicenseStatus.sDisableCommonHooks) {
-                                return;
-                            }
-                            try {
-                                if (!isEnabled()) {
-                                    return;
-                                }
-                            } catch (Throwable e) {
-                                log(e);
-                            }
-                            Context context = (Context) param.args[1];
-                            Object emoticon = param.args[3];
-                            String name = (String) XposedHelpers.getObjectField(emoticon,
-                                "name");
-                            if ("随机骰子".equals(name) || "骰子".equals(name)) {
-                                param.setResult(null);
-                                showDiceDialog(context, param);
-                            } else if ("猜拳".equals(name)) {
-                                param.setResult(null);
-                                showMorraDialog(context, param);
-                            }
-                        }
-                    });
+                    load("com.tencent.mobileqq.emoticon.EmojiStickerManager$StickerInfo"), hook);
             } else {
                 XposedHelpers.findAndHookMethod(DexKit.doFindClass(DexKit.C_PIC_EMOTICON_INFO),
                     Method, load("com.tencent.mobileqq.app.QQAppInterface"),
                     Context.class, _SessionInfo(), load("com.tencent.mobileqq.data.Emoticon"),
-                    load("com.tencent.mobileqq.emoticon.EmojiStickerManager$StickerInfo"),
-                    new XC_MethodHook(43) {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            if (LicenseStatus.sDisableCommonHooks) {
-                                return;
-                            }
-                            try {
-                                if (!isEnabled()) {
-                                    return;
-                                }
-                            } catch (Throwable e) {
-                                log(e);
-                            }
-                            Context context = (Context) param.args[1];
-                            Object emoticon = param.args[3];
-                            String name = (String) XposedHelpers.getObjectField(emoticon,
-                                "name");
-                            if ("随机骰子".equals(name) || "骰子".equals(name)) {
-                                param.setResult(null);
-                                showDiceDialog(context, param);
-                            } else if ("猜拳".equals(name)) {
-                                param.setResult(null);
-                                showMorraDialog(context, param);
-                            }
-                        }
-                    });
+                    load("com.tencent.mobileqq.emoticon.EmojiStickerManager$StickerInfo"), hook);
             }
             return true;
         } catch (Throwable e) {
@@ -176,34 +167,23 @@ public class CheatHook extends CommonDelayableHook {
     private void showDiceDialog(Context context, XC_MethodHook.MethodHookParam param) {
         AlertDialog alertDialog = new AlertDialog.Builder(context, CustomDialog.themeIdForDialog())
             .setTitle("自定义骰子")
-            .setSingleChoiceItems(diceItem, diceNum, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    diceNum = which;
-                }
-            })
+            .setSingleChoiceItems(diceItem, diceNum, (dialog, which) -> diceNum = which)
             .setNegativeButton("取消", null)
-            .setNeutralButton("随机", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    diceNum = Math.abs(new Random().nextInt(6));
-                    try {
-                        XposedBridge
-                            .invokeOriginalMethod(param.method, param.thisObject, param.args);
-                    } catch (Exception e) {
-                        XposedBridge.log(e);
-                    }
+            .setNeutralButton("随机", (dialog, which) -> {
+                diceNum = Math.abs(new Random().nextInt(6));
+                try {
+                    XposedBridge
+                        .invokeOriginalMethod(param.method, param.thisObject, param.args);
+                } catch (Exception e) {
+                    XposedBridge.log(e);
                 }
             })
-            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    try {
-                        XposedBridge
-                            .invokeOriginalMethod(param.method, param.thisObject, param.args);
-                    } catch (Exception e) {
-                        XposedBridge.log(e);
-                    }
+            .setPositiveButton("确定", (dialog, which) -> {
+                try {
+                    XposedBridge
+                        .invokeOriginalMethod(param.method, param.thisObject, param.args);
+                } catch (Exception e) {
+                    XposedBridge.log(e);
                 }
             })
             .create();
@@ -213,34 +193,23 @@ public class CheatHook extends CommonDelayableHook {
     private void showMorraDialog(Context context, XC_MethodHook.MethodHookParam param) {
         AlertDialog alertDialog = new AlertDialog.Builder(context, CustomDialog.themeIdForDialog())
             .setTitle("自定义猜拳")
-            .setSingleChoiceItems(morraItem, morraNum, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    morraNum = which;
-                }
-            })
+            .setSingleChoiceItems(morraItem, morraNum, (dialog, which) -> morraNum = which)
             .setNegativeButton("取消", null)
-            .setNeutralButton("随机", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    morraNum = Math.abs(new Random().nextInt(3));
-                    try {
-                        XposedBridge
-                            .invokeOriginalMethod(param.method, param.thisObject, param.args);
-                    } catch (Exception e) {
-                        XposedBridge.log(e);
-                    }
+            .setNeutralButton("随机", (dialog, which) -> {
+                morraNum = Math.abs(new Random().nextInt(3));
+                try {
+                    XposedBridge
+                        .invokeOriginalMethod(param.method, param.thisObject, param.args);
+                } catch (Exception e) {
+                    XposedBridge.log(e);
                 }
             })
-            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    try {
-                        XposedBridge
-                            .invokeOriginalMethod(param.method, param.thisObject, param.args);
-                    } catch (Exception e) {
-                        XposedBridge.log(e);
-                    }
+            .setPositiveButton("确定", (dialog, which) -> {
+                try {
+                    XposedBridge
+                        .invokeOriginalMethod(param.method, param.thisObject, param.args);
+                } catch (Exception e) {
+                    XposedBridge.log(e);
                 }
             })
             .create();

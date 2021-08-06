@@ -24,16 +24,28 @@ package ltd.nextalone.hook
 import ltd.nextalone.util.method
 import ltd.nextalone.util.replace
 import ltd.nextalone.util.tryOrFalse
+import me.singleneuron.qn_kernel.annotation.UiItem
+import me.singleneuron.qn_kernel.base.CommonDelayAbleHookBridge
 import me.singleneuron.qn_kernel.data.requireMinQQVersion
-import me.singleneuron.util.QQVersion
+import me.singleneuron.qn_kernel.ui.base.净化功能
 import nil.nadph.qnotified.base.annotation.FunctionEntry
-import nil.nadph.qnotified.hook.CommonDelayableHook
+import nil.nadph.qnotified.util.QQVersion
 
 @FunctionEntry
-object RemoveShortCutBar : CommonDelayableHook("na_remove_short_cut_bar_kt") {
+@UiItem
+object RemoveShortCutBar : CommonDelayAbleHookBridge() {
+
+    override val preference = uiSwitchPreference {
+        title = "隐藏文本框上方快捷方式"
+    }
+
+    override val preferenceLocate = 净化功能
 
     override fun initOnce() = tryOrFalse {
-        "Lcom.tencent.mobileqq.activity.aio.helper.ShortcutBarAIOHelper;->h()V".method.replace(
+        val methodName = if (requireMinQQVersion(QQVersion.QQ_8_6_0))
+            "Lcom/tencent/mobileqq/activity/aio/helper/TroopAppShortcutBarHelper;->g()V"
+        else "Lcom.tencent.mobileqq.activity.aio.helper.ShortcutBarAIOHelper;->h()V"
+        methodName.method.replace(
             this,
             null
         )

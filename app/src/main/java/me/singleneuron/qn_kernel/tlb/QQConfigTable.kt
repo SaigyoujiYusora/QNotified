@@ -23,61 +23,13 @@ package me.singleneuron.qn_kernel.tlb
 
 import cc.ioctl.hook.ReplyNoAtHook
 import cc.ioctl.hook.VasProfileAntiCrash
-import ltd.nextalone.hook.HideProfileBubble
-import ltd.nextalone.hook.HideTotalNumber
+import ltd.nextalone.hook.ChatWordsCount
 import me.kyuubiran.hook.AutoMosaicName
-import me.singleneuron.util.QQVersion.*
+import nil.nadph.qnotified.util.QQVersion.*
 
 class QQConfigTable : ConfigTableInterface {
 
     override val configs: Map<String?, Map<Long, Any>> = mapOf(
-
-        // 字符串关键字 updateProfileBubbleMsgView
-        HideProfileBubble::class.simpleName to mapOf(
-            QQ_8_3_9 to "S",
-            QQ_8_4_1 to "V",
-            QQ_8_4_5 to "V",
-            QQ_8_4_8 to "U",
-            QQ_8_4_10 to "Y",
-            QQ_8_4_17 to "Y",
-            QQ_8_4_18 to "Y",
-            QQ_8_5_0 to "Z",
-            QQ_8_5_5 to "Z"
-        ),
-
-        VasProfileAntiCrash::class.java.simpleName to mapOf(
-            QQ_8_4_1 to "azfl",
-            QQ_8_4_5 to "azxy",
-            QQ_8_4_8 to "aymn",
-            QQ_8_4_10 to "Y",
-            QQ_8_4_17 to "Y",
-            QQ_8_4_18 to "Y",
-            QQ_8_5_0 to "com.tencent.mobileqq.profile.ProfileCardTemplate",
-            QQ_8_5_5 to "com.tencent.mobileqq.profile.ProfileCardTemplate",
-        ),
-
-        //com.tencent.mobileqq.activity.aio.core.TroopChatPie中一般是包含R.id.blz的
-        HideTotalNumber::class.java.simpleName to mapOf(
-            QQ_8_4_1 to "bE",
-            QQ_8_4_5 to "bE",
-            QQ_8_4_8 to "r",
-            QQ_8_4_10 to "t",
-            QQ_8_4_17 to "t",
-            QQ_8_4_18 to "t",
-            QQ_8_5_0 to "s",
-            QQ_8_5_5 to "bz"
-        ),
-
-        AutoMosaicName::class.java.simpleName to mapOf(
-            QQ_8_4_1 to "t",
-            QQ_8_4_5 to "t",
-            QQ_8_4_8 to "enableMosaicEffect",
-            QQ_8_4_10 to "enableMosaicEffect",
-            QQ_8_4_17 to "enableMosaicEffect",
-            QQ_8_4_18 to "enableMosaicEffect",
-            QQ_8_5_0 to "enableMosaicEffect",
-            QQ_8_5_5 to "r",
-        ),
 
         )
 
@@ -88,7 +40,32 @@ class QQConfigTable : ConfigTableInterface {
             QQ_8_2_6 to "m",
             QQ_8_3_6 to "n",
             QQ_8_4_8 to "createAtMsg",
-            QQ_8_5_5 to "l"
+            QQ_8_5_5 to "l",
+            QQ_8_6_0 to "__NOT_USED__",
+        ),
+        ChatWordsCount::class.java.simpleName to mapOf(
+            QQ_8_5_0 to "ivc",
+            QQ_8_6_5 to "mvm",
+            QQ_8_7_0 to "mxh",
+            QQ_8_7_5 to "mxn",
+            QQ_8_8_0 to "mxz",
+            QQ_8_8_3 to "myn",
+        ),
+
+        VasProfileAntiCrash::class.java.simpleName to mapOf(
+            QQ_8_4_1 to "azfl",
+            QQ_8_4_5 to "azxy",
+            QQ_8_4_8 to "aymn",
+            QQ_8_4_10 to "Y",
+            QQ_8_5_0 to "com.tencent.mobileqq.profile.ProfileCardTemplate",
+            QQ_8_6_0 to "com.tencent.mobileqq.profilecard.vas.component.template.VasProfileTemplateComponent",
+        ),
+
+        AutoMosaicName::class.java.simpleName to mapOf(
+            QQ_8_4_1 to "t",
+            QQ_8_4_8 to "enableMosaicEffect",
+            QQ_8_5_5 to "r",
+            QQ_8_6_0 to "k",
         ),
     )
 

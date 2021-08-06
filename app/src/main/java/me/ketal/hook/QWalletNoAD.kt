@@ -32,7 +32,7 @@ import me.ketal.util.BaseUtil.tryVerbosely
 import me.ketal.util.HookUtil.getField
 import me.ketal.util.HookUtil.getMethod
 import me.singleneuron.qn_kernel.data.requireMinQQVersion
-import me.singleneuron.util.QQVersion
+import nil.nadph.qnotified.util.QQVersion
 import nil.nadph.qnotified.base.annotation.FunctionEntry
 import nil.nadph.qnotified.util.Utils
 
@@ -62,7 +62,7 @@ object QWalletNoAD : PluginDelayableHook("ketal_qwallet_noad") {
                         val webView =
                             "Lcom/qwallet/view/QWalletHeaderView;->a:Lcom/tencent/biz/ui/TouchWebView;"
                                 .getField(classLoader)
-                                ?.get(headerView) as View
+                                ?.get(headerView) as View?
                         headerView.removeView(webView)
                         headerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
                     }

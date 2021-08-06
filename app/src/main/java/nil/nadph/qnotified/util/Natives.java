@@ -29,7 +29,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import nil.nadph.qnotified.BuildConfig;
+import nil.nadph.qnotified.startup.StartupInfo;
 
 public class Natives {
 
@@ -101,6 +103,28 @@ public class Natives {
 
     public static native long call(long addr, long argv);
 
+    private static void registerNativeLibEntry(String soTailingName) {
+        if (soTailingName == null || soTailingName.length() == 0) {
+            return;
+        }
+        try {
+            Class<?> xp = Class.forName("de.robv.android.xposed.XposedBridge");
+            try {
+                xp.getClassLoader()
+                    .loadClass("org.lsposed.lspd.nativebridge.NativeAPI")
+                    .getMethod("recordNativeEntrypoint", String.class)
+                    .invoke(null, soTailingName);
+            } catch (ClassNotFoundException ignored) {
+                // not LSPosed, ignore
+            } catch (NoSuchMethodException | IllegalArgumentException
+                | InvocationTargetException | IllegalAccessException e) {
+                Utils.log(e);
+            }
+        } catch (ClassNotFoundException e) {
+            // not in host process, ignore
+        }
+    }
+
     @SuppressWarnings("deprecation")
     @SuppressLint("UnsafeDynamicallyLoadedCode")
     public static void load(Context ctx) throws Throwable {
@@ -109,20 +133,34 @@ public class Natives {
             return;
         } catch (UnsatisfiedLinkError ignored) {
         }
-        System.load(extractNativeLibrary(ctx, "natives").getAbsolutePath());
-        extractNativeLibrary(ctx, "mmkv");
+        try {
+            Class.forName("de.robv.android.xposed.XposedBridge");
+            // in host process
+            try {
+                if (StartupInfo.modulePath != null) {
+                    // try direct memory map
+                    System.load(StartupInfo.modulePath
+                        + "!/lib/" + Build.CPU_ABI + "/libnatives.so");
+                    Utils.logd("dlopen by mmap success");
+                }
+            } catch (UnsatisfiedLinkError e1) {
+                // direct memory map load failed, extract and dlopen
+                File libnatives = extractNativeLibrary(ctx, "natives");
+                registerNativeLibEntry(libnatives.getName());
+                System.load(libnatives.getAbsolutePath());
+                Utils.logd("dlopen by extract success");
+            }
+        } catch (ClassNotFoundException e) {
+            // not in host process, ignore
+            System.loadLibrary("natives");
+        }
         getpagesize();
         File mmkvDir = new File(ctx.getFilesDir(), "qn_mmkv");
         if (!mmkvDir.exists()) {
             mmkvDir.mkdirs();
         }
         MMKV.initialize(mmkvDir.getAbsolutePath(), s -> {
-            try {
-                System.load(extractNativeLibrary(ctx, s).getAbsolutePath());
-            } catch (IOException e) {
-                throw (UnsatisfiedLinkError) new UnsatisfiedLinkError("extract lib failed: " + s)
-                    .initCause(e);
-            }
+            // nop, mmkv is attached with libnatives.so already
         });
         MMKV.mmkvWithID("global_config", MMKV.MULTI_PROCESS_MODE);
         MMKV.mmkvWithID("global_cache", MMKV.MULTI_PROCESS_MODE);
@@ -135,7 +173,7 @@ public class Natives {
      */
     static File extractNativeLibrary(Context ctx, String libraryName) throws IOException {
         String abi = Build.CPU_ABI;
-        String soName = "lib" + libraryName + ".so." + BuildConfig.VERSION_NAME + "." + abi;
+        String soName = "lib" + libraryName + ".so." + BuildConfig.VERSION_CODE + "." + abi;
         File dir = new File(ctx.getFilesDir(), "qn_dyn_lib");
         if (!dir.isDirectory()) {
             if (dir.isFile()) {

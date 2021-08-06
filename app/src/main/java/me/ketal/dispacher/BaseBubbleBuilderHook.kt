@@ -22,12 +22,15 @@
 
 package me.ketal.dispacher
 
+import android.view.View
 import android.view.ViewGroup
 import de.robv.android.xposed.XC_MethodHook
 import ltd.nextalone.hook.HideTroopLevel
+import ltd.nextalone.util.*
+import ltd.nextalone.util.clazz
 import ltd.nextalone.util.hookAfter
-import ltd.nextalone.util.method
 import ltd.nextalone.util.tryOrFalse
+import me.ketal.hook.ChatItemShowQQUin
 import me.ketal.hook.ShowMsgAt
 import me.singleneuron.qn_kernel.data.MsgRecordData
 import nil.nadph.qnotified.base.annotation.FunctionEntry
@@ -40,11 +43,17 @@ object BaseBubbleBuilderHook : CommonDelayableHook("__NOT_USED__") {
     private val decorators = arrayOf<OnBubbleBuilder>(
         HideTroopLevel,
         ShowMsgAt,
+        ChatItemShowQQUin,
     )
 
     override fun initOnce() = tryOrFalse {
-        "Lcom/tencent/mobileqq/activity/aio/BaseBubbleBuilder;->a(IILcom/tencent/mobileqq/data/ChatMessage;Landroid/view/View;Landroid/view/ViewGroup;Lcom/tencent/mobileqq/activity/aio/OnLongClickAndTouchListener;)Landroid/view/View;"
-            .method.hookAfter(this) {
+        for (m in "com.tencent.mobileqq.activity.aio.BaseBubbleBuilder".clazz?.methods!!) {
+            //
+            if (m.name != "a") continue
+            if (m.returnType != View::class.java) continue
+            if (!m.isPublic) continue
+            if (m.parameterTypes.size != 6) continue
+            m.hookAfter(this) {
                 if (it.result == null) return@hookAfter
                 val rootView = it.result as ViewGroup
                 val msg = MsgRecordData(it.args[2])
@@ -56,6 +65,7 @@ object BaseBubbleBuilderHook : CommonDelayableHook("__NOT_USED__") {
                     }
                 }
             }
+        }
     }
 
     override fun isEnabled() = true

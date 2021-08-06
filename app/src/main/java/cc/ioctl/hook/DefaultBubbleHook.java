@@ -21,17 +21,19 @@
  */
 package cc.ioctl.hook;
 
-import static nil.nadph.qnotified.util.Utils.log;
-
 import android.app.Application;
 import android.os.Looper;
+
 import java.io.File;
-import me.singleneuron.qn_kernel.data.HostInformationProviderKt;
+
+import me.singleneuron.qn_kernel.data.HostInfo;
 import nil.nadph.qnotified.SyncUtils;
 import nil.nadph.qnotified.base.annotation.FunctionEntry;
 import nil.nadph.qnotified.hook.CommonDelayableHook;
 import nil.nadph.qnotified.util.Toasts;
 import nil.nadph.qnotified.util.Utils;
+
+import static nil.nadph.qnotified.util.Utils.log;
 
 @FunctionEntry
 public class DefaultBubbleHook extends CommonDelayableHook {
@@ -49,15 +51,15 @@ public class DefaultBubbleHook extends CommonDelayableHook {
 
     @Override
     public boolean isValid() {
-        Application app = HostInformationProviderKt.getHostInfo().getApplication();
-        return app == null || !HostInformationProviderKt.getHostInfo().isTim();
+        Application app = HostInfo.getHostInfo().getApplication();
+        return app == null || !HostInfo.isTim();
     }
 
     @Override
     public boolean isEnabled() {
         try {
-            Application app = HostInformationProviderKt.getHostInfo().getApplication();
-            if (app != null && HostInformationProviderKt.getHostInfo().isTim()) {
+            Application app = HostInfo.getHostInfo().getApplication();
+            if (app != null && HostInfo.isTim()) {
                 return false;
             }
             File dir = new File(app.getFilesDir().getAbsolutePath() + "/bubble_info");
@@ -72,7 +74,7 @@ public class DefaultBubbleHook extends CommonDelayableHook {
     public void setEnabled(boolean enabled) {
         try {
             File dir = new File(
-                HostInformationProviderKt.getHostInfo().getApplication().getFilesDir()
+                HostInfo.getHostInfo().getApplication().getFilesDir()
                     .getAbsolutePath() + "/bubble_info");
             boolean curr = !dir.exists() || !dir.canRead();
             if (dir.exists()) {
@@ -90,12 +92,12 @@ public class DefaultBubbleHook extends CommonDelayableHook {
         } catch (final Exception e) {
             Utils.log(e);
             if (Looper.myLooper() == Looper.getMainLooper()) {
-                Toasts.error(HostInformationProviderKt.getHostInfo().getApplication(), e + "");
+                Toasts.error(HostInfo.getHostInfo().getApplication(), e + "");
             } else {
                 SyncUtils.post(new Runnable() {
                     @Override
                     public void run() {
-                        Toasts.error(HostInformationProviderKt.getHostInfo().getApplication(),
+                        Toasts.error(HostInfo.getHostInfo().getApplication(),
                             e + "");
                     }
                 });
