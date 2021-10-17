@@ -60,7 +60,7 @@ object ShowMsgAt : CommonDelayableHook("Ketal_HideTroopLevel"), OnBubbleBuilder 
             when (chatMessage.msgType) {
                 MSG_TYPE_TEXT, // TODO MSG_TYPE_MIX,
                 MSG_TYPE_REPLY_TEXT -> {
-                    when (val content = rootView.findHostView<View>("chat_item_content_layout")!!) {
+                    when (val content = rootView.findHostView<View>("chat_item_content_layout")) {
                         is TextView -> {
                             copeAtInfo(content, at)
                         }
@@ -91,7 +91,8 @@ object ShowMsgAt : CommonDelayableHook("Ketal_HideTroopLevel"), OnBubbleBuilder 
             val uin = con["uin"].toString().toLong()
             val start = con["startPos"] as Int
             val length = con["textLen"] as Int
-            spannableString.setSpan(OpenQQSpan(uin), start, start + length, Spannable.SPAN_EXCLUSIVE_INCLUSIVE)
+            if (spannableString[start] == '@')
+                spannableString.setSpan(OpenQQSpan(uin), start, start + length, Spannable.SPAN_EXCLUSIVE_INCLUSIVE)
         }
         textView.text = spannableString
         textView.movementMethod = LinkMovementMethod.getInstance()

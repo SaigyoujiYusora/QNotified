@@ -30,7 +30,7 @@ import nil.nadph.qnotified.util.Utils
 import org.ferredoxin.ferredoxin_ui.base.UiSwitchPreference
 
 @UiItem
-object DebugDump : BaseStartActivityHookDecorator("debugDump") {
+object DebugDump : BaseStartActivityHookDecorator() {
 
     override fun doDecorate(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
         Utils.logd("debugDump: startActivity " + param.thisObject::class.java.name)
