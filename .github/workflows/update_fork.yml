@@ -24,7 +24,7 @@ jobs:
         git config --global user.name "github-actions"
     - name: Update fork
       run: |
-        git remote add upstream https://github.com/LSPosed/MagiskOnWSA.git
+        git remote add upstream https://github.com/ferredoxin/QNotified.git
         git remote -v
         git fetch upstream
         git checkout master
