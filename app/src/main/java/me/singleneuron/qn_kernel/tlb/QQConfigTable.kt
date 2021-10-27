@@ -23,7 +23,7 @@ package me.singleneuron.qn_kernel.tlb
 
 import cc.ioctl.hook.ReplyNoAtHook
 import cc.ioctl.hook.VasProfileAntiCrash
-import ltd.nextalone.hook.ChatWordsCount
+import xyz.nextalone.hook.ChatWordsCount
 import me.ketal.hook.SortAtPanel
 import me.kyuubiran.hook.RemovePlayTogether
 import me.kyuubiran.hook.SimplifyQQSettingMe
@@ -54,6 +54,7 @@ class QQConfigTable : ConfigTableInterface {
             QQ_8_8_20 to "n87",
             QQ_8_8_23 to "n_d",
             QQ_8_8_33 to "nbn",
+            QQ_8_8_35 to "nci",
         ),
 
         VasProfileAntiCrash::class.java.simpleName to mapOf(
