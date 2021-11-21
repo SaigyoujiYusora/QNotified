@@ -22,36 +22,21 @@
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext.kotlin_version = "${Version.kotlin}"
+    extra["kotlin_version"] = Version.kotlin
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
         //noinspection AndroidGradlePluginVersion,GradleDependency
-        classpath 'com.android.tools.build:gradle:4.2.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${Version.kotlin}"
+        classpath("com.android.tools.build:gradle:7.0.3")
+        classpath(kotlin("gradle-plugin", version = Version.kotlin))
 
         // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        // in the individual module settings.gradle.kts files
     }
 }
 
-allprojects {
-    repositories {
-        maven {
-            setUrl("https://maven.aliyun.com/nexus/content/groups/public/")
-        }
-        google()
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
-        maven { url 'https://api.xposed.info/' }
-    }
-    tasks.withType(JavaCompile) {
-        //options.compilerArgs <<"-Xlint:deprecation" //<<"-Xlint:unchecked"
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
+tasks.register<Delete>("clean").configure {
+    delete(rootProject.buildDir)
 }

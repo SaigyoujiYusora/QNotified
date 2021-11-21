@@ -32,7 +32,7 @@ import cc.ioctl.dialog.RikkaDialog
 import cc.ioctl.hook.AddAccount
 import cc.ioctl.hook.OpenProfileCard
 import me.singleneuron.qn_kernel.data.hostInfo
-import me.singleneuron.qn_kernel.ui.gen.AnnotatedUiItemList
+import me.singleneuron.qn_kernel.ui.gen.getAnnotatedUiItemClassList
 import nil.nadph.qnotified.activity.*
 import nil.nadph.qnotified.util.Initiator
 import nil.nadph.qnotified.util.Toasts
@@ -137,6 +137,9 @@ object UiTable : UiScreen {
                         onClickListener = ClickToActivity(AuxFuncActivity::class.java)
                     }
                 )
+            },
+            uiCategory {
+                name = "频道功能"
             },
             uiCategory {
                 name = "好友列表"
@@ -246,7 +249,7 @@ object UiTable : UiScreen {
                 name = "本软件为免费软件,请尊重开发者劳动成果,严禁倒卖\nLife feeds on negative entropy."
             }
         )
-        loadUiInList(map,AnnotatedUiItemList.getAnnotatedUiItemClassList())
+        loadUiInList(map, getAnnotatedUiItemClassList())
         map
     }
 }
