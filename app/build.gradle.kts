@@ -23,7 +23,7 @@ android {
         targetSdk = 31
         versionCode = Common.getTimeStamp()
         // versionName = major.minor.accumulation.commit_id
-        versionName = "0.8.24" + (Common.getGitHeadRefsSuffix(rootProject))
+        versionName = "0.9.0" + (Common.getGitHeadRefsSuffix(rootProject))
         multiDexEnabled = false
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
@@ -94,6 +94,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = Version.java.toString()
+        compileOptions {
+            kotlinOptions.freeCompilerArgs += "-Xmulti-platform"
+        }
     }
     // Encapsulates your external native build configurations.
     externalNativeBuild {
@@ -121,7 +124,9 @@ dependencies {
     compileOnly(fileTree(mapOf("dir" to "lib", "include" to listOf("*.jar"))))
     compileOnly(project(":stub"))
     implementation(project(":mmkv"))
-    implementation(project(":FerredoxinUILib"))
+    implementation(project(":common"))
+    implementation(project(":qnotified_style"))
+    //add("kspAndroid", project(":compiler"))
     ksp(project(":compiler"))
     compileOnly("de.robv.android.xposed:api:82")
     implementation("com.jaredrummler:colorpicker:1.1.0")
@@ -143,18 +148,18 @@ dependencies {
 
 
 dependencies {
-    val appCenterSdkVersion = "4.3.1"
+    val appCenterSdkVersion = "4.4.1"
     implementation("com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}")
     implementation("com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}")
 }
 
 dependencies {
-    val lifecycle_version = "2.4.0"
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
-    implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycle_version")
+    val lifecycleVersion = "2.4.0"
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion")
 }
 
-fun _execDexTail(dexPath: String): Boolean {
+fun execDexTail(dexPath: String): Boolean {
     val cl = URLClassLoader(arrayOf(Paths.get(rootProject.projectDir.absolutePath, "libs", "dex-ptm", "build", "classes", "java", "main").toUri().toURL()))
     try {
         val time = cl.loadClass("cc.ioctl.dextail.HexUtils").getMethod("getTimeAsByteArray").invoke(null) as ByteArray
@@ -171,47 +176,47 @@ tasks.register("dexTailDebug") {
         println("dexTailDebug.doLast invoked")
         val pathList: ArrayList<File> = arrayListOf()
         //3.6.x, plain
-        var tmp_path = "intermediates/dex/debug/out/classes.dex"
+        var tmpPath = "intermediates/dex/debug/out/classes.dex"
         if ("/" != File.separator) {
-            tmp_path = tmp_path.replace('/', File.separatorChar)
+            tmpPath = tmpPath.replace('/', File.separatorChar)
         }
-        var tmp_f = File(project.buildDir, tmp_path)
-        if (tmp_f.exists()) {
-            pathList.add(tmp_f)
+        var tmpF = File(project.buildDir, tmpPath)
+        if (tmpF.exists()) {
+            pathList.add(tmpF)
         }
         //3.6.x, minify
-        tmp_path = "intermediates/dex/debug/shrunkDex/classes.dex"
+        tmpPath = "intermediates/dex/debug/shrunkDex/classes.dex"
         if ("/" != File.separator) {
-            tmp_path = tmp_path.replace('/', File.separatorChar)
+            tmpPath = tmpPath.replace('/', File.separatorChar)
         }
-        tmp_f = File(project.buildDir, tmp_path)
-        if (tmp_f.exists()) {
-            pathList.add(tmp_f)
+        tmpF = File(project.buildDir, tmpPath)
+        if (tmpF.exists()) {
+            pathList.add(tmpF)
         }
         //4.0.x single
-        tmp_path = "intermediates/dex/debug/mergeDexDebug/classes.dex"
+        tmpPath = "intermediates/dex/debug/mergeDexDebug/classes.dex"
         if ("/" != File.separator) {
-            tmp_path = tmp_path.replace('/', File.separatorChar)
+            tmpPath = tmpPath.replace('/', File.separatorChar)
         }
-        tmp_f = File(project.buildDir, tmp_path)
-        if (tmp_f.exists()) {
-            pathList.add(tmp_f)
+        tmpF = File(project.buildDir, tmpPath)
+        if (tmpF.exists()) {
+            pathList.add(tmpF)
         }
         //4.0.x minify
-        tmp_path = "intermediates/dex/debug/minifyDebugWithR8/classes.dex"
+        tmpPath = "intermediates/dex/debug/minifyDebugWithR8/classes.dex"
         if ("/" != File.separator) {
-            tmp_path = tmp_path.replace('/', File.separatorChar)
+            tmpPath = tmpPath.replace('/', File.separatorChar)
         }
-        tmp_f = File(project.buildDir, tmp_path)
-        if (tmp_f.exists()) {
-            pathList.add(tmp_f)
+        tmpF = File(project.buildDir, tmpPath)
+        if (tmpF.exists()) {
+            pathList.add(tmpF)
         }
         //end
         if (pathList.size == 0) {
             throw RuntimeException("dex not found: we only support 3.6.x, 4.0.x and 4.1.x")
         }
         for (f in pathList) {
-            if (!_execDexTail(f.absolutePath)) {
+            if (!execDexTail(f.absolutePath)) {
                 throw RuntimeException("DedxTail returned false")
             }
         }
@@ -224,47 +229,47 @@ tasks.register("dexTailRelease") {
         println("dexTailRelease.doLast invoked")
         val pathList: ArrayList<File> = arrayListOf()
         //3.6.x single?
-        var tmp_path = "intermediates/dex/release/out/classes.dex"
+        var tmpPath = "intermediates/dex/release/out/classes.dex"
         if ("/" != File.separator) {
-            tmp_path = tmp_path.replace('/', File.separatorChar)
+            tmpPath = tmpPath.replace('/', File.separatorChar)
         }
-        var tmp_f = File(project.buildDir, tmp_path)
-        if (tmp_f.exists()) {
-            pathList.add(tmp_f)
+        var tmpF = File(project.buildDir, tmpPath)
+        if (tmpF.exists()) {
+            pathList.add(tmpF)
         }
         //3.6.x, minify
-        tmp_path = "intermediates/dex/release/shrunkDex/classes.dex"
+        tmpPath = "intermediates/dex/release/shrunkDex/classes.dex"
         if ("/" != File.separator) {
-            tmp_path = tmp_path.replace('/', File.separatorChar)
+            tmpPath = tmpPath.replace('/', File.separatorChar)
         }
-        tmp_f = File(project.buildDir, tmp_path)
-        if (tmp_f.exists()) {
-            pathList.add(tmp_f)
+        tmpF = File(project.buildDir, tmpPath)
+        if (tmpF.exists()) {
+            pathList.add(tmpF)
         }
         //4.0.x single
-        tmp_path = "intermediates/dex/release/mergeDexRelease/classes.dex"
+        tmpPath = "intermediates/dex/release/mergeDexRelease/classes.dex"
         if ("/" != File.separator) {
-            tmp_path = tmp_path.replace('/', File.separatorChar)
+            tmpPath = tmpPath.replace('/', File.separatorChar)
         }
-        tmp_f = File(project.buildDir, tmp_path)
-        if (tmp_f.exists()) {
-            pathList.add(tmp_f)
+        tmpF = File(project.buildDir, tmpPath)
+        if (tmpF.exists()) {
+            pathList.add(tmpF)
         }
         //4.0.x minify
-        tmp_path = "intermediates/dex/release/minifyReleaseWithR8/classes.dex"
+        tmpPath = "intermediates/dex/release/minifyReleaseWithR8/classes.dex"
         if ("/" != File.separator) {
-            tmp_path = tmp_path.replace('/', File.separatorChar)
+            tmpPath = tmpPath.replace('/', File.separatorChar)
         }
-        tmp_f = File(project.buildDir, tmp_path)
-        if (tmp_f.exists()) {
-            pathList.add(tmp_f)
+        tmpF = File(project.buildDir, tmpPath)
+        if (tmpF.exists()) {
+            pathList.add(tmpF)
         }
         //end
         if (pathList.size == 0) {
             throw RuntimeException("dex not found: we only support 3.6.x, 4.0.x and 4.1.x")
         }
         for (f in pathList) {
-            if (!_execDexTail(f.absolutePath)) {
+            if (!execDexTail(f.absolutePath)) {
                 throw RuntimeException("DedxTail returned false")
             }
         }
@@ -279,11 +284,11 @@ tasks.register("checkTargetNativeLibsDebug") {
         val soName = "libnatives.so"
         val libPath = "app/build/intermediates/cmake/debug/obj"
         for (abi in targetAbi) {
-            var tmp_path = "$libPath/$abi/$soName"
+            var tmpPath = "$libPath/$abi/$soName"
             if ("/" != File.separator) {
-                tmp_path = tmp_path.replace('/', File.separatorChar)
+                tmpPath = tmpPath.replace('/', File.separatorChar)
             }
-            val f = File(rootProject.projectDir, tmp_path)
+            val f = File(rootProject.projectDir, tmpPath)
             if (!f.exists()) {
                 throw IllegalStateException(" Native library missing for the target abi: $abi. Please run gradle task ':app:externalNativeBuildDebug' manually to force android gradle plugin to satisfy all required ABIs.")
             }
@@ -297,11 +302,11 @@ tasks.register("checkTargetNativeLibsRelease") {
         val soName = "libnatives.so"
         val libPath = "app/build/intermediates/cmake/release/obj"
         for (abi in targetAbi) {
-            var tmp_path = "$libPath/$abi/$soName"
+            var tmpPath = "$libPath/$abi/$soName"
             if ("/" != File.separator) {
-                tmp_path = tmp_path.replace('/', File.separatorChar)
+                tmpPath = tmpPath.replace('/', File.separatorChar)
             }
-            val f = File(rootProject.projectDir, tmp_path)
+            val f = File(rootProject.projectDir, tmpPath)
             if (!f.exists()) {
                 throw IllegalStateException("Native library missing for the target abi: $abi.\nPlease run gradle task ':app:externalNativeBuildRelease' manually to force android gradle plugin to satisfy all required ABIs.")
             }
@@ -345,5 +350,17 @@ tasks.whenTaskAdded {
     }
     if (this.name == "packageRelease") {
         this.dependsOn(tasks.getByName("checkTargetNativeLibsRelease"))
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
+    if (name.contains("release", true)) {
+        kotlinOptions {
+            freeCompilerArgs = freeCompilerArgs + listOf(
+                "-Xno-call-assertions",
+                "-Xno-receiver-assertions",
+                "-Xno-param-assertions",
+            )
+        }
     }
 }
