@@ -30,11 +30,6 @@ plugins {
     id("kotlin-android")
 }
 
-val signingFilePath = "signing.gradle"
-val performSigning = file(signingFilePath).exists()
-if (performSigning) {
-    apply(from = signingFilePath)
-}
 android {
     compileSdk = 31
     buildToolsVersion = "31.0.0"
@@ -45,7 +40,7 @@ android {
         targetSdk = 31
         versionCode = Common.getTimeStamp()
         // versionName = major.minor.accumulation.commit_id
-        versionName = "0.9.0" + (Common.getGitHeadRefsSuffix(rootProject))
+        versionName = "1.0.0" + (Common.getGitHeadRefsSuffix(rootProject))
         multiDexEnabled = false
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
@@ -57,13 +52,13 @@ android {
             }
         }
     }
-    if (performSigning) {
+    if (System.getenv("KEYSTORE_PATH") != null) {
         signingConfigs {
             create("release") {
-                storeFile = file(signingFilePath)
-                storePassword = storePassword
-                keyAlias = keyAlias
-                keyPassword = keyPassword
+                storeFile = file(System.getenv("KEYSTORE_PATH"))
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
                 enableV1Signing = true
                 enableV2Signing = true
             }
@@ -74,7 +69,7 @@ android {
             isShrinkResources = true
             isMinifyEnabled = true
             setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
-            if (performSigning) {
+            if (System.getenv("KEYSTORE_PATH") != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
             tasks.forEach {
